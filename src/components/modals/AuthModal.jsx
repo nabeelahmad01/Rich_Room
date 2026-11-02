@@ -412,7 +412,7 @@ export default function AuthModal({
           {/* Top Brand Showcase */}
           <div style={{ position: 'relative', zIndex: 2 }}>
             <img
-              src="/images/logo.png"
+              src="/logo.png"
               alt="Rich Room VIP"
               style={{
                 height: '56px',
@@ -622,8 +622,8 @@ export default function AuthModal({
             {/* Mobile Header Banner (Visible only on <768px) */}
             <div className="md:hidden" style={{ textAlign: 'center', marginBottom: '16px' }}>
               <img
-                src="/images/logo.png"
-                alt="Players Paradise Hub"
+                src="/logo.png"
+                alt="Rich Room VIP"
                 style={{
                   height: '46px',
                   width: 'auto',
@@ -631,7 +631,7 @@ export default function AuthModal({
                   objectFit: 'contain',
                   margin: '0 auto 8px auto',
                   display: 'block',
-                  filter: 'drop-shadow(0 0 14px rgba(0, 240, 255, 0.55)) drop-shadow(0 0 20px rgba(224, 38, 216, 0.4))',
+                  filter: 'drop-shadow(0 0 14px var(--neon-cyan-glow))',
                 }}
               />
               <div

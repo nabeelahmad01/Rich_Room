@@ -8,7 +8,6 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import AuthModal from '@/components/modals/AuthModal';
 import WalletModal from '@/components/modals/WalletModal';
-import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import {
   Users,
   Copy,
@@ -39,7 +38,6 @@ export default function ReferralPage() {
   // Modals
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
   const [walletModal, setWalletModal] = useState({ open: false, tab: 'deposit' });
-  const [spinWheelOpen, setSpinWheelOpen] = useState(false);
 
   const loadUserAndStats = async (isSilent = false) => {
     try {
@@ -125,7 +123,6 @@ export default function ReferralPage() {
         user={user}
         onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
         onOpenGameRequest={() => router.push('/games')}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       {/* Main Layout Area */}
@@ -139,7 +136,6 @@ export default function ReferralPage() {
           user={user}
           onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
           onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
-          onOpenSpinWheel={() => setSpinWheelOpen(true)}
           onOpenNotifications={() => {}}
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' }).then(() => {
@@ -148,14 +144,14 @@ export default function ReferralPage() {
           }}
         />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full space-y-8">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-8 max-w-6xl mx-auto w-full space-y-8">
           {/* Header Banner */}
           <div className="relative rounded-3xl overflow-hidden p-6 sm:p-10 border border-[var(--neon-cyan)]/30 bg-gradient-to-br from-[#0c0824] via-[#09061c] to-[#04020d] shadow-[0_0_40px_rgba(0,240,255,0.15)]">
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-[var(--neon-cyan)]/15 to-purple-600/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 max-w-2xl space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/40 text-[var(--neon-cyan)] text-xs font-heading font-black tracking-wider uppercase">
                 <Sparkles size={14} />
-                <span>PLAYERS PARADISE AFFILIATE SYSTEM</span>
+                <span>RICH ROOM VIP AFFILIATE SYSTEM</span>
               </div>
               <h1 className="font-heading font-black text-2xl sm:text-4xl tracking-wide leading-tight text-white">
                 INVITE PLAYERS. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)]">EARN UNLIMITED COMMISSIONS.</span>
@@ -364,7 +360,6 @@ export default function ReferralPage() {
         onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
         onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
         onOpenGameRequest={() => router.push('/games')}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       {/* Auth Modal */}
@@ -384,14 +379,6 @@ export default function ReferralPage() {
         isOpen={walletModal.open}
         onClose={() => setWalletModal({ open: false, tab: 'deposit' })}
         initialTab={walletModal.tab}
-        user={user}
-        onBalanceUpdated={loadUserAndStats}
-      />
-
-      {/* Spin Wheel */}
-      <DailySpinWheelModal
-        isOpen={spinWheelOpen}
-        onClose={() => setSpinWheelOpen(false)}
         user={user}
         onBalanceUpdated={loadUserAndStats}
       />

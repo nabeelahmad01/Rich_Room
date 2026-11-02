@@ -12,7 +12,6 @@ import WalletModal from '@/components/modals/WalletModal';
 import ExternalGameModal from '@/components/modals/ExternalGameModal';
 import Panda777SlotsModal from '@/components/games/Panda777SlotsModal';
 import CyberCrashModal from '@/components/games/CyberCrashModal';
-import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 
 import {
   KeyRound,
@@ -37,7 +36,6 @@ export default function MyGameIdsPage() {
   const [activeExternalGame, setActiveExternalGame] = useState(null);
   const [slotsOpen, setSlotsOpen] = useState(false);
   const [crashOpen, setCrashOpen] = useState(false);
-  const [spinWheelOpen, setSpinWheelOpen] = useState(false);
 
   const loadUser = async () => {
     try {
@@ -117,14 +115,13 @@ export default function MyGameIdsPage() {
           onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
           onOpenDailyBonus={() => {}}
           onOpenNotifications={() => {}}
-          onOpenSpinWheel={() => setSpinWheelOpen(true)}
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
           }}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 lg:pb-8">
           {/* Header Banner */}
           <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 border border-[var(--chrome-border)] bg-[var(--bg-card)] shadow-[0_0_30px_var(--neon-cyan-glow)]">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--neon-cyan)]/10 rounded-full blur-3xl pointer-events-none" />
@@ -187,7 +184,6 @@ export default function MyGameIdsPage() {
         onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
         onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
         onOpenGameRequest={() => router.push('/my-game-ids')}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       <AuthModal
@@ -224,13 +220,6 @@ export default function MyGameIdsPage() {
         onClose={() => setCrashOpen(false)}
         user={user}
         onBalanceUpdated={loadUser}
-      />
-
-      <DailySpinWheelModal
-        isOpen={spinWheelOpen}
-        onClose={() => setSpinWheelOpen(false)}
-        user={user}
-        onSpinComplete={loadUser}
       />
     </div>
   );

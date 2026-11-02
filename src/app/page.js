@@ -25,7 +25,6 @@ import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import KycModal from '@/components/modals/KycModal';
 import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
-import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 
 // Games
 import Panda777SlotsModal from '@/components/games/Panda777SlotsModal';
@@ -63,7 +62,6 @@ export default function HomePage() {
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
   const [walletModal, setWalletModal] = useState({ open: false, tab: 'deposit' });
   const [gameRequestModal, setGameRequestModal] = useState({ open: false, initialGame: null });
-  const [spinWheelOpen, setSpinWheelOpen] = useState(false);
   const [activeExternalGame, setActiveExternalGame] = useState(null);
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [kycOpen, setKycOpen] = useState(false);
@@ -384,7 +382,6 @@ export default function HomePage() {
             if (typeof window.openLiveChat === 'function') window.openLiveChat();
           }
         }}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       {/* Main Content Layout */}
@@ -399,12 +396,11 @@ export default function HomePage() {
           user={user}
           onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
           onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
-          onOpenSpinWheel={() => setSpinWheelOpen(true)}
           onLogout={handleLogout}
         />
 
         {/* Page Inner Container */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 pb-28 lg:pb-8">
           {/* Hero Banner */}
           <CyberHeroBanner
             user={user}
@@ -493,7 +489,7 @@ export default function HomePage() {
                 <p className="text-xs">Try selecting a different category or clearing the search query.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                 {games.map((g) => {
                   const cleanGTitle = (g.title || '').toLowerCase().trim();
                   const hasAcc = userGameAccounts.some((a) => {
@@ -571,15 +567,6 @@ export default function HomePage() {
         onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
         onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
         onOpenGameRequest={() => handleRequestGame()}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
-      />
-
-      {/* Daily Lucky Spin Wheel Modal */}
-      <DailySpinWheelModal
-        isOpen={spinWheelOpen}
-        onClose={() => setSpinWheelOpen(false)}
-        user={user}
-        onBalanceUpdated={loadUser}
       />
 
 

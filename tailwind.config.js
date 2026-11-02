@@ -18,9 +18,9 @@ export default {
         'chrome-border': 'var(--chrome-border)',
       },
       fontFamily: {
-        heading: ['Orbitron', 'sans-serif'],
-        sub: ['Rajdhani', 'sans-serif'],
-        body: ['Outfit', 'sans-serif'],
+        heading: ['Outfit', 'var(--font-heading)', '"Plus Jakarta Sans"', 'sans-serif'],
+        sub: ['"Plus Jakarta Sans"', 'var(--font-sub)', 'Outfit', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'var(--font-body)', 'Inter', 'sans-serif'],
       },
     },
   },

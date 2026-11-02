@@ -1,9 +1,6 @@
 import './globals.css';
 import GlobalLiveChat from '@/components/chat/GlobalLiveChat';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
-import { ThemeProvider } from '@/context/ThemeContext';
-import ThemeSelectorModal from '@/components/theme/ThemeSelectorModal';
-import FloatingThemeSwitcher from '@/components/theme/FloatingThemeSwitcher';
 
 export const metadata = {
   title: 'Rich Room | VIP Online Gaming & Sweeps Lounge',
@@ -50,7 +47,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="gold">
+    <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
@@ -65,13 +62,9 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-title" content="Rich Room" />
       </head>
       <body className="antialiased selection:bg-[var(--neon-cyan)] selection:text-black">
-        <ThemeProvider>
-          <PushNotificationManager />
-          {children}
-          <FloatingThemeSwitcher />
-          <ThemeSelectorModal />
-          <GlobalLiveChat />
-        </ThemeProvider>
+        <PushNotificationManager />
+        {children}
+        <GlobalLiveChat />
       </body>
     </html>
   );

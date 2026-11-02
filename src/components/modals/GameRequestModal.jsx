@@ -187,7 +187,7 @@ export default function GameRequestModal({
 
   return (
     <div className="cyber-modal-overlay">
-      <div className="relative w-full max-w-md rounded-3xl border border-[var(--chrome-border)] bg-[var(--bg-deep)] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] overflow-hidden">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-[var(--chrome-border)] bg-[var(--bg-deep)] p-5 sm:p-7 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] custom-scrollbar">
         {/* Glow ambient */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--neon-purple)]/15 rounded-full blur-3xl pointer-events-none" />
 

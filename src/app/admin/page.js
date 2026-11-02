@@ -1478,13 +1478,13 @@ export default function AdminPortal({ initialTab }) {
   const currentTabObj = allTabs.find(t => t.id === activeTab);
 
   return (
-    <div style={{ height: '100dvh', maxHeight: '100dvh', backgroundColor: '#070514', color: '#F8FAFC', display: 'flex', flexDirection: 'column', fontFamily: 'Lexend, sans-serif', overflow: 'hidden' }}>
+    <div style={{ height: '100dvh', maxHeight: '100dvh', backgroundColor: 'var(--bg-deep)', color: '#F8FAFC', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', overflow: 'hidden' }} className="admin-portal-root font-body">
       {/* Top Staff Navbar */}
       <header
         style={{
-          backgroundColor: '#070514',
-          borderBottom: '1px solid rgba(0, 240, 255, 0.16)',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.08)',
+          backgroundColor: 'var(--bg-surface)',
+          borderBottom: '1px solid var(--chrome-border)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--neon-cyan-glow)',
           zIndex: 40,
         }}
         className="px-2.5 sm:px-6 flex items-center justify-between shrink-0 relative h-16 sm:h-[82px] min-h-[64px] sm:min-h-[82px]"
@@ -1501,8 +1501,8 @@ export default function AdminPortal({ initialTab }) {
             }}
           >
             <img
-              src="/images/logo.png"
-              alt="Players Paradise Hub Admin"
+              src="/logo.png"
+              alt="Rich Room VIP Admin"
               className="vegas-navbar-logo hover:scale-105 transition-transform h-9 sm:h-[46px] w-auto object-contain"
             />
           </Link>
@@ -1511,26 +1511,26 @@ export default function AdminPortal({ initialTab }) {
           <div
             className="hidden sm:inline-flex items-center gap-2"
             style={{
-              backgroundColor: '#140E33',
-              border: '1px solid rgba(0, 240, 255, 0.4)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--chrome-border)',
               padding: '7px 18px',
               borderRadius: '9999px',
-              boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)',
+              boxShadow: '0 0 15px var(--neon-cyan-glow)',
             }}
           >
-            <Flame size={14} color="#00F0FF" />
+            <Flame size={14} color="var(--neon-cyan)" />
             <span style={{ color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              STAFF OPERATIONS CONSOLE
+              RICH ROOM VIP CONSOLE
             </span>
           </div>
 
           {/* Breadcrumb Indicator */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-[#0E0A24] border border-white/10 shrink-0">
-            <span className="text-[10.5px] text-[#9A91A8] font-bold uppercase tracking-wider">
+          <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-card)] border border-[var(--chrome-border)]/50 shrink-0">
+            <span className="text-[10.5px] text-[#9A91A8] font-bold uppercase tracking-wider font-sub">
               {currentTabObj?.category || 'Console'}
             </span>
             <span className="text-white/30 text-xs">/</span>
-            <span className="text-xs font-black text-[#00F0FF]">
+            <span className="text-xs font-black text-[var(--neon-cyan)] font-sub">
               {currentTabObj?.label || 'Dashboard'}
             </span>
           </div>
@@ -1562,8 +1562,8 @@ export default function AdminPortal({ initialTab }) {
           {/* Luxury Audio Alert Hub */}
           <div
             style={{
-              backgroundColor: '#0E0A24',
-              border: '1px solid rgba(0, 240, 255, 0.3)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--chrome-border)',
               borderRadius: '9999px',
               padding: '5px 12px',
               display: 'flex',
@@ -1650,7 +1650,7 @@ export default function AdminPortal({ initialTab }) {
             </button>
           </div>
 
-          {/* Staff Profile Avatar Circle (matches SU circle in screenshot) */}
+          {/* Staff Profile Avatar Circle */}
           <div className="relative" ref={profileDropdownRef}>
             <button
               type="button"
@@ -1659,15 +1659,15 @@ export default function AdminPortal({ initialTab }) {
                 width: '38px',
                 height: '38px',
                 borderRadius: '50%',
-                backgroundColor: '#0E0A24',
-                border: '1.5px solid #00F0FF',
+                backgroundColor: 'var(--bg-card)',
+                border: '1.5px solid var(--neon-cyan)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#00F0FF',
+                color: 'var(--neon-cyan)',
                 fontWeight: 900,
                 fontSize: '13px',
-                boxShadow: '0 0 14px rgba(0, 240, 255, 0.3)',
+                boxShadow: '0 0 14px var(--neon-cyan-glow)',
                 cursor: 'pointer',
                 padding: 0,
               }}
@@ -1680,28 +1680,28 @@ export default function AdminPortal({ initialTab }) {
             {/* Dropdown Menu Panel */}
             {profileDropdownOpen && (
               <div
-                className="vegas-profile-dropdown w-64 p-3 animate-in fade-in zoom-in-95 duration-150"
+                className="vegas-profile-dropdown w-64 p-3 animate-in fade-in zoom-in-95 duration-150 font-body"
                 style={{
                   position: 'absolute',
                   top: '100%',
                   right: 0,
                   marginTop: '10px',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.4)',
+                  backgroundColor: 'var(--bg-card)',
+                  border: '1px solid var(--chrome-border)',
                   borderRadius: '18px',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.2)',
+                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.95), 0 0 25px var(--neon-cyan-glow)',
                   zIndex: 99999,
-                  fontFamily: 'Lexend, sans-serif',
+                  fontFamily: 'var(--font-body)',
                 }}
               >
-                <div className="p-3 bg-[#070514] rounded-xl border border-white/10 mb-2">
+                <div className="p-3 bg-[var(--bg-deep)] rounded-xl border border-[var(--chrome-border)]/40 mb-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-[#140E33] border border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] font-black text-sm uppercase shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/50 flex items-center justify-center text-[var(--neon-cyan)] font-black text-sm uppercase shrink-0">
                       {user.username?.substring(0, 2).toUpperCase() || 'SU'}
                     </div>
                     <div className="overflow-hidden">
-                      <p className="m-0 text-sm font-black text-white truncate">{user.username}</p>
-                      <span className="inline-block px-2 py-0.5 mt-0.5 rounded-md bg-[#00F0FF]/15 border border-[#00F0FF]/30 text-[#00F0FF] text-[9.5px] font-black uppercase tracking-wider font-mono">
+                      <p className="m-0 text-sm font-black text-white truncate font-sub">{user.username}</p>
+                      <span className="inline-block px-2 py-0.5 mt-0.5 rounded-md bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] text-[9.5px] font-black uppercase tracking-wider font-mono">
                         {user.role?.replace('_', ' ')}
                       </span>
                     </div>
@@ -1715,10 +1715,10 @@ export default function AdminPortal({ initialTab }) {
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/10 hover:text-white transition text-decoration-none group"
                   >
                     <div className="flex items-center gap-2.5">
-                      <ExternalLink size={15} className="text-[#00F0FF]" />
+                      <ExternalLink size={15} className="text-[var(--neon-cyan)]" />
                       <span>Player Casino Lobby</span>
                     </div>
-                    <span className="text-[10px] text-gray-400 group-hover:text-[#00F0FF]">↗</span>
+                    <span className="text-[10px] text-gray-400 group-hover:text-[var(--neon-cyan)]">↗</span>
                   </Link>
 
                   <button
@@ -1731,10 +1731,10 @@ export default function AdminPortal({ initialTab }) {
                     className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-white/10 hover:text-white transition cursor-pointer text-left bg-transparent border-none"
                   >
                     <div className="flex items-center gap-2.5">
-                      <SlidersHorizontal size={15} className="text-[#00F0FF]" />
+                      <SlidersHorizontal size={15} className="text-[var(--neon-cyan)]" />
                       <span>Audio Alert Settings</span>
                     </div>
-                    <span className="text-[10px] font-mono font-black text-[#00F0FF] bg-[#00F0FF]/20 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-mono font-black text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/20 px-1.5 py-0.5 rounded">
                       {Math.round(alertVolume * 100)}%
                     </span>
                   </button>
@@ -1760,12 +1760,12 @@ export default function AdminPortal({ initialTab }) {
           {/* Mobile Drawer Hamburger Button (strictly hidden on desktop >= 768px) */}
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="admin-mobile-hamburger items-center justify-center w-10 h-10 rounded-xl text-[#00F0FF] bg-[#0E0A24] border border-[#00F0FF]/40 shrink-0 transition relative cursor-pointer"
+            className="admin-mobile-hamburger items-center justify-center w-10 h-10 rounded-xl text-[var(--neon-cyan)] bg-[var(--bg-card)] border border-[var(--chrome-border)] shrink-0 transition relative cursor-pointer"
             aria-label="Toggle navigation drawer"
           >
             {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {totalPendingBadges > 0 && !mobileSidebarOpen && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E026D8] text-white font-black text-[9px] flex items-center justify-center border-2 border-[#070514] animate-pulse shadow-[0_0_8px_#E026D8]">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-black text-[9px] flex items-center justify-center border-2 border-[var(--bg-deep)] animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)] font-mono">
                 {totalPendingBadges > 9 ? '9+' : totalPendingBadges}
               </span>
             )}
@@ -1783,10 +1783,10 @@ export default function AdminPortal({ initialTab }) {
           />
         )}
 
-        {/* Left Admin Navigation - EXACT MATCH to VegasSidebar.jsx in user screenshot */}
+        {/* Left Admin Navigation */}
         <aside
           className={`transition-all duration-300 z-50 md:static ${mobileSidebarOpen
-            ? 'fixed inset-y-0 left-0 flex shadow-[0_0_60px_rgba(0,0,0,0.95)] border-r border-[#00F0FF]/30'
+            ? 'fixed inset-y-0 left-0 flex shadow-[0_0_60px_rgba(0,0,0,0.95)] border-r border-[var(--chrome-border)]'
             : 'hidden md:flex'
             }`}
           style={{
@@ -1795,21 +1795,21 @@ export default function AdminPortal({ initialTab }) {
             maxWidth: '85vw',
             height: '100%',
             maxHeight: '100dvh',
-            backgroundColor: '#070514',
-            borderRight: '1px solid rgba(0, 240, 255, 0.16)',
+            backgroundColor: 'var(--bg-surface)',
+            borderRight: '1px solid var(--chrome-border)',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: 'Lexend, -apple-system, sans-serif',
+            fontFamily: 'var(--font-body)',
           }}
         >
           {/* Mobile Drawer Top Bar (strictly mobile only, desktop logo lives in the top header) */}
           <div
-            className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#070514] flex-shrink-0"
+            className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--chrome-border)]/50 bg-[var(--bg-deep)] flex-shrink-0"
             style={{
               paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
             }}
           >
-            <span className="text-xs font-black uppercase tracking-wider text-[#00F0FF] flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-[var(--neon-cyan)] flex items-center gap-2 font-heading">
               <ShieldCheck size={14} />
               Navigation Menu
             </span>
@@ -1940,7 +1940,7 @@ export default function AdminPortal({ initialTab }) {
 
         {/* Tab Content Display */}
         <main
-          className={`flex-1 flex flex-col min-h-0 bg-[#070514] ${activeTab === 'chat' ? 'p-2 sm:p-4 overflow-hidden' : 'p-3 sm:p-6 overflow-y-auto'
+          className={`flex-1 flex flex-col min-h-0 bg-[var(--bg-deep)] w-full max-w-full overflow-x-hidden ${activeTab === 'chat' ? 'p-2 sm:p-4 overflow-hidden' : 'p-2.5 sm:p-6 overflow-y-auto'
             }`}
           style={{ flex: 1 }}
         >

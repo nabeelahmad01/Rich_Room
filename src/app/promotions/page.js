@@ -99,17 +99,17 @@ export default function PromotionsPage() {
           onLogout={() => {}}
         />
 
-        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 space-y-10">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-8 space-y-8">
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-heading font-bold">
               <Crown size={14} />
               <span>CROWN VIP CLUB & REWARDS</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black font-heading text-white">
-              PLAYERS PARADISE <span className="text-amber-400">VIP LOUNGE</span>
+              RICH ROOM <span className="text-amber-400">VIP LOUNGE</span>
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl mx-auto">
-              Every spin on Ultra Panda, Fire Kirin, Orion Stars, and our in-house games advances your VIP rank. Climb from Bronze Panda to Paradise Legend!
+              Every spin on Ultra Panda, Fire Kirin, Orion Stars, and our in-house games advances your VIP rank. Climb from Bronze Tier to Sovereign Legend!
             </p>
           </div>
 

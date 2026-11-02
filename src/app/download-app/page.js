@@ -72,7 +72,7 @@ export default function DownloadAppPage() {
           onLogout={() => {}}
         />
 
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 space-y-12">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-8 space-y-10">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--neon-cyan)]/20 border border-[var(--neon-cyan)]/40 text-[var(--neon-cyan)] text-xs font-heading font-bold">
@@ -80,7 +80,7 @@ export default function DownloadAppPage() {
               <span>OFFICIAL MOBILE EDITION 2026</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading text-white">
-              DOWNLOAD <span className="text-[var(--neon-cyan)]">PLAYERS PARADISE</span> APP
+              DOWNLOAD <span className="text-[var(--neon-cyan)]">RICH ROOM VIP</span> APP
             </h1>
             <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Experience ultra-fast loading, full-screen gaming, and push notifications for deposits, cashouts, and new game platform credentials.

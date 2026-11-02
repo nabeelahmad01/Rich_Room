@@ -10,7 +10,6 @@ import {
   KeyRound,
   Wallet,
   Receipt,
-  Gift,
   Download,
   MessageSquare,
   ShieldCheck,
@@ -22,10 +21,8 @@ import {
   Sparkles,
   Crown,
   Users,
-  Headphones,
-  Palette
+  Headphones
 } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
 
 export default function CyberSidebar({
   collapsed,
@@ -37,11 +34,9 @@ export default function CyberSidebar({
   onOpenGameRequest,
   onOpenChat,
   onOpenDailyBonus,
-  onOpenSpinWheel,
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { openThemeModal, currentTheme } = useTheme();
 
   const navItems = [
     { label: 'Game Lobby', path: '/', icon: Gamepad2, badge: 'HOT' },
@@ -49,18 +44,6 @@ export default function CyberSidebar({
     { label: 'My Game IDs', path: '/my-game-ids', icon: KeyRound, highlight: true },
     { label: 'Deposit Funds', path: '/deposit', icon: Wallet },
     { label: 'Redeem Cashout', path: '/withdraw', icon: Receipt },
-    { label: 'Daily Spin', path: '/spin-wheel', icon: Gift, glow: true },
-    {
-      label: 'Gradient Themes',
-      path: '#themes',
-      icon: Palette,
-      badge: '6 PRESETS',
-      glow: true,
-      action: () => {
-        openThemeModal();
-        setMobileOpen(false);
-      },
-    },
     { label: 'Refer & Earn', path: '/referral', icon: Users, badge: 'REWARDS', glow: true },
     {
       label: '24/7 Live Support',

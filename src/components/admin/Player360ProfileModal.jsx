@@ -920,7 +920,8 @@ export default function Player360ProfileModal({
                     </div>
                   ) : (
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                      <div style={{ overflowX: 'auto', width: '100%' }}>
+                        <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
                         <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Amount ($ SC)</th>
@@ -989,6 +990,7 @@ export default function Player360ProfileModal({
                         </tbody>
                       </table>
                     </div>
+                  </div>
                   )}
                 </div>
               )}
@@ -1002,7 +1004,8 @@ export default function Player360ProfileModal({
                     </div>
                   ) : (
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                      <div style={{ overflowX: 'auto', width: '100%' }}>
+                        <table style={{ width: '100%', minWidth: '720px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
                         <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Amount ($ SC)</th>
@@ -1073,6 +1076,7 @@ export default function Player360ProfileModal({
                         </tbody>
                       </table>
                     </div>
+                  </div>
                   )}
                 </div>
               )}
@@ -1130,7 +1134,8 @@ export default function Player360ProfileModal({
                     </div>
                   ) : (
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                      <div style={{ overflowX: 'auto', width: '100%' }}>
+                        <table style={{ width: '100%', minWidth: '580px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
                         <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Player</th>
@@ -1155,6 +1160,7 @@ export default function Player360ProfileModal({
                         </tbody>
                       </table>
                     </div>
+                  </div>
                   )}
                 </div>
               )}
@@ -1168,7 +1174,8 @@ export default function Player360ProfileModal({
                     </div>
                   ) : (
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                      <div style={{ overflowX: 'auto', width: '100%' }}>
+                        <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
                         <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Action Type</th>
@@ -1216,6 +1223,7 @@ export default function Player360ProfileModal({
                         </tbody>
                       </table>
                     </div>
+                  </div>
                   )}
                 </div>
               )}

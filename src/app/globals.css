@@ -1,16 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root,
-html[data-theme="gold"] {
-  --font-heading: 'Orbitron', -apple-system, sans-serif;
-  --font-sub: 'Rajdhani', -apple-system, sans-serif;
-  --font-body: 'Outfit', -apple-system, sans-serif;
+:root {
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sub: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Theme: Rich Room Imperial Gold & Royal Amber (Default) */
+  /* Rich Room VIP Imperial Gold & Luxury Dark Theme */
   --theme-id: 'gold';
   --bg-deep: #080704;
   --bg-surface: #131006;
@@ -18,11 +17,11 @@ html[data-theme="gold"] {
   --bg-card-hover: rgba(38, 30, 12, 0.96);
   --bg-glass: rgba(19, 15, 6, 0.8);
 
-  --neon-cyan: #FFD700; /* Gold */
+  --neon-cyan: #FFD700; /* Rich Gold */
   --neon-cyan-dark: #B8860B;
   --neon-cyan-glow: rgba(255, 215, 0, 0.45);
 
-  --neon-purple: #F59E0B; /* Amber/Bronze */
+  --neon-purple: #F59E0B; /* Amber / Bronze */
   --neon-purple-light: #FDE68A;
   --neon-purple-glow: rgba(245, 158, 11, 0.45);
 
@@ -50,141 +49,6 @@ html[data-theme="gold"] {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-}
-
-/* Theme 2: Cyber Neon & Electric Blue */
-html[data-theme="cyan"] {
-  --theme-id: 'cyan';
-  --bg-deep: #050711;
-  --bg-surface: #0b0f22;
-  --bg-card: rgba(15, 22, 46, 0.85);
-  --bg-card-hover: rgba(23, 33, 68, 0.95);
-  --bg-glass: rgba(11, 15, 34, 0.75);
-
-  --neon-cyan: #00f0ff;
-  --neon-cyan-dark: #00a8b5;
-  --neon-cyan-glow: rgba(0, 240, 255, 0.45);
-
-  --neon-purple: #c026d3;
-  --neon-purple-light: #e879f9;
-  --neon-purple-glow: rgba(192, 38, 211, 0.45);
-
-  --chrome-border: rgba(0, 240, 255, 0.25);
-  --chrome-border-purple: rgba(192, 38, 211, 0.25);
-
-  --primary-gradient: linear-gradient(135deg, #00f0ff 0%, #0099ff 50%, #7928ca 100%);
-  --secondary-gradient: linear-gradient(135deg, #c026d3 0%, #7e22ce 100%);
-  --accent-gradient: linear-gradient(135deg, #38f8ff 0%, #1ea5ff 100%);
-  --bg-glow-1: rgba(0, 240, 255, 0.08);
-  --bg-glow-2: rgba(192, 38, 211, 0.09);
-}
-
-/* Theme 3: Dragon Emerald & Jade Mint */
-html[data-theme="emerald"] {
-  --theme-id: 'emerald';
-  --bg-deep: #030d07;
-  --bg-surface: #071910;
-  --bg-card: rgba(10, 31, 20, 0.88);
-  --bg-card-hover: rgba(15, 46, 29, 0.95);
-  --bg-glass: rgba(7, 25, 16, 0.75);
-
-  --neon-cyan: #00FF87;
-  --neon-cyan-dark: #059669;
-  --neon-cyan-glow: rgba(0, 255, 135, 0.45);
-
-  --neon-purple: #10B981;
-  --neon-purple-light: #6EE7B7;
-  --neon-purple-glow: rgba(16, 185, 129, 0.45);
-
-  --chrome-border: rgba(0, 255, 135, 0.28);
-  --chrome-border-purple: rgba(16, 185, 129, 0.28);
-
-  --primary-gradient: linear-gradient(135deg, #00FF87 0%, #60EFFF 50%, #059669 100%);
-  --secondary-gradient: linear-gradient(135deg, #10B981 0%, #047857 100%);
-  --accent-gradient: linear-gradient(135deg, #34D399 0%, #059669 100%);
-  --bg-glow-1: rgba(0, 255, 135, 0.08);
-  --bg-glow-2: rgba(16, 185, 129, 0.09);
-}
-
-/* Theme 4: Blood Ruby & Crimson Inferno */
-html[data-theme="crimson"] {
-  --theme-id: 'crimson';
-  --bg-deep: #0d0305;
-  --bg-surface: #1a070a;
-  --bg-card: rgba(36, 11, 16, 0.88);
-  --bg-card-hover: rgba(54, 15, 23, 0.95);
-  --bg-glass: rgba(26, 7, 10, 0.75);
-
-  --neon-cyan: #FF1744;
-  --neon-cyan-dark: #B91C1C;
-  --neon-cyan-glow: rgba(255, 23, 68, 0.45);
-
-  --neon-purple: #FF5252;
-  --neon-purple-light: #FF8A80;
-  --neon-purple-glow: rgba(255, 82, 82, 0.45);
-
-  --chrome-border: rgba(255, 23, 68, 0.28);
-  --chrome-border-purple: rgba(255, 82, 82, 0.28);
-
-  --primary-gradient: linear-gradient(135deg, #FF1744 0%, #FF5252 50%, #990000 100%);
-  --secondary-gradient: linear-gradient(135deg, #EF4444 0%, #991B1B 100%);
-  --accent-gradient: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%);
-  --bg-glow-1: rgba(255, 23, 68, 0.08);
-  --bg-glow-2: rgba(255, 82, 82, 0.09);
-}
-
-/* Theme 5: Cosmic Amethyst & Royal Violet */
-html[data-theme="amethyst"] {
-  --theme-id: 'amethyst';
-  --bg-deep: #090514;
-  --bg-surface: #130a26;
-  --bg-card: rgba(26, 14, 52, 0.88);
-  --bg-card-hover: rgba(39, 21, 77, 0.95);
-  --bg-glass: rgba(19, 10, 38, 0.75);
-
-  --neon-cyan: #C084FC;
-  --neon-cyan-dark: #7E22CE;
-  --neon-cyan-glow: rgba(192, 132, 252, 0.45);
-
-  --neon-purple: #9333EA;
-  --neon-purple-light: #E9D5FF;
-  --neon-purple-glow: rgba(147, 51, 234, 0.45);
-
-  --chrome-border: rgba(192, 132, 252, 0.28);
-  --chrome-border-purple: rgba(147, 51, 234, 0.28);
-
-  --primary-gradient: linear-gradient(135deg, #C084FC 0%, #9333EA 50%, #4F46E5 100%);
-  --secondary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
-  --accent-gradient: linear-gradient(135deg, #D8B4FE 0%, #A855F7 100%);
-  --bg-glow-1: rgba(192, 132, 252, 0.08);
-  --bg-glow-2: rgba(147, 51, 234, 0.09);
-}
-
-/* Theme 6: Solar Blaze & Phoenix Orange */
-html[data-theme="sunset"] {
-  --theme-id: 'sunset';
-  --bg-deep: #0f0603;
-  --bg-surface: #1f0c05;
-  --bg-card: rgba(41, 16, 7, 0.88);
-  --bg-card-hover: rgba(60, 23, 10, 0.95);
-  --bg-glass: rgba(31, 12, 5, 0.75);
-
-  --neon-cyan: #FF6A00;
-  --neon-cyan-dark: #EA580C;
-  --neon-cyan-glow: rgba(255, 106, 0, 0.45);
-
-  --neon-purple: #EE0979;
-  --neon-purple-light: #FDA4AF;
-  --neon-purple-glow: rgba(238, 9, 121, 0.45);
-
-  --chrome-border: rgba(255, 106, 0, 0.28);
-  --chrome-border-purple: rgba(238, 9, 121, 0.28);
-
-  --primary-gradient: linear-gradient(135deg, #FF6A00 0%, #EE0979 50%, #FF8A00 100%);
-  --secondary-gradient: linear-gradient(135deg, #F97316 0%, #C2410C 100%);
-  --accent-gradient: linear-gradient(135deg, #FB923C 0%, #EA580C 100%);
-  --bg-glow-1: rgba(255, 106, 0, 0.08);
-  --bg-glow-2: rgba(238, 9, 121, 0.09);
 }
 
 * {
@@ -515,7 +379,7 @@ h1, h2, h3, h4, .font-heading {
   color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-family: var(--font-heading, 'Orbitron', sans-serif);
+  font-family: var(--font-heading, 'Outfit', sans-serif);
 }
 
 .vegas-sidebar-nav-btn {
@@ -646,4 +510,97 @@ html, body {
     bottom: 5.5rem; /* 88px on desktop */
   }
 }
+
+/* ======================================================== */
+/* Responsive Table & Container Mobile Enhancements         */
+/* ======================================================== */
+.overflow-x-auto,
+[style*="overflowX: 'auto'"],
+[style*="overflow-x: auto"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y !important;
+}
+
+/* Modal Responsive Containment */
+.cyber-modal-overlay {
+  padding: max(12px, env(safe-area-inset-top, 12px)) max(12px, env(safe-area-inset-right, 12px)) max(12px, env(safe-area-inset-bottom, 12px)) max(12px, env(safe-area-inset-left, 12px));
+  box-sizing: border-box;
+}
+
+.modal-scrollable {
+  max-height: calc(100dvh - 28px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Mobile Safe Areas and Viewport Boundary Protections */
+@media (max-width: 767px) {
+  .admin-portal-root header {
+    padding-left: 0.625rem !important;
+    padding-right: 0.625rem !important;
+  }
+  .admin-portal-root main {
+    padding: 0.625rem !important;
+  }
+}
+
+/* ======================================================== */
+/* Admin Global Font & Color Alignment                      */
+/* ======================================================== */
+.admin-portal-root,
+.admin-portal-root * {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.admin-portal-root h1,
+.admin-portal-root h2,
+.admin-portal-root h3,
+.admin-portal-root .font-heading {
+  font-family: var(--font-heading), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Re-route any remaining inline Lexend font declarations to modern body typography */
+[style*="fontFamily: 'Lexend"],
+[style*='font-family: Lexend'],
+[style*="font-family: 'Lexend"],
+[style*='fontFamily: "Lexend'],
+[style*="fontFamily: 'var(--font-lexend"] {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Admin Palette Harmonization (remaps legacy dark-blue/cyan/magenta to Rich Room Gold & Dark) */
+.admin-portal-root [style*="backgroundColor: '#0E0A24'"],
+.admin-portal-root [style*="background-color: #0E0A24"],
+.admin-portal-root [style*="backgroundColor: '#090b18'"],
+.admin-portal-root [style*="backgroundColor: '#070514'"],
+.admin-portal-root [style*="backgroundColor: '#140E33'"],
+.admin-portal-root .bg-\[\#0E0A24\],
+.admin-portal-root .bg-\[\#070514\],
+.admin-portal-root .bg-\[\#090b18\],
+.admin-portal-root .bg-\[\#140E33\],
+.admin-portal-root .bg-\[\#080a14\] {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--chrome-border) !important;
+}
+
+.admin-portal-root th {
+  background-color: #0d0a04 !important;
+  color: #D1D5DB !important;
+  border-bottom: 1px solid var(--chrome-border) !important;
+}
+
+.admin-portal-root [style*="color: '#00F0FF'"],
+.admin-portal-root .text-cyan-400,
+.admin-portal-root .text-cyan-300 {
+  color: var(--neon-cyan) !important;
+}
+
+.admin-portal-root [style*="color: '#E026D8'"] {
+  color: var(--neon-purple) !important;
+}
+
+
 

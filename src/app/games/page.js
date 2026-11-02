@@ -324,7 +324,7 @@ export default function GamesPage() {
           }}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 lg:pb-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export default function GamesPage() {
           ) : games.length === 0 ? (
             <p className="text-xs text-center text-slate-400 py-16">No games found in this category.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
               {games.map((g) => {
                 const cleanGTitle = (g.title || '').toLowerCase().trim();
                 const hasAcc = userGameAccounts.some((a) => {

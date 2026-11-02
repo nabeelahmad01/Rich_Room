@@ -114,7 +114,7 @@ export default function WalletPage() {
           }}
         />
 
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-28 lg:pb-8">
           {/* Header Card */}
           <div className="p-6 md:p-8 rounded-3xl border border-[var(--chrome-border)] bg-gradient-to-br from-[#0c1333] via-[#090d24] to-[#050711] flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2 text-center md:text-left">

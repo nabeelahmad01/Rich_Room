@@ -25,7 +25,6 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
-import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 
 export default function WithdrawPage() {
   const router = useRouter();
@@ -33,7 +32,6 @@ export default function WithdrawPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [spinWheelOpen, setSpinWheelOpen] = useState(false);
 
   // Withdrawal Form State
   const [amount, setAmount] = useState(50);
@@ -387,8 +385,6 @@ export default function WithdrawPage() {
         }}
         onOpenGameRequest={() => router.push('/games')}
         onOpenChat={() => {}}
-        onOpenDailyBonus={() => setSpinWheelOpen(true)}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       {/* Main Content Layout */}
@@ -406,11 +402,10 @@ export default function WithdrawPage() {
             if (tab === 'deposit') router.push('/deposit');
             else router.push('/withdraw');
           }}
-          onOpenSpinWheel={() => setSpinWheelOpen(true)}
         />
 
         {/* Center Content Body */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28 lg:pb-8">
           {/* Header Banner */}
           <div className="relative overflow-hidden rounded-3xl border border-[var(--chrome-border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-[0_0_40px_var(--neon-cyan-glow)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -975,14 +970,6 @@ export default function WithdrawPage() {
         <CyberFooter />
       </div>
 
-      {/* Daily Spin Wheel Modal */}
-      <DailySpinWheelModal
-        isOpen={spinWheelOpen}
-        onClose={() => setSpinWheelOpen(false)}
-        user={user}
-        onBalanceUpdated={fetchUser}
-      />
-
       {/* Mobile Bottom Nav */}
       <CyberMobileBottomNav
         user={user}
@@ -991,7 +978,6 @@ export default function WithdrawPage() {
           if (tab === 'deposit') router.push('/deposit');
           else router.push('/withdraw');
         }}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
     </div>
   );

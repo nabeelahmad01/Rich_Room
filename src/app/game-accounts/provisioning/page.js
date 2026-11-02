@@ -25,7 +25,6 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
-import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 
 function ProvisioningContent() {
   const router = useRouter();
@@ -36,7 +35,6 @@ function ProvisioningContent() {
   const [user, setUser] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [spinWheelOpen, setSpinWheelOpen] = useState(false);
 
   // 30-Second 3-Stage Progress Simulation
   const [progress, setProgress] = useState(5);
@@ -272,8 +270,6 @@ function ProvisioningContent() {
         }}
         onOpenGameRequest={() => router.push('/games')}
         onOpenChat={() => {}}
-        onOpenDailyBonus={() => setSpinWheelOpen(true)}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
       {/* Main Content Layout with proper lg:pl-64 offset */}
@@ -291,10 +287,9 @@ function ProvisioningContent() {
             if (tab === 'withdraw') router.push('/withdraw');
             else router.push('/deposit');
           }}
-          onOpenSpinWheel={() => setSpinWheelOpen(true)}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28 lg:pb-8">
           {/* Header Card */}
           <div className="relative overflow-hidden rounded-3xl border border-[var(--neon-purple)]/30 bg-gradient-to-r from-purple-950/40 via-slate-900 to-[#0c102b] p-6 sm:p-8 shadow-[0_0_40px_rgba(192,38,211,0.15)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -537,13 +532,6 @@ function ProvisioningContent() {
         <CyberFooter />
       </div>
 
-      {/* Daily Spin Wheel Modal */}
-      <DailySpinWheelModal
-        isOpen={spinWheelOpen}
-        onClose={() => setSpinWheelOpen(false)}
-        user={user}
-        onBalanceUpdated={() => router.refresh()}
-      />
       <CyberMobileBottomNav
         user={user}
         onOpenAuth={(mode) => router.push(`/${mode}`)}
@@ -551,7 +539,6 @@ function ProvisioningContent() {
           if (tab === 'withdraw') router.push('/withdraw');
           else router.push('/deposit');
         }}
-        onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
     </div>
   );

@@ -7,23 +7,15 @@ import { useRouter } from 'next/navigation';
 import {
   Menu,
   Wallet,
-  Gift,
   Bell,
-  Volume2,
-  VolumeX,
   User,
   LogOut,
   ChevronDown,
   Sparkles,
   ShieldCheck,
-  KeyRound,
-  ArrowUpRight,
-  Plus,
-  Headphones,
-  Palette
+  KeyRound
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
-import { useTheme } from '@/context/ThemeContext';
 
 export default function CyberNavbar({
   onToggleSidebar,
@@ -31,13 +23,11 @@ export default function CyberNavbar({
   onOpenAuth,
   onOpenWallet,
   onOpenDailyBonus,
-  onOpenSpinWheel,
   onOpenNotifications,
   onLogout,
   unreadNotifsCount = 0,
 }) {
   const router = useRouter();
-  const { openThemeModal, currentTheme } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [jackpot, setJackpot] = useState(184920.45);
@@ -305,51 +295,19 @@ export default function CyberNavbar({
               </span>
             </Link>
 
-            {/* Deposit Direct Action */}
-            <Link
-              href="/deposit"
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 text-black text-xs font-heading font-black shadow-[0_0_12px_rgba(16,185,129,0.35)] hover:scale-102 active:scale-98 transition-all shrink-0"
-              title="Deposit Funds"
-            >
-              <Plus size={14} strokeWidth={3} />
-              <span className="hidden sm:inline">DEPOSIT</span>
-            </Link>
-
-            {/* Redeem Cashout Direct Action (Wide screen only, also in sidebar & profile) */}
-            <Link
-              href="/withdraw"
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors shrink-0"
-              title="Redeem Winnings"
-            >
-              <ArrowUpRight size={14} className="text-[var(--neon-cyan)]" />
-              <span>Redeem</span>
-            </Link>
-
-            {/* Daily Lucky Spin Wheel Button */}
-            {onOpenSpinWheel && (
-              <button
-                type="button"
-                onClick={onOpenSpinWheel}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-300 text-xs font-bold transition-all shadow-[0_0_12px_rgba(245,158,11,0.25)] shrink-0"
-                title="Daily Free Spin Wheel (Win up to $50)"
-              >
-                <Gift size={14} className="text-amber-400 animate-bounce" />
-                <span className="hidden 2xl:inline">Daily Spin</span>
-              </button>
-            )}
           </>
         ) : (
           /* Guest Actions */
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={() => handleAuthClick('login')}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-all shrink-0 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-all shrink-0 cursor-pointer font-sub"
             >
               LOG IN
             </button>
             <button
               onClick={() => handleAuthClick('register')}
-              className="cyber-btn-cyan text-xs py-1.5 px-3 sm:px-3.5 font-bold shrink-0 cursor-pointer"
+              className="cyber-btn-cyan text-xs py-1.5 px-3 sm:px-3.5 font-bold shrink-0 cursor-pointer font-sub"
             >
               <Sparkles size={13} />
               <span>PLAY NOW</span>
@@ -366,49 +324,10 @@ export default function CyberNavbar({
         >
           <Bell size={16} />
           {liveUnreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse">
+            <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse font-mono">
               {liveUnreadCount}
             </span>
           )}
-        </button>
-
-        {/* 24/7 Live Support Concierge Header Button */}
-        <button
-          type="button"
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('open-live-chat'));
-              if (typeof window.openLiveChat === 'function') window.openLiveChat();
-            }
-          }}
-          className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 via-purple-600/20 to-pink-500/20 border border-cyan-400/40 text-cyan-300 hover:text-white hover:border-cyan-300 hover:scale-105 transition-all shadow-[0_0_12px_rgba(0,240,255,0.25)] shrink-0 cursor-pointer"
-          title="24/7 Live Support Concierge"
-        >
-          <Headphones size={16} />
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        </button>
-
-        {/* Theme Styler Quick Trigger */}
-        <button
-          type="button"
-          onClick={openThemeModal}
-          className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900/80 border border-slate-700/70 hover:border-[var(--neon-cyan)] text-slate-300 hover:text-white hover:scale-105 transition-all shadow-sm shrink-0 cursor-pointer"
-          title="Change Site Gradient Theme"
-        >
-          <Palette size={16} style={{ color: currentTheme?.primaryColor || 'var(--neon-cyan)' }} />
-          <span
-            className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full shadow-sm"
-            style={{ background: currentTheme?.gradient || 'var(--primary-gradient)' }}
-          />
-        </button>
-
-        {/* Sound toggle (Desktop) */}
-        <button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          className="hidden xl:flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900/80 border border-slate-700/70 text-slate-400 hover:text-white transition-colors shrink-0"
-          title={soundEnabled ? 'Mute Audio' : 'Enable Audio'}
-        >
-          {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
 
         {/* User Profile Menu */}

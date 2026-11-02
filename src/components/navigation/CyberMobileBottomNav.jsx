@@ -16,7 +16,6 @@ export default function CyberMobileBottomNav({
   onOpenAuth,
   onOpenWallet,
   onOpenGameRequest,
-  onOpenSpinWheel,
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -52,11 +51,11 @@ export default function CyberMobileBottomNav({
       isActive: pathname === '/deposit',
     },
     {
-      id: 'spin',
-      label: 'Spin $50',
+      id: 'promos',
+      label: 'Promos',
       icon: Sparkles,
-      action: onOpenSpinWheel || (() => router.push('/promotions')),
-      isActive: false,
+      action: () => router.push('/promotions'),
+      isActive: pathname === '/promotions',
     },
   ];
 
