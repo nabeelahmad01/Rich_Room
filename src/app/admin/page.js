@@ -79,6 +79,7 @@ import {
   sendDesktopNotification,
   requestDesktopNotificationPermission,
 } from '@/lib/soundAlerts';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function AdminPortal({ initialTab }) {
   const [user, setUser] = useState(null);
@@ -295,6 +296,8 @@ export default function AdminPortal({ initialTab }) {
   const [isSendingChat, setIsSendingChat] = useState(false);
   const chatMessagesEndRef = useRef(null);
   const adminChatFileInputRef = useRef(null);
+  const prevAdminChatMsgCountRef = useRef(0);
+  const prevAdminChatConvIdRef = useRef(null);
   const [selectedChatImagePreview, setSelectedChatImagePreview] = useState(null);
 
   // Push Notifications & Omnichannel Broadcast state
@@ -831,19 +834,19 @@ export default function AdminPortal({ initialTab }) {
       const chatData = chatRes.status === 'fulfilled' ? await chatRes.value.json().catch(() => ({})) : {};
 
       if (depData.success) {
-        setDeposits(depData.deposits || []);
+        diffSet(setDeposits, depData.deposits || []);
       }
       if (withData.success) {
-        setRedemptions(withData.redemptions || []);
+        diffSet(setRedemptions, withData.redemptions || []);
       }
       if (reqData.success) {
-        setAccountRequests(reqData.accountRequests || []);
+        diffSet(setAccountRequests, reqData.accountRequests || []);
       }
       if (loadData.success) {
-        setCoinLoadRequests(loadData.accountRequests || []);
+        diffSet(setCoinLoadRequests, loadData.accountRequests || []);
       }
       if (chatData.success && Array.isArray(chatData.conversations)) {
-        setChatConversations(chatData.conversations);
+        diffSet(setChatConversations, chatData.conversations);
       }
 
       const pendingDeps = (depData.deposits || []).filter((d) => d.status === 'pending');
@@ -1180,23 +1183,28 @@ export default function AdminPortal({ initialTab }) {
     const loadData = () => {
       if (document.hidden) return;
       if (activeTab === 'overview') {
-        fetch('/api/admin/stats', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setStats(d.stats); });
+        fetch('/api/admin/stats', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStats, d.stats); });
       } else if (activeTab === 'games') {
-        fetch('/api/games?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setGames(d.games); });
+        fetch('/api/games?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => {
+          if (d.success && d.games) {
+            const cleanList = d.games.map(g => ({ ...g, title: cleanGameTitle(g.title || '') }));
+            diffSet(setGames, cleanList);
+          }
+        });
       } else if (activeTab === 'finance') {
-        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setPaymentMethods(d.methods || []); });
-        fetch('/api/payments/deposit?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setDeposits(d.deposits || []); });
-        fetch('/api/payments/withdraw?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setRedemptions(d.redemptions || []); });
+        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
+        fetch('/api/payments/deposit?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setDeposits, d.deposits || []); });
+        fetch('/api/payments/withdraw?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setRedemptions, d.redemptions || []); });
       } else if (activeTab === 'ledger') {
         fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { cache: 'no-store' })
           .then(r => r.json())
-          .then(d => { if (d.success) setLedgerRecords(d.records); });
+          .then(d => { if (d.success) diffSet(setLedgerRecords, d.records || []); });
       } else if (activeTab === 'chat') {
         fetch('/api/chat?inbox=true', { cache: 'no-store' })
           .then(r => r.json())
           .then(d => {
             if (d.success) {
-              setChatConversations(d.conversations || []);
+              diffSet(setChatConversations, d.conversations || []);
               if (typeof window !== 'undefined') {
                 const sp = new URLSearchParams(window.location.search);
                 const cid = sp.get('cid');
@@ -1209,33 +1217,33 @@ export default function AdminPortal({ initialTab }) {
             }
           });
       } else if (activeTab === 'promos') {
-        fetch('/api/notifications?admin=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setBroadcastLogs(d.broadcasts || []); });
+        fetch('/api/notifications?admin=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setBroadcastLogs, d.broadcasts || []); });
         fetchAdminPromotions();
       } else if (activeTab === 'affiliates' || activeTab === 'affiliate_commissions') {
         fetch('/api/affiliates?mode=admin', { cache: 'no-store' }).then(r => r.json()).then(d => {
           if (d.success) {
-            setAffiliates(d.affiliates || []);
-            setAffiliateSummary(d.summary || null);
+            diffSet(setAffiliates, d.affiliates || []);
+            diffSet(setAffiliateSummary, d.summary || null);
           }
         });
       } else if (activeTab === 'staff') {
-        fetch('/api/admin/staff', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setStaffList(d.staff); });
+        fetch('/api/admin/staff', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStaffList, d.staff || []); });
       } else if (activeTab === 'account_requests') {
         fetchAccountRequests();
       } else if (activeTab === 'coins_allotment') {
         fetchAllotmentData();
       } else if (activeTab === 'users') {
-        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setUsersList(d.users || []); });
+        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setUsersList, d.users || []); });
       } else if (activeTab === 'gateways') {
-        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setPaymentMethods(d.methods || []); });
+        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
       } else if (activeTab === 'tx_search') {
-        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setLedgerRecords(d.records || []); });
+        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setLedgerRecords, d.records || []); });
       } else if (activeTab === 'settings') {
         if (!settingsLoadedRef.current) {
           settingsLoadedRef.current = true;
           fetch('/api/admin/settings', { cache: 'no-store' })
             .then(r => r.json())
-            .then(d => { if (d.success && d.settings) setSysSettings(d.settings); });
+            .then(d => { if (d.success && d.settings) diffSet(setSysSettings, d.settings); });
           fetchAdminPromotions();
         }
       } else {
@@ -1265,17 +1273,24 @@ export default function AdminPortal({ initialTab }) {
     const fetchChatMsgs = () => {
       fetch(`/api/chat?conversationId=${activeChatConv._id}`)
         .then(r => r.json())
-        .then(d => { if (d.success) setChatMessages(d.messages); });
+        .then(d => { if (d.success) diffSet(setChatMessages, d.messages || []); });
     };
     fetchChatMsgs();
     const interval = setInterval(fetchChatMsgs, 1200);
     return () => clearInterval(interval);
   }, [activeChatConv]);
 
-  // Auto-scroll chat messages to bottom
+  // Auto-scroll chat messages to bottom ONLY on new message or conversation change
   useEffect(() => {
     if (activeTab === 'chat' && activeChatConv) {
-      chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const convChanged = prevAdminChatConvIdRef.current !== activeChatConv._id;
+      const hasNew = (chatMessages || []).length > prevAdminChatMsgCountRef.current;
+      prevAdminChatConvIdRef.current = activeChatConv._id;
+      prevAdminChatMsgCountRef.current = (chatMessages || []).length;
+
+      if (convChanged || hasNew) {
+        chatMessagesEndRef.current?.scrollIntoView({ behavior: convChanged ? 'auto' : 'smooth' });
+      }
     }
   }, [chatMessages, activeChatConv, activeTab]);
 

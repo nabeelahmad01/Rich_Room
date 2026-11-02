@@ -25,6 +25,7 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 function ProvisioningContent() {
   const router = useRouter();
@@ -57,7 +58,7 @@ function ProvisioningContent() {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
         if (data.authenticated && data.user) {
-          setUser(data.user);
+          diffSet(setUser, data.user);
         } else {
           router.push('/login');
         }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Trophy, Flame, Sparkles } from 'lucide-react';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function CyberLatestWinsTicker() {
   const [wins, setWins] = useState([]);
@@ -10,25 +11,21 @@ export default function CyberLatestWinsTicker() {
     fetch('/api/games/activity')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.activity) {
-          setWins(data.activity);
+        const rawList = data.activity || data.ticker || [];
+        if (data.success && Array.isArray(rawList)) {
+          const sanitized = rawList.map((item) => ({
+            ...item,
+            gameTitle: cleanGameTitle(item.gameTitle || item.game || 'VIP Casino'),
+          }));
+          diffSet(setWins, sanitized);
         }
       })
       .catch(() => {});
   }, []);
 
-  const defaultWins = [
-    { username: 'CyberAce77', gameTitle: 'Ultra Panda', amount: 340.5, currency: 'SC' },
-    { username: 'PandaKing99', gameTitle: 'Panda 777 Slots', amount: 820.0, currency: 'SC' },
-    { username: 'MatrixNeo', gameTitle: 'Cyber Matrix Crash', amount: 450.0, currency: 'SC' },
-    { username: 'NeonHunter', gameTitle: 'Fire Kirin', amount: 1250.0, currency: 'SC' },
-    { username: 'VortexPlayer', gameTitle: 'Orion Stars', amount: 290.75, currency: 'SC' },
-    { username: 'ShadowBlade', gameTitle: 'Game Vault 999', amount: 620.0, currency: 'SC' },
-    { username: 'LuckyPanda', gameTitle: 'Juwa 777', amount: 380.0, currency: 'SC' },
-  ];
+  if (wins.length === 0) return null;
 
-  const displayList = wins.length > 0 ? wins : defaultWins;
-  const doubleList = [...displayList, ...displayList];
+  const doubleList = [...wins, ...wins];
 
   return (
     <div className="w-full my-6 overflow-hidden rounded-2xl border border-[var(--chrome-border)]/60 bg-gradient-to-r from-[#070918] via-[#0d122b] to-[#070918] py-2.5 px-3 flex items-center gap-3 shadow-lg">

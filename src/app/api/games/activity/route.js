@@ -46,29 +46,35 @@ export async function GET(req) {
       .limit(limit)
       .toArray();
 
-    // If database is new/empty, provide realistic default ticker items
-    const fallbackTicker = [
-      { username: 'raze', game: 'Vegas 777 Deluxe', amount: 7016.45, currency: 'SC' },
-      { username: 'nyx', game: 'Golden Treasure', amount: 2118.14, currency: 'SC' },
-      { username: 'satoshi.j', game: 'Neon Rocket Crash', amount: 6990.66, currency: 'SC' },
-      { username: 'halcyon', game: 'Fire Kirin', amount: 3410.00, currency: 'SC' },
-      { username: 'crypto_ace', game: 'Blackjack High Roller', amount: 4800.00, currency: 'SC' },
-      { username: 'lucky_bella', game: 'Orion Stars', amount: 1520.25, currency: 'SC' },
-      { username: 'drake99', game: 'Royal European Roulette', amount: 5600.00, currency: 'SC' },
-    ];
+    let displayWins = [];
+    if (recentWins.length > 0) {
+      displayWins = recentWins.map(w => ({
+        username: w.username,
+        game: w.gameId.replace(/-/g, ' ').toUpperCase(),
+        gameTitle: w.gameId.replace(/-/g, ' ').toUpperCase(),
+        amount: w.winAmount,
+        currency: w.currency || 'SC',
+      }));
+    } else {
+      // Dynamically fetch active games from the database
+      const gamesCol = db.collection('games');
+      const activeGames = await gamesCol.find({ active: { $ne: false } }).limit(10).toArray();
+      const mockUsers = ['raze77', 'nyx_pro', 'satoshi.j', 'halcyon_vip', 'crypto_ace', 'lucky_bella', 'drake99', 'matrix_neo'];
+      const sampleAmounts = [340.5, 820.0, 450.0, 1250.0, 290.75, 620.0, 380.0, 750.25];
 
-    const displayWins = recentWins.length > 0
-      ? recentWins.map(w => ({
-          username: w.username,
-          game: w.gameId.replace(/-/g, ' ').toUpperCase(),
-          amount: w.winAmount,
-          currency: w.currency || 'SC',
-        }))
-      : fallbackTicker;
+      displayWins = activeGames.map((g, idx) => ({
+        username: mockUsers[idx % mockUsers.length],
+        game: g.title,
+        gameTitle: g.title,
+        amount: sampleAmounts[idx % sampleAmounts.length],
+        currency: 'SC',
+      }));
+    }
 
     return NextResponse.json({
       success: true,
       ticker: displayWins,
+      activity: displayWins,
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

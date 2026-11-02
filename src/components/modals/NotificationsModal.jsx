@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Check
 } from 'lucide-react';
+import { diffSet } from '@/lib/fastDiff';
 
 export default function NotificationsModal({ isOpen, onClose, user, onAllRead }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.notifications)) {
-        setNotifs(data.notifications);
+        diffSet(setNotifs, data.notifications);
       }
     } catch {
       // silent fail

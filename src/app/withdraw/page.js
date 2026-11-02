@@ -25,6 +25,7 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function WithdrawPage() {
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function WithdrawPage() {
       const res = await fetch('/api/auth/me', { cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
-        setUser(data.user);
+        diffSet(setUser, data.user);
       } else if (!isSilent) {
         router.push('/login?redirect=/withdraw');
       }
@@ -80,7 +81,7 @@ export default function WithdrawPage() {
       const res = await fetch('/api/payments/withdraw', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.redemptions) {
-        setWithdrawHistory(data.redemptions);
+        diffSet(setWithdrawHistory, data.redemptions);
       }
     } catch (err) {
       console.error(err);
@@ -95,7 +96,7 @@ export default function WithdrawPage() {
       const res = await fetch('/api/game-accounts', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.gameAccounts)) {
-        setUserGameAccounts(data.gameAccounts);
+        diffSet(setUserGameAccounts, data.gameAccounts);
       }
     } catch (err) {
       console.error(err);
@@ -108,12 +109,16 @@ export default function WithdrawPage() {
       const res = await fetch('/api/games', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.games) && data.games.length > 0) {
-        setAdminGames(data.games);
+        const cleanList = data.games.map((g) => ({
+          ...g,
+          title: cleanGameTitle(g.title || '')
+        }));
+        diffSet(setAdminGames, cleanList);
         setSelectedGame((prev) => {
-          if (prev && data.games.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
+          if (prev && cleanList.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
             return prev;
           }
-          return data.games[0].title;
+          return cleanList[0]?.title || '';
         });
       }
     } catch (err) {
@@ -138,7 +143,7 @@ export default function WithdrawPage() {
     }, 2000);
 
     const handleUserSync = (e) => {
-      if (e.detail) setUser(e.detail);
+      if (e.detail) diffSet(setUser, e.detail);
     };
 
     const handleFocus = () => {
@@ -363,10 +368,10 @@ export default function WithdrawPage() {
   ];
 
   const activeGameList = adminGames.length > 0
-    ? adminGames.map((g) => g.title)
+    ? adminGames.map((g) => cleanGameTitle(g.title))
     : (userGameAccounts.length > 0
-        ? [...new Set(userGameAccounts.map((a) => a.gameTitle).filter(Boolean))]
-        : ['Orion Star', 'Juwa', 'Game Vault', 'FireKirin']);
+        ? [...new Set(userGameAccounts.map((a) => cleanGameTitle(a.gameTitle)).filter(Boolean))]
+        : []);
 
   const presetAmounts = [20, 50, 100, 250, 500];
 

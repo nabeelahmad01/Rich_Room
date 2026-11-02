@@ -19,6 +19,7 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import WalletModal from '@/components/modals/WalletModal';
 import AuthModal from '@/components/modals/AuthModal';
+import { diffSet } from '@/lib/fastDiff';
 
 export default function WalletPage() {
   const router = useRouter();
@@ -35,15 +36,15 @@ export default function WalletPage() {
       const meRes = await fetch('/api/auth/me');
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
-        setUser(meData.user);
+        diffSet(setUser, meData.user);
         const [depRes, withRes] = await Promise.all([
           fetch('/api/payments/deposit'),
           fetch('/api/payments/withdraw'),
         ]);
         const depData = await depRes.json();
         const withData = await withRes.json();
-        if (depData.success) setDeposits(depData.deposits || []);
-        if (withData.success) setRedemptions(withData.redemptions || []);
+        if (depData.success) diffSet(setDeposits, depData.deposits || []);
+        if (withData.success) diffSet(setRedemptions, withData.redemptions || []);
       }
     } catch {}
   };
@@ -56,7 +57,7 @@ export default function WalletPage() {
     }, 2000);
 
     const handleUserSync = (e) => {
-      if (e.detail) setUser(e.detail);
+      if (e.detail) diffSet(setUser, e.detail);
     };
 
     const handleFocus = () => loadData();

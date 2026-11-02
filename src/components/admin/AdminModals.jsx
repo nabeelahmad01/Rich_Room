@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Coins
 } from 'lucide-react';
+import { cleanGameTitle } from '@/lib/fastDiff';
 
 // 1. Approve Game Account Request Modal
 export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
@@ -818,14 +819,23 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
 
 // 7. Manual Add Game Account Modal (Proactively create credentials for a player)
 export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesList = [], onComplete }) {
+  const activeGames = gamesList.map((g) => {
+    const title = typeof g === 'string' ? g : (g.title || '');
+    return cleanGameTitle(title);
+  }).filter(Boolean);
+
   const [playerEmail, setPlayerEmail] = useState('');
-  const [selectedGame, setSelectedGame] = useState('Ultra Panda');
+  const [selectedGame, setSelectedGame] = useState(activeGames[0] || '');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const defaultGames = ['Ultra Panda', 'Fire Kirin', 'Orion Stars', 'Game Vault', 'Milky Way', 'Juwa'];
+  React.useEffect(() => {
+    if (activeGames.length > 0 && (!selectedGame || !activeGames.includes(selectedGame))) {
+      setSelectedGame(activeGames[0]);
+    }
+  }, [gamesList]);
 
   if (!isOpen) return null;
 
@@ -936,7 +946,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
               onChange={(e) => setSelectedGame(e.target.value)}
               className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             >
-              {defaultGames.map((g) => (
+              {activeGames.map((g) => (
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>

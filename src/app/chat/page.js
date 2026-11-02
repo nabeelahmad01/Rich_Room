@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
+import { diffSet, areEqual } from '@/lib/fastDiff';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -42,6 +43,8 @@ export default function ChatPage() {
   const fileInputRef = useRef(null);
   const lastStaffMsgCountRef = useRef(0);
   const fetchMsgsRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
+  const initialLoadedRef = useRef(false);
 
   // Load user & listen to global user sync
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function ChatPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d?.authenticated && d.user) {
-          setUser(d.user);
+          diffSet(setUser, d.user);
           try {
             localStorage.removeItem('pp_guest_chat_id');
           } catch {}
@@ -59,13 +62,13 @@ export default function ChatPage() {
 
     const handleSync = (e) => {
       const nextUser = e.detail || null;
-      setUser(nextUser);
+      diffSet(setUser, nextUser);
       if (nextUser) {
         try {
           localStorage.removeItem('pp_guest_chat_id');
         } catch {}
       } else {
-        setMessages([]);
+        diffSet(setMessages, []);
       }
     };
     window.addEventListener('paradise-user-sync', handleSync);
@@ -116,7 +119,8 @@ export default function ChatPage() {
                     Math.abs(new Date(nm.createdAt).getTime() - new Date(m.createdAt).getTime()) < 15000
                 )
             );
-            return [...newMsgs, ...pendingOpts];
+            const nextVal = [...newMsgs, ...pendingOpts];
+            return areEqual(prev, nextVal) ? prev : nextVal;
           });
 
           const staffMsgs = newMsgs.filter((m) => m.senderRole === 'staff');
@@ -174,9 +178,16 @@ export default function ChatPage() {
     };
   }, [user, guestId]);
 
-  // Scroll to bottom
+  // Scroll to bottom only when new messages arrive or image attached
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const isFirst = !initialLoadedRef.current && messages.length > 0;
+    const hasNew = messages.length > prevMsgCountRef.current;
+    initialLoadedRef.current = true;
+    prevMsgCountRef.current = messages.length;
+
+    if (isFirst || hasNew || attachedImage) {
+      messagesEndRef.current?.scrollIntoView({ behavior: isFirst ? 'auto' : 'smooth' });
+    }
   }, [messages, attachedImage]);
 
   // Handle image upload

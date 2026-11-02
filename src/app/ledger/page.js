@@ -27,6 +27,7 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
+import { diffSet } from '@/lib/fastDiff';
 
 export default function LedgerPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function LedgerPage() {
       const meRes = await fetch('/api/auth/me', { cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
-        setUser(meData.user);
+        diffSet(setUser, meData.user);
         const isStaff = meData.user.role && meData.user.role !== 'player';
         if (!isStaff) {
           router.replace('/wallet');
@@ -74,7 +75,7 @@ export default function LedgerPage() {
     }, 5000);
 
     const handleUserSync = (e) => {
-      if (e.detail) setUser(e.detail);
+      if (e.detail) diffSet(setUser, e.detail);
     };
 
     const handleFocus = () => loadData(true);

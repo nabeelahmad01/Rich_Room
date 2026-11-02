@@ -16,6 +16,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
+import { diffSet, areEqual } from '@/lib/fastDiff';
 
 export default function CyberNavbar({
   onToggleSidebar,
@@ -36,6 +37,7 @@ export default function CyberNavbar({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [balancePulse, setBalancePulse] = useState(false);
   const lastBalanceRef = useRef(user ? (user.balance ?? user.balanceSC ?? 0) : null);
+  const lastUserRef = useRef(user || null);
   const profileRef = useRef(null);
   const notificationsOpenRef = useRef(false);
 
@@ -59,7 +61,7 @@ export default function CyberNavbar({
   // Handle opening notifications modal & immediately clearing badge
   const handleOpenNotifications = () => {
     setNotificationsOpen(true);
-    setLiveUnreadCount(0);
+    diffSet(setLiveUnreadCount, 0);
     const active = liveUser || user;
     if (active?.email || active?.userId) {
       fetch('/api/notifications', {
@@ -81,7 +83,7 @@ export default function CyberNavbar({
   useEffect(() => {
     const handleOpenNotifsEvent = () => {
       setNotificationsOpen(true);
-      setLiveUnreadCount(0);
+      diffSet(setLiveUnreadCount, 0);
     };
     window.addEventListener('paradise-open-notifications', handleOpenNotifsEvent);
     return () => window.removeEventListener('paradise-open-notifications', handleOpenNotifsEvent);
@@ -89,10 +91,13 @@ export default function CyberNavbar({
 
   // Keep liveUser aligned when prop changes
   useEffect(() => {
-    setLiveUser(user || null);
-    if (user) {
+    if (user && !areEqual(user, lastUserRef.current)) {
+      lastUserRef.current = user;
+      diffSet(setLiveUser, user);
       lastBalanceRef.current = Number(user.balance ?? user.balanceSC ?? 0);
-    } else {
+    } else if (!user && lastUserRef.current !== null) {
+      lastUserRef.current = null;
+      diffSet(setLiveUser, null);
       lastBalanceRef.current = null;
     }
   }, [user]);
@@ -100,9 +105,13 @@ export default function CyberNavbar({
   // Listen to global paradise-user-sync event from anywhere in the app
   useEffect(() => {
     const handleSync = (e) => {
-      setLiveUser(e.detail || null);
+      const nextUser = e.detail || null;
+      if (!areEqual(nextUser, lastUserRef.current)) {
+        lastUserRef.current = nextUser;
+        diffSet(setLiveUser, nextUser);
+      }
       if (!e.detail) {
-        setLiveUnreadCount(0);
+        diffSet(setLiveUnreadCount, 0);
       }
     };
     window.addEventListener('paradise-user-sync', handleSync);
@@ -117,7 +126,7 @@ export default function CyberNavbar({
     return () => clearInterval(timer);
   }, []);
 
-  // Real-time auto-sync for user balance and notifications (Zero Page Refresh)
+  // Real-time auto-sync for user balance and notifications (Zero Page Refresh, Bailout on Unchanged Data)
   useEffect(() => {
     let isCancelled = false;
 
@@ -135,14 +144,19 @@ export default function CyberNavbar({
             setTimeout(() => setBalancePulse(false), 2200);
           }
           lastBalanceRef.current = currentBal;
-          setLiveUser(data.user);
 
-          // Dispatch event to sync parent page states automatically
-          if (typeof window !== 'undefined') {
-            if (data.user.email) {
-              localStorage.setItem('pp_user_email', data.user.email);
+          // Only trigger state updates and global events when user data genuinely changed
+          if (!areEqual(data.user, lastUserRef.current)) {
+            lastUserRef.current = data.user;
+            diffSet(setLiveUser, data.user);
+
+            // Dispatch event to sync parent page states automatically
+            if (typeof window !== 'undefined') {
+              if (data.user.email) {
+                localStorage.setItem('pp_user_email', data.user.email);
+              }
+              window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
             }
-            window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
           }
 
           // Fetch live unread notification count
@@ -153,17 +167,21 @@ export default function CyberNavbar({
                 if (!isCancelled && nData.success && Array.isArray(nData.notifications)) {
                   if (!notificationsOpenRef.current) {
                     const unread = nData.notifications.filter((n) => !n.read).length;
-                    setLiveUnreadCount(unread);
+                    diffSet(setLiveUnreadCount, unread);
                   }
                 }
               })
               .catch(() => {});
           }
         } else {
-          setLiveUser(null);
-          setLiveUnreadCount(0);
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('pp_user_email');
+          if (lastUserRef.current !== null) {
+            lastUserRef.current = null;
+            diffSet(setLiveUser, null);
+            diffSet(setLiveUnreadCount, 0);
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('pp_user_email');
+              window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
+            }
           }
         }
       } catch {

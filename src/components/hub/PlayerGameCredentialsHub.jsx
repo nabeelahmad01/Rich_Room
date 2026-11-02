@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function PlayerGameAccountsHub({
   user,
@@ -110,9 +111,9 @@ export default function PlayerGameAccountsHub({
         });
       }
 
-      setActiveAccounts(readyList);
-      setPendingRequests(pendingList);
-      setRejectedRequests(rejectedList);
+      diffSet(setActiveAccounts, readyList);
+      diffSet(setPendingRequests, pendingList);
+      diffSet(setRejectedRequests, rejectedList);
     } catch (err) {
       console.error('Error fetching game accounts:', err);
     } finally {
@@ -139,8 +140,9 @@ export default function PlayerGameAccountsHub({
         window.removeEventListener('accountRequestUpdated', handleFocus);
       };
     } else {
-      setActiveAccounts([]);
-      setPendingRequests([]);
+      diffSet(setActiveAccounts, []);
+      diffSet(setPendingRequests, []);
+      diffSet(setRejectedRequests, []);
     }
   }, [user?.email]);
 

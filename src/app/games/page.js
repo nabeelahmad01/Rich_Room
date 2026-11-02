@@ -26,6 +26,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function GamesPage() {
   const router = useRouter();
@@ -51,16 +52,16 @@ export default function GamesPage() {
 
   const loadUserGameAccounts = async (userEmail) => {
     if (!userEmail) {
-      setUserGameAccounts([]);
-      setPendingAccountRequests([]);
+      diffSet(setUserGameAccounts, []);
+      diffSet(setPendingAccountRequests, []);
       return;
     }
     try {
       const res = await fetch(`/api/game-accounts?email=${encodeURIComponent(userEmail)}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.success) {
-        setUserGameAccounts(data.gameAccounts || []);
-        setPendingAccountRequests(data.pendingRequests || []);
+        diffSet(setUserGameAccounts, data.gameAccounts || []);
+        diffSet(setPendingAccountRequests, data.pendingRequests || []);
       }
     } catch {}
   };
@@ -70,22 +71,22 @@ export default function GamesPage() {
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.authenticated && data.user) {
-        setUser(data.user);
+        diffSet(setUser, data.user);
         loadUserGameAccounts(data.user.email);
       } else {
-        setUser(null);
-        setUserGameAccounts([]);
-        setPendingAccountRequests([]);
+        diffSet(setUser, null);
+        diffSet(setUserGameAccounts, []);
+        diffSet(setPendingAccountRequests, []);
       }
     } catch {
-      setUser(null);
-      setUserGameAccounts([]);
-      setPendingAccountRequests([]);
+      diffSet(setUser, null);
+      diffSet(setUserGameAccounts, []);
+      diffSet(setPendingAccountRequests, []);
     }
   };
 
-  const loadGames = async () => {
-    setLoading(true);
+  const loadGames = async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     try {
       let url = '/api/games';
       const params = new URLSearchParams();
@@ -95,9 +96,15 @@ export default function GamesPage() {
 
       const res = await fetch(url);
       const data = await res.json();
-      if (data.success && data.games) setGames(data.games);
+      if (data.success && data.games) {
+        const cleanList = (data.games || []).map(g => ({
+          ...g,
+          title: cleanGameTitle(g.title || '')
+        }));
+        diffSet(setGames, cleanList);
+      }
     } catch {}
-    setLoading(false);
+    if (!isSilent) setLoading(false);
   };
 
   useEffect(() => {

@@ -23,6 +23,7 @@ import ExternalGameModal from '@/components/modals/ExternalGameModal';
 import SubscriptionPromoModal from '@/components/modals/SubscriptionPromoModal';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import KycModal from '@/components/modals/KycModal';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 
@@ -81,16 +82,24 @@ export default function HomePage() {
 
   const loadUserGameAccounts = async (userEmail) => {
     if (!userEmail) {
-      setUserGameAccounts([]);
-      setPendingAccountRequests([]);
+      diffSet(setUserGameAccounts, []);
+      diffSet(setPendingAccountRequests, []);
       return;
     }
     try {
       const res = await fetch(`/api/game-accounts?email=${encodeURIComponent(userEmail)}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.success) {
-        setUserGameAccounts(data.gameAccounts || []);
-        setPendingAccountRequests(data.pendingRequests || []);
+        const cleanAccounts = (data.gameAccounts || []).map(a => ({
+          ...a,
+          gameTitle: cleanGameTitle(a.gameTitle),
+        }));
+        const cleanRequests = (data.pendingRequests || []).map(r => ({
+          ...r,
+          gameTitle: cleanGameTitle(r.gameTitle),
+        }));
+        diffSet(setUserGameAccounts, cleanAccounts);
+        diffSet(setPendingAccountRequests, cleanRequests);
       }
     } catch {}
   };
@@ -101,23 +110,24 @@ export default function HomePage() {
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.authenticated && data.user) {
-        setUser(data.user);
+        diffSet(setUser, data.user);
         loadUserGameAccounts(data.user.email);
       } else {
-        setUser(null);
-        setUserGameAccounts([]);
-        setPendingAccountRequests([]);
+        diffSet(setUser, null);
+        diffSet(setUserGameAccounts, []);
+        diffSet(setPendingAccountRequests, []);
       }
     } catch {
-      setUser(null);
-      setUserGameAccounts([]);
-      setPendingAccountRequests([]);
+      diffSet(setUser, null);
+      diffSet(setUserGameAccounts, []);
+      diffSet(setPendingAccountRequests, []);
     }
   };
 
   // Load Games
   const loadGames = async () => {
-    setLoadingGames(true);
+    // Only show loading spinner on cold initial load
+    if (games.length === 0) setLoadingGames(true);
     try {
       let url = '/api/games';
       const params = new URLSearchParams();
@@ -128,7 +138,11 @@ export default function HomePage() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && data.games) {
-        setGames(data.games);
+        const sanitized = data.games.map(g => ({
+          ...g,
+          title: cleanGameTitle(g.title),
+        }));
+        diffSet(setGames, sanitized);
       }
     } catch (err) {
       console.error(err);

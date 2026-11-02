@@ -14,6 +14,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
+import { diffSet, areEqual } from '@/lib/fastDiff';
 
 export default function LiveChatWidget({ user: initialUser, soundEnabled = true }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,6 +35,8 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
   const fileInputRef = useRef(null);
   const lastStaffMsgCountRef = useRef(0);
   const fetchMessagesRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
+  const prevOpenRef = useRef(false);
 
   // Synchronous and persistent guestId generation
   useEffect(() => {
@@ -67,13 +70,13 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     // Listen to global user sync events from navbar
     const handleUserSync = (e) => {
       const nextUser = e.detail || null;
-      setCurrentUser(nextUser);
+      diffSet(setCurrentUser, nextUser);
       if (nextUser) {
         try {
           localStorage.removeItem('pp_guest_chat_id');
         } catch {}
       } else {
-        setMessages([]);
+        diffSet(setMessages, []);
       }
     };
     window.addEventListener('paradise-user-sync', handleUserSync);
@@ -185,15 +188,16 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
                   Math.abs(new Date(nm.createdAt).getTime() - new Date(m.createdAt).getTime()) < 15000
               )
           );
-          return [...newMsgs, ...pendingOpts];
+          const nextVal = [...newMsgs, ...pendingOpts];
+          return areEqual(prev, nextVal) ? prev : nextVal;
         });
 
         // Calculate unread staff messages
         const staffMsgs = newMsgs.filter((m) => m.senderRole === 'staff');
         if (isOpen) {
-          setUnreadStaffCount(0);
+          diffSet(setUnreadStaffCount, 0);
         } else {
-          setUnreadStaffCount(data.unreadCount || staffMsgs.filter((m) => !m.read).length);
+          diffSet(setUnreadStaffCount, data.unreadCount || staffMsgs.filter((m) => !m.read).length);
         }
 
         // Optional sound alert on new incoming staff message
@@ -254,10 +258,20 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     };
   }, [currentUser, guestId]);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom ONLY on new incoming messages, initial open, or attachment/keyboard
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!isOpen) {
+      prevOpenRef.current = false;
+      return;
+    }
+
+    const isNewlyOpened = !prevOpenRef.current && isOpen;
+    const hasNewMessage = messages.length > prevMsgCountRef.current;
+    prevOpenRef.current = isOpen;
+    prevMsgCountRef.current = messages.length;
+
+    if (isNewlyOpened || hasNewMessage || attachedImage || keyboardOffset > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: isNewlyOpened ? 'auto' : 'smooth' });
     }
   }, [messages, keyboardOffset, attachedImage, isOpen]);
 

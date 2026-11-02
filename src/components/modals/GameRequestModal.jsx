@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Clock,
 } from 'lucide-react';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function GameRequestModal({
   isOpen,
@@ -25,22 +26,15 @@ export default function GameRequestModal({
   const [adminGames, setAdminGames] = useState([]);
   const [existingAccounts, setExistingAccounts] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [selectedGame, setSelectedGame] = useState(initialGame?.title || '');
+  const [selectedGame, setSelectedGame] = useState(initialGame?.title ? cleanGameTitle(initialGame.title) : '');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ error: '', success: '' });
 
-  const platforms = adminGames.length > 0
-    ? adminGames.map((g) => ({
-        title: g.title,
-        category: g.category || 'Sweepstakes',
-        badge: g.badge || (g.isHot ? 'HOT' : (g.isFeatured ? 'POPULAR' : 'OFFICIAL')),
-      }))
-    : [
-        { title: 'Orion Star', category: 'Sweepstakes', badge: 'POPULAR' },
-        { title: 'Juwa', category: 'Sweepstakes', badge: 'HOT' },
-        { title: 'Game Vault', category: 'Sweepstakes', badge: 'CLASSIC' },
-        { title: 'FireKirin', category: 'Sweepstakes', badge: 'TOP CHOICE' },
-      ];
+  const platforms = adminGames.map((g) => ({
+    title: cleanGameTitle(g.title || ''),
+    category: g.category || 'Sweepstakes',
+    badge: g.badge || (g.isHot ? 'HOT' : (g.isFeatured ? 'POPULAR' : 'OFFICIAL')),
+  }));
 
   useEffect(() => {
     if (isOpen) {
@@ -49,9 +43,13 @@ export default function GameRequestModal({
         .then((r) => r.json())
         .then((data) => {
           if (data.success && Array.isArray(data.games) && data.games.length > 0) {
-            setAdminGames(data.games);
+            const cleanList = data.games.map((g) => ({
+              ...g,
+              title: cleanGameTitle(g.title || '')
+            }));
+            diffSet(setAdminGames, cleanList);
             if (!initialGame?.title) {
-              setSelectedGame(data.games[0].title);
+              setSelectedGame(cleanList[0]?.title || '');
             }
           }
         })
@@ -63,16 +61,17 @@ export default function GameRequestModal({
           .then((res) => res.json())
           .then((data) => {
             if (data.success) {
-              setExistingAccounts(data.gameAccounts || []);
-              setPendingRequests(data.pendingRequests || []);
+              diffSet(setExistingAccounts, data.gameAccounts || []);
+              diffSet(setPendingRequests, data.pendingRequests || []);
 
               const accTitles = (data.gameAccounts || []).map((a) => (a.gameTitle || '').toLowerCase().trim());
               const pendTitles = (data.pendingRequests || []).map((p) => (p.gameTitle || '').toLowerCase().trim());
 
               if (initialGame?.title) {
-                const initLower = initialGame.title.toLowerCase().trim();
+                const initClean = cleanGameTitle(initialGame.title);
+                const initLower = initClean.toLowerCase().trim();
                 if (!accTitles.includes(initLower) && !pendTitles.includes(initLower)) {
-                  setSelectedGame(initialGame.title);
+                  setSelectedGame(initClean);
                   return;
                 }
               }

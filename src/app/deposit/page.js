@@ -29,6 +29,7 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function DepositPage() {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function DepositPage() {
       const [uData, sData] = await Promise.all([uRes.json(), sRes.json()]);
 
       if (uData.authenticated && uData.user) {
-        setUser(uData.user);
+        diffSet(setUser, uData.user);
         if (uData.user.email) {
           setPlayerPaymentEmail((prev) => prev || uData.user.email);
         }
@@ -87,7 +88,7 @@ export default function DepositPage() {
       }
 
       if (sData.success && sData.settings) {
-        setSettings({
+        diffSet(setSettings, {
           welcomeBonusPercent: Number(sData.settings.welcomeBonusPercent ?? 300),
           regularBonusPercent: Number(sData.settings.regularBonusPercent ?? 50),
         });
@@ -105,8 +106,8 @@ export default function DepositPage() {
       const res = await fetch('/api/payments/methods');
       const data = await res.json();
       if (data.success && data.methods && data.methods.length > 0) {
-        setGateways(data.methods);
-        setSelectedGateway(data.methods[0]);
+        diffSet(setGateways, data.methods);
+        setSelectedGateway((prev) => prev || data.methods[0]);
       } else {
         const defaults = [
           {
@@ -132,8 +133,8 @@ export default function DepositPage() {
             instructions: 'Send exact BTC equivalent. Paste TxHash or tag below.',
           },
         ];
-        setGateways(defaults);
-        setSelectedGateway(defaults[0]);
+        diffSet(setGateways, defaults);
+        setSelectedGateway((prev) => prev || defaults[0]);
       }
     } catch (err) {
       console.error(err);
@@ -147,7 +148,7 @@ export default function DepositPage() {
       const res = await fetch('/api/payments/deposit', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.deposits) {
-        setDepositHistory(data.deposits);
+        diffSet(setDepositHistory, data.deposits);
       }
     } catch (err) {
       console.error(err);
@@ -162,7 +163,7 @@ export default function DepositPage() {
       const res = await fetch('/api/game-accounts', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.gameAccounts)) {
-        setUserGameAccounts(data.gameAccounts);
+        diffSet(setUserGameAccounts, data.gameAccounts);
       }
     } catch (err) {
       console.error(err);
@@ -175,12 +176,16 @@ export default function DepositPage() {
       const res = await fetch('/api/games', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.games) && data.games.length > 0) {
-        setAdminGames(data.games);
+        const cleanList = data.games.map((g) => ({
+          ...g,
+          title: cleanGameTitle(g.title || '')
+        }));
+        diffSet(setAdminGames, cleanList);
         setSelectedGame((prev) => {
-          if (prev && data.games.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
+          if (prev && cleanList.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
             return prev;
           }
-          return data.games[0].title;
+          return cleanList[0]?.title || '';
         });
       }
     } catch (err) {
@@ -206,7 +211,7 @@ export default function DepositPage() {
     }, 4000);
 
     const handleUserSync = (e) => {
-      if (e.detail) setUser(e.detail);
+      if (e.detail) diffSet(setUser, e.detail);
     };
 
     const handleFocus = () => {
@@ -675,10 +680,10 @@ export default function DepositPage() {
                         (a) => (a.gameTitle || '').toLowerCase().trim() === selectedGame.toLowerCase().trim()
                       );
                       const activeGameList = adminGames.length > 0
-                        ? adminGames.map((g) => g.title)
+                        ? adminGames.map((g) => cleanGameTitle(g.title))
                         : (userGameAccounts.length > 0
-                            ? [...new Set(userGameAccounts.map((a) => a.gameTitle).filter(Boolean))]
-                            : ['Orion Star', 'Juwa', 'Game Vault', 'FireKirin']);
+                            ? [...new Set(userGameAccounts.map((a) => cleanGameTitle(a.gameTitle)).filter(Boolean))]
+                            : []);
 
                       return (
                         <>

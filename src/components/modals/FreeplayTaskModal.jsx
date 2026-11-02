@@ -18,17 +18,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react';
-
-const POPULAR_GAMES = [
-  'Ultra Panda',
-  'Orion Stars',
-  'Fire Kirin',
-  'Game Vault',
-  'Juwa',
-  'Panda Master',
-  'Milky Way',
-  'Vblink',
-];
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
 export default function FreeplayTaskModal({
   isOpen,
@@ -68,12 +58,16 @@ export default function FreeplayTaskModal({
         .then((r) => r.json())
         .then((d) => {
           if (d.success && Array.isArray(d.games) && d.games.length > 0) {
-            setAdminGames(d.games);
+            const cleanList = d.games.map((g) => ({
+              ...g,
+              title: cleanGameTitle(g.title || '')
+            }));
+            diffSet(setAdminGames, cleanList);
             setSelectedGame((prev) => {
-              if (prev && d.games.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
+              if (prev && cleanList.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
                 return prev;
               }
-              return d.games[0].title;
+              return cleanList[0]?.title || '';
             });
           }
         })
@@ -313,9 +307,7 @@ export default function FreeplayTaskModal({
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(() => {
-                const activeGames = adminGames.length > 0
-                  ? adminGames.map((g) => g.title)
-                  : ['Orion Star', 'Juwa', 'Game Vault', 'FireKirin'];
+                const activeGames = adminGames.map((g) => cleanGameTitle(g.title));
                 return activeGames.map((game) => {
                   const isSelected = selectedGame === game;
                   return (
