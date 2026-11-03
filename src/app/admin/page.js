@@ -61,6 +61,7 @@ import {
   Paperclip,
   Save,
   Zap,
+  Receipt,
 } from 'lucide-react';
 import FinanceDepositsView from '@/components/admin/FinanceDepositsView';
 import FinanceRedemptionsView from '@/components/admin/FinanceRedemptionsView';
@@ -709,6 +710,16 @@ export default function AdminPortal({ initialTab }) {
     setAllotmentSuccessMsg(null);
     setAllotmentErrorMsg(null);
 
+    // Optimistic balance update for instant (0ms) UI feedback
+    const prevPlayer = { ...selectedPlayer };
+    const delta = allotmentAction === 'credit' ? num : -num;
+    const currentBal = allotmentCurrency === 'SC' ? (selectedPlayer.balanceSC || 0) : (selectedPlayer.balanceGC || 0);
+    const optimisticBal = Math.max(0, currentBal + delta);
+    setSelectedPlayer(prev => prev ? {
+      ...prev,
+      [allotmentCurrency === 'SC' ? 'balanceSC' : 'balanceGC']: optimisticBal,
+    } : null);
+
     try {
       const res = await fetch('/api/coins/allotment', {
         method: 'POST',
@@ -732,10 +743,12 @@ export default function AdminPortal({ initialTab }) {
         setAllotmentAmount('');
         fetchAllotmentData();
       } else {
+        setSelectedPlayer(prevPlayer);
         setAllotmentErrorMsg(data.error || 'Failed to execute coin allotment.');
       }
     } catch (err) {
       setAllotmentLoading(false);
+      setSelectedPlayer(prevPlayer);
       setAllotmentErrorMsg('Network error: ' + err.message);
     }
   };

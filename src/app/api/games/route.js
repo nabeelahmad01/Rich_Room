@@ -2,47 +2,30 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
-import { ensureDbInitialized } from '@/lib/initDb';
+
+let gamesCache = null;
+let gamesCacheTime = 0;
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache
+
+export function invalidateGamesCache() {
+  gamesCache = null;
+  gamesCacheTime = 0;
+}
 
 export async function GET(req) {
   try {
-    await ensureDbInitialized();
-
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const all = searchParams.get('all') === 'true';
 
-    const db = await getDb();
-    const gamesCol = db.collection('games');
+    const now = Date.now();
+    if (!gamesCache || now - gamesCacheTime > CACHE_TTL_MS) {
+      const db = await getDb();
+      const gamesCol = db.collection('games');
+      const rawGames = await gamesCol.find({}).sort({ isFeatured: -1, playsCount: -1, createdAt: -1 }).toArray();
 
-    const query = {};
-    if (!all) {
-      query.isActive = { $ne: false };
-    }
-    if (category && category !== 'all' && category !== 'lobby') {
-      const catLower = category.toLowerCase().trim();
-      if (catLower === 'sweeps' || catLower === 'sweepstakes') {
-        query.category = { $in: ['sweeps', 'sweepstakes'] };
-      } else {
-        query.category = catLower;
-      }
-    }
-    if (search && search.trim()) {
-      const cleanSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      query.$or = [
-        { title: { $regex: cleanSearch, $options: 'i' } },
-        { provider: { $regex: cleanSearch, $options: 'i' } },
-        { category: { $regex: cleanSearch, $options: 'i' } },
-        { description: { $regex: cleanSearch, $options: 'i' } },
-      ];
-    }
-
-    const games = await gamesCol.find(query).sort({ isFeatured: -1, playsCount: -1, createdAt: -1 }).toArray();
-
-    return NextResponse.json({
-      success: true,
-      games: games.map(g => {
+      gamesCache = rawGames.map((g) => {
         const sid = g._id ? g._id.toString() : (g.id || g.gameId);
         const resolvedImage = g.thumbnail || g.image || g.imageUrl || '/images/vegas-777.svg';
         return {
@@ -50,7 +33,7 @@ export async function GET(req) {
           _id: sid,
           gameId: g.gameId || sid,
           title: g.title,
-          category: g.category || 'sweepstakes',
+          category: (g.category || 'sweepstakes').toLowerCase().trim(),
           provider: g.provider || 'Players Paradise Studio',
           thumbnail: resolvedImage,
           image: resolvedImage,
@@ -69,8 +52,40 @@ export async function GET(req) {
           isInternal: g.isInternal ?? (g.type === 'internal'),
           rtp: g.rtp || 98.2,
           rating: g.rating || 4.9,
+          createdAt: g.createdAt || null,
         };
-      }),
+      });
+      gamesCacheTime = now;
+    }
+
+    let filtered = gamesCache;
+
+    if (!all) {
+      filtered = filtered.filter((g) => g.isActive !== false);
+    }
+
+    if (category && category !== 'all' && category !== 'lobby') {
+      const catLower = category.toLowerCase().trim();
+      if (catLower === 'sweeps' || catLower === 'sweepstakes') {
+        filtered = filtered.filter((g) => g.category === 'sweeps' || g.category === 'sweepstakes');
+      } else {
+        filtered = filtered.filter((g) => g.category === catLower);
+      }
+    }
+
+    if (search && search.trim()) {
+      const cleanSearch = search.trim().toLowerCase();
+      filtered = filtered.filter((g) =>
+        (g.title && g.title.toLowerCase().includes(cleanSearch)) ||
+        (g.provider && g.provider.toLowerCase().includes(cleanSearch)) ||
+        (g.category && g.category.toLowerCase().includes(cleanSearch)) ||
+        (g.description && g.description.toLowerCase().includes(cleanSearch))
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      games: filtered,
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -136,6 +151,7 @@ export async function POST(req) {
     };
 
     const res = await gamesCol.insertOne(newGame);
+    invalidateGamesCache();
     const idStr = res.insertedId ? res.insertedId.toString() : gameId;
     return NextResponse.json({
       success: true,
@@ -189,6 +205,7 @@ export async function PUT(req) {
     }
 
     await gamesCol.updateOne(getGameFilter(id), { $set: updateFields });
+    invalidateGamesCache();
 
     return NextResponse.json({ success: true, message: 'Game updated successfully' });
   } catch (error) {
@@ -215,6 +232,7 @@ export async function DELETE(req) {
     const gamesCol = db.collection('games');
 
     await gamesCol.deleteOne(getGameFilter(id));
+    invalidateGamesCache();
     return NextResponse.json({ success: true, message: 'Game deleted successfully' });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

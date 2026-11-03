@@ -2,12 +2,10 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES, safeIdFilter } from '@/lib/auth';
-import { ensureDbInitialized } from '@/lib/initDb';
 
 // GET Coins Allotment Tasks Queue
 export async function GET(req) {
   try {
-    await ensureDbInitialized();
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get('status') || 'ALL';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));

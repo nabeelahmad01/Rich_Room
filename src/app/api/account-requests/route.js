@@ -19,23 +19,6 @@ export async function GET(req) {
     if (email) {
       const cleanEmail = email.toLowerCase().trim();
       query.userEmail = cleanEmail;
-
-      // Auto-cleanup stale rejected requests for games the user already has active credentials for
-      try {
-        const activeAccounts = await db.collection('gameAccounts').find({ userEmail: cleanEmail }).toArray();
-        if (activeAccounts.length > 0) {
-          const activeTitles = activeAccounts.map(a => a.gameTitle).filter(Boolean);
-          if (activeTitles.length > 0) {
-            await db.collection('accountRequests').deleteMany({
-              userEmail: cleanEmail,
-              gameTitle: { $in: activeTitles },
-              status: { $in: ['REJECTED', 'CANCELLED'] },
-            });
-          }
-        }
-      } catch (cleanErr) {
-        console.error('Error auto-cleaning stale rejected requests:', cleanErr);
-      }
     }
     if (status && status !== 'all') {
       query.status = status.toUpperCase();
