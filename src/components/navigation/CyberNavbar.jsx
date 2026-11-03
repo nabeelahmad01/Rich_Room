@@ -13,7 +13,8 @@ import {
   ChevronDown,
   Sparkles,
   ShieldCheck,
-  KeyRound
+  KeyRound,
+  Gift
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
 import { diffSet, areEqual } from '@/lib/fastDiff';
@@ -333,6 +334,24 @@ export default function CyberNavbar({
           </div>
         )}
 
+        {/* Free Spin Wheel Button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('paradise-open-spin-wheel'));
+            }
+            router.push('/spin-wheel');
+          }}
+          className="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-cyan-500/20 border border-amber-500/40 hover:border-amber-400 text-amber-300 hover:text-white transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow-[0_0_20px_rgba(245,158,11,0.5)] shrink-0 cursor-pointer group"
+          title="Daily Lucky Spin Wheel - Win Free SC"
+        >
+          <Gift size={15} className="text-amber-400 group-hover:rotate-12 transition-transform animate-pulse" />
+          <span className="text-[11px] font-heading font-black tracking-wider uppercase hidden sm:inline">
+            FREE SPIN
+          </span>
+        </button>
+
         {/* Notification Bell */}
         <button
           type="button"
@@ -380,6 +399,17 @@ export default function CyberNavbar({
                 </div>
 
                 <div className="py-1">
+                  <div
+                    onClick={() => {
+                      router.push('/profile');
+                      setProfileOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-slate-800/80 rounded-xl cursor-pointer font-bold"
+                  >
+                    <User size={15} className="text-[var(--neon-cyan)]" />
+                    <span>My Profile &amp; Security</span>
+                  </div>
+
                   <div
                     onClick={() => {
                       handleWalletClick('deposit');

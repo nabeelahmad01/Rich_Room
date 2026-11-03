@@ -357,22 +357,12 @@ export default function GamesPage() {
             </div>
           </div>
 
-          {/* Categories */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all ${
-                  category === cat.id
-                    ? 'bg-gradient-to-r from-[var(--neon-cyan)] to-blue-500 text-black shadow-md'
-                    : 'bg-slate-900/80 border border-slate-800 text-slate-300 hover:border-slate-700'
-                }`}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.label}</span>
-              </button>
-            ))}
+          {/* All Available Games Header */}
+          <div className="flex items-center gap-2.5 pt-2 pb-1 border-b border-slate-800/80">
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)] animate-pulse"></span>
+            <h3 className="font-heading font-black text-sm text-[var(--neon-cyan)] uppercase tracking-wider">
+              All Available Games
+            </h3>
           </div>
 
           {/* Grid */}

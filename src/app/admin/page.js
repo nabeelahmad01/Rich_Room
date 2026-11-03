@@ -276,6 +276,8 @@ export default function AdminPortal({ initialTab }) {
   });
   const [editGatewayModal, setEditGatewayModal] = useState({ open: false, data: null });
   const [previewQrModal, setPreviewQrModal] = useState(null);
+  const [cashoutMethods, setCashoutMethods] = useState([]);
+  const [newCashoutMethod, setNewCashoutMethod] = useState({ name: '', placeholder: '', minCashout: 1 });
 
   // Players Ledger state
   const [ledgerRecords, setLedgerRecords] = useState([]);
@@ -814,6 +816,8 @@ export default function AdminPortal({ initialTab }) {
     chat: 0,
   });
   const seenRequestIdsRef = React.useRef(new Set());
+  const seenDepositIdsRef = React.useRef(new Set());
+  const seenWithdrawIdsRef = React.useRef(new Set());
   const isInitialLoadRef = React.useRef(true);
 
   const syncRequestsAndAlerts = async () => {
@@ -879,6 +883,8 @@ export default function AdminPortal({ initialTab }) {
       }
 
       if (isInitialLoadRef.current) {
+        pendingDeps.forEach((d) => seenDepositIdsRef.current.add(d.id || d._id));
+        pendingWith.forEach((r) => seenWithdrawIdsRef.current.add(r.id || r._id));
         pendingReqs.forEach((r) => seenRequestIdsRef.current.add(r.id || r._id));
         prevCountsRef.current = {
           deposits: pendingDeps.length,
@@ -888,6 +894,30 @@ export default function AdminPortal({ initialTab }) {
           coinCashouts: pendingCoinCashouts.length,
           chat: unreadChatCount,
         };
+
+        // Alert on initial load if pending items are waiting
+        if (pendingDeps.length > 0) {
+          const newest = pendingDeps[0];
+          setActiveAlertToast({
+            type: 'deposit',
+            title: `💰 Pending Deposit ($${Number(newest?.amount || 0).toFixed(2)})`,
+            message: `${newest?.username || 'Player'} awaiting approval`,
+            subtext: `Via ${newest?.methodName || 'Payment'}`,
+            targetTab: 'finance',
+            targetSubTab: 'deposits',
+          });
+        } else if (pendingWith.length > 0) {
+          const newest = pendingWith[0];
+          setActiveAlertToast({
+            type: 'redemption',
+            title: `💸 Pending Cashout ($${Number(newest?.amount || 0).toFixed(2)})`,
+            message: `${newest?.username || 'Player'} awaiting payout`,
+            subtext: `Via ${newest?.payoutMethod || 'Direct'}`,
+            targetTab: 'finance',
+            targetSubTab: 'redemptions',
+          });
+        }
+
         isInitialLoadRef.current = false;
         return;
       }
@@ -916,8 +946,11 @@ export default function AdminPortal({ initialTab }) {
       }
 
       // 2. Incoming new deposits
-      if (pendingDeps.length > (prevCountsRef.current.deposits || 0)) {
-        const newest = pendingDeps[0];
+      const newPendingDeps = pendingDeps.filter((d) => !seenDepositIdsRef.current.has(d.id || d._id));
+      if (newPendingDeps.length > 0 || pendingDeps.length > (prevCountsRef.current.deposits || 0)) {
+        pendingDeps.forEach((d) => seenDepositIdsRef.current.add(d.id || d._id));
+        const newest = newPendingDeps[0] || pendingDeps[0];
+        unlockAudioContext();
         playAdminChime();
         const alertTitle = '💰 New Deposit Request!';
         const alertBody = `$${Number(newest?.amount || 0).toFixed(2)} USD from ${newest?.username || 'Player'} via ${newest?.methodName || 'Payment'}`;
@@ -935,8 +968,11 @@ export default function AdminPortal({ initialTab }) {
       }
 
       // 3. Incoming new redemptions / cashouts
-      if (pendingWith.length > (prevCountsRef.current.redemptions || 0)) {
-        const newest = pendingWith[0];
+      const newPendingWith = pendingWith.filter((r) => !seenWithdrawIdsRef.current.has(r.id || r._id));
+      if (newPendingWith.length > 0 || pendingWith.length > (prevCountsRef.current.redemptions || 0)) {
+        pendingWith.forEach((r) => seenWithdrawIdsRef.current.add(r.id || r._id));
+        const newest = newPendingWith[0] || pendingWith[0];
+        unlockAudioContext();
         playAdminChime();
         const alertTitle = '💸 New Cashout Request!';
         const alertBody = `$${Number(newest?.amount || 0).toFixed(2)} SC for ${newest?.username || 'Player'} via ${newest?.payoutMethod || 'Direct'}`;
@@ -1193,6 +1229,7 @@ export default function AdminPortal({ initialTab }) {
         });
       } else if (activeTab === 'finance') {
         fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
+        fetch('/api/payments/cashout-methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setCashoutMethods, d.methods || []); });
         fetch('/api/payments/deposit?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setDeposits, d.deposits || []); });
         fetch('/api/payments/withdraw?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setRedemptions, d.redemptions || []); });
       } else if (activeTab === 'ledger') {
@@ -5780,6 +5817,37 @@ export default function AdminPortal({ initialTab }) {
                     </div>
                   </div>
 
+                  {/* 5. Official Cashout & Redemption Rules Editor */}
+                  <div className="bg-[#070514] border border-cyan-500/35 p-5 sm:p-6 rounded-2xl space-y-4 shadow-lg w-full">
+                    <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={18} className="text-cyan-400" />
+                        <h4 className="text-sm font-black text-white uppercase tracking-wider m-0">
+                          Official Cashout &amp; Redemption Rules (Displayed on /rules &amp; Menu)
+                        </h4>
+                      </div>
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                        LIVE SYNC
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-300 block mb-1.5 uppercase tracking-wider">
+                        Cashout Rules Content (Supports multi-line text)
+                      </label>
+                      <textarea
+                        rows={5}
+                        value={sysSettings?.cashoutRules ?? ''}
+                        onChange={(e) => setSysSettings(prev => ({ ...prev, cashoutRules: e.target.value }))}
+                        placeholder="Write your cashout and redemption rules here. Players can view them by clicking 'Cashout Rules' in the 3-lines menu."
+                        className="w-full bg-[#0E0A24] border border-cyan-500/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition"
+                      />
+                      <p className="text-[10.5px] text-gray-400 mt-1 leading-relaxed">
+                        These rules appear directly on the website when players click &quot;Cashout Rules&quot; above Refer &amp; Earn in the sidebar.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Save Action Footer */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
                     <p className="text-xs text-gray-400 m-0">
@@ -6922,6 +6990,148 @@ export default function AdminPortal({ initialTab }) {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Cashout / Payout Methods Management (Admin Controlled) */}
+              <div className="bg-[#0E0A24] border border-[#00F0FF]/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                      <Receipt size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black text-white m-0">
+                        Player Cashout &amp; Payout Methods
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Enable or disable payout methods offered to players for redemptions. Players only see the active methods you choose.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add New Cashout Method Form */}
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!newCashoutMethod.name.trim()) return;
+                    try {
+                      const res = await fetch('/api/payments/cashout-methods', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newCashoutMethod),
+                      });
+                      const d = await res.json();
+                      if (d.success && d.method) {
+                        setCashoutMethods((prev) => [...prev, d.method]);
+                        setNewCashoutMethod({ name: '', placeholder: '', minCashout: 1 });
+                      } else {
+                        alert(d.error || 'Failed to add cashout method');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="p-4 rounded-xl bg-[#070514] border border-white/10 space-y-3"
+                >
+                  <span className="text-xs font-bold text-white block uppercase tracking-wider">
+                    Add Custom Cashout Method
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Method Name (e.g. Apple Pay / Chime / Bank)"
+                      value={newCashoutMethod.name}
+                      onChange={(e) => setNewCashoutMethod({ ...newCashoutMethod, name: e.target.value })}
+                      className="w-full bg-[#0E0A24] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF]"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Handle Placeholder (e.g. phone number or email)"
+                      value={newCashoutMethod.placeholder}
+                      onChange={(e) => setNewCashoutMethod({ ...newCashoutMethod, placeholder: e.target.value })}
+                      className="w-full bg-[#0E0A24] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF]"
+                    />
+                    <button
+                      type="submit"
+                      className="py-2.5 px-4 rounded-xl cyber-btn-cyan text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus size={14} />
+                      <span>Add Cashout Method</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* List of Cashout Methods with 1-Click Toggles */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {cashoutMethods.map((cm) => (
+                    <div
+                      key={cm.id || cm.methodId}
+                      className={`p-4 rounded-xl border flex flex-col justify-between gap-3 transition ${
+                        cm.isActive
+                          ? 'bg-[#070514] border-[#00F0FF]/35 shadow-[0_0_15px_rgba(0,240,255,0.1)]'
+                          : 'bg-[#070514]/60 border-white/10 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-heading font-bold text-sm text-white">
+                          {cm.name}
+                        </span>
+                        <span
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                            cm.isActive
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              : 'bg-red-500/15 text-red-400 border-red-500/30'
+                          }`}
+                        >
+                          {cm.isActive ? 'OFFERED TO PLAYERS' : 'DISABLED'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-mono text-gray-400 m-0 truncate">
+                        {cm.placeholder || 'No placeholder'}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextActive = !cm.isActive;
+                            setCashoutMethods((prev) =>
+                              prev.map((x) => (x.id === cm.id ? { ...x, isActive: nextActive } : x))
+                            );
+                            fetch('/api/payments/cashout-methods', {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ id: cm.id, methodId: cm.methodId, isActive: nextActive }),
+                            }).catch((err) => console.error(err));
+                          }}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition border cursor-pointer ${
+                            cm.isActive
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          <Power size={12} />
+                          <span>{cm.isActive ? 'Disable Method' : 'Enable Method'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!window.confirm(`Delete cashout method "${cm.name}"?`)) return;
+                            setCashoutMethods((prev) => prev.filter((x) => x.id !== cm.id));
+                            fetch(`/api/payments/cashout-methods?id=${encodeURIComponent(cm.id || cm.methodId)}`, {
+                              method: 'DELETE',
+                            }).catch((err) => console.error(err));
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 font-bold text-xs flex items-center gap-1 transition cursor-pointer"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

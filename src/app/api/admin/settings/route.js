@@ -8,11 +8,11 @@ export async function GET() {
     const settings = await db.collection('system_settings').findOne({ key: 'general' });
     const defaultSettings = {
       siteName: 'Players Paradise',
-      welcomeBonusPercent: 300,
+      welcomeBonusPercent: 120,
       welcomeBonusMax: 7500,
       welcomeBonusSpins: 150,
       welcomeBonusTitle: 'WELCOME BONUS',
-      welcomeBonusSubtitle: 'Get a 300% bonus on your first deposit! Instant approval & fast cashouts.',
+      welcomeBonusSubtitle: 'Get a 120% bonus on your first deposit! Instant approval & fast cashouts.',
       regularBonusPercent: 50,
       regularBonusMax: 2500,
       regularBonusTitle: 'REGULAR BONUS',
@@ -25,7 +25,8 @@ export async function GET() {
       welcomeBonusActive: true,
       regularBonusActive: true,
       referralBonusActive: true,
-      minRedemptionSC: 50.0,
+      minRedemptionSC: 1.0,
+      cashoutRules: '1. All winnings from eligible sweepstakes games can be redeemed directly to your active cashout method.\n2. Cashouts are processed 24/7 with zero minimum fees.\n3. Ensure your Cashtag, handle, or crypto address matches your verified account.\n4. Processing time is usually within 5 to 15 minutes.',
       geoRestrictionEnabled: false,
       restrictedStates: [],
       maintenanceMode: false,
@@ -61,6 +62,7 @@ export async function PUT(req) {
     if (body.freeplayAmountSC !== undefined) updateFields.freeplayAmountSC = Number(body.freeplayAmountSC);
     if (body.freeplayActive !== undefined) updateFields.freeplayActive = Boolean(body.freeplayActive);
     if (body.minRedemptionSC !== undefined) updateFields.minRedemptionSC = Number(body.minRedemptionSC);
+    if (body.cashoutRules !== undefined) updateFields.cashoutRules = String(body.cashoutRules);
 
     // Dynamic Welcome & Regular Bonus Settings
     if (body.welcomeBonusPercent !== undefined) updateFields.welcomeBonusPercent = Number(body.welcomeBonusPercent);

@@ -415,6 +415,9 @@ export default function HomePage() {
 
         {/* Page Inner Container */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 pb-28 lg:pb-8">
+          {/* Marquee Ticker at the Very Top */}
+          <CyberLatestWinsTicker />
+
           {/* Hero Banner */}
           <CyberHeroBanner
             user={user}
@@ -422,9 +425,6 @@ export default function HomePage() {
             onOpenWallet={(tab) => router.push(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? '/withdraw' : '/deposit')}
             onOpenGameRequest={() => handleRequestGame()}
           />
-
-          {/* Marquee Ticker */}
-          <CyberLatestWinsTicker />
 
           {/* Player Game Credentials & Request Station */}
           <PlayerGameCredentialsHub
@@ -462,33 +462,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-              {categories.map((cat) => {
-                const isSelected = category === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setCategory(cat.id)}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all ${
-                      isSelected
-                        ? 'text-black'
-                        : 'bg-slate-900/80 border border-slate-800 text-slate-300 hover:border-slate-700'
-                    }`}
-                    style={
-                      isSelected
-                        ? {
-                            background: 'var(--primary-gradient)',
-                            boxShadow: '0 0 15px var(--neon-cyan-glow)',
-                          }
-                        : undefined
-                    }
-                  >
-                    <span>{cat.icon}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                );
-              })}
+            {/* Simple All Available Games Section Header */}
+            <div className="flex items-center gap-2.5 pt-2 pb-1 border-b border-slate-800/80">
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)] animate-pulse"></span>
+              <h3 className="font-heading font-black text-sm text-[var(--neon-cyan)] uppercase tracking-wider">
+                All Available Games
+              </h3>
             </div>
 
             {/* Games Grid */}

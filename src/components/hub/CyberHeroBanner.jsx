@@ -27,7 +27,12 @@ export default function CyberHeroBanner({
 }) {
   const router = useRouter();
   const [freeplayFeedback, setFreeplayFeedback] = useState(null);
-  const [bonusSettings, setBonusSettings] = useState(null);
+  const [bonusSettings, setBonusSettings] = useState({
+    welcomeBonusPercent: 120,
+    welcomeBonusTitle: 'WELCOME BONUS',
+    welcomeBonusSubtitle: 'Get a 120% bonus on your first deposit! Instant approval & fast cashouts.',
+    welcomeBonusActive: true,
+  });
   const [freeplayModalOpen, setFreeplayModalOpen] = useState(false);
 
   React.useEffect(() => {
@@ -67,9 +72,9 @@ export default function CyberHeroBanner({
         }}
       />
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Column: Headlines & CTAs */}
-        <div className="lg:col-span-7 space-y-5">
+      <div className="relative z-10 max-w-4xl">
+        {/* Headlines & CTAs */}
+        <div className="space-y-5">
           {/* Top Tag */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] text-xs font-heading font-bold shadow-[0_0_15px_rgba(0,240,255,0.2)]">
             <Flame size={14} className="text-amber-400 animate-pulse" />
@@ -95,7 +100,7 @@ export default function CyberHeroBanner({
           </p>
 
           {/* Dynamic Bonus Highlight Card */}
-          {bonusSettings?.welcomeBonusActive !== false && Number(bonusSettings?.welcomeBonusPercent ?? 300) > 0 && (
+          {bonusSettings?.welcomeBonusActive !== false && Number(bonusSettings?.welcomeBonusPercent ?? 120) > 0 && (
             <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/50 via-slate-900/70 to-cyan-950/40 border border-purple-500/30 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-black font-black text-xl shrink-0 shadow-[0_0_15px_rgba(192,38,211,0.5)]">
                 %
@@ -105,7 +110,7 @@ export default function CyberHeroBanner({
                   {bonusSettings?.welcomeBonusTitle || 'WELCOME BONUS'}
                 </div>
                 <div className="font-heading font-extrabold text-base sm:text-lg text-white">
-                  {bonusSettings?.welcomeBonusPercent ?? 300}% Match Bonus + Free 10,000 GC Credits
+                  {bonusSettings?.welcomeBonusPercent ?? 120}% Match Bonus + Free 10,000 GC Credits
                 </div>
                 {bonusSettings?.welcomeBonusSubtitle && (
                   <p className="text-[11px] text-slate-300 mt-0.5 leading-snug m-0">
@@ -189,62 +194,6 @@ export default function CyberHeroBanner({
                 <span>PLATFORMS</span>
               </div>
               <div className="font-heading font-bold text-sm text-white">10+ Verified</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 3D Mascot Graphic Display */}
-        <div className="lg:col-span-5 flex justify-center relative" style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-          <div
-            className="hero-mascot-box relative group"
-            style={{
-              position: 'relative',
-              width: '320px',
-              height: '320px',
-              maxWidth: '100%',
-              aspectRatio: '1/1',
-              flexShrink: 0
-            }}
-          >
-            {/* Ambient Circular Neon Rings */}
-            <div
-              className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--neon-cyan)]/30 animate-spin"
-              style={{ position: 'absolute', inset: 0, borderRadius: '9999px', animationDuration: '30s' }}
-            />
-            <div
-              className="absolute inset-4 rounded-full border border-[var(--neon-purple)]/40 shadow-[0_0_30px_rgba(192,38,211,0.3)]"
-              style={{ position: 'absolute', inset: '16px', borderRadius: '9999px' }}
-            />
-
-            {/* Mascot Image Card */}
-            <div
-              className="relative w-full h-full rounded-3xl overflow-hidden border-2 border-[var(--neon-cyan)] shadow-[0_0_35px_rgba(0,240,255,0.5)] bg-slate-950"
-              style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                borderRadius: '24px',
-                overflow: 'hidden'
-              }}
-            >
-              <Image
-                src="/logo.png"
-                alt="Cyber Gamer Panda - Players Paradise Hub"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                priority
-              />
-
-              {/* Bottom Badge inside image */}
-              <div className="absolute bottom-3 left-3 right-3 p-2.5 rounded-xl bg-black/80 backdrop-blur-md border border-[var(--neon-cyan)]/40 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="font-heading text-xs font-bold text-white">ONLINE SERVER</span>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/20 px-2 py-0.5 rounded">
-                  99.9% UPTIME
-                </span>
-              </div>
             </div>
           </div>
         </div>

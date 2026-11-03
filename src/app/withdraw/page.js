@@ -56,6 +56,12 @@ export default function WithdrawPage() {
   const [withdrawHistory, setWithdrawHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
+  // Dynamic Payout Methods State
+  const [payoutMethods, setPayoutMethods] = useState([
+    { id: 'cashapp', name: 'Cash App', placeholder: 'e.g. $YourCashtag' },
+    { id: 'crypto-btc', name: 'Bitcoin (BTC)', placeholder: 'e.g. bc1q... wallet address' },
+  ]);
+
   // 1. Fetch current user
   const fetchUser = async (isSilent = false) => {
     if (!isSilent) setLoadingUser(true);
@@ -64,13 +70,30 @@ export default function WithdrawPage() {
       const data = await res.json();
       if (data.authenticated && data.user) {
         diffSet(setUser, data.user);
-      } else if (!isSilent) {
-        router.push('/login?redirect=/withdraw');
       }
     } catch (err) {
       console.error(err);
     } finally {
       if (!isSilent) setLoadingUser(false);
+    }
+  };
+
+  // 1b. Fetch active payout methods from database
+  const fetchPayoutMethods = async () => {
+    try {
+      const res = await fetch('/api/payments/cashout-methods', { cache: 'no-store' });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.methods) && data.methods.length > 0) {
+        diffSet(setPayoutMethods, data.methods);
+        setMethod((prev) => {
+          if (prev && data.methods.some((m) => m.name === prev || (m.methodId || m.id) === prev)) {
+            return prev;
+          }
+          return data.methods[0]?.name || 'Cash App';
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -131,6 +154,7 @@ export default function WithdrawPage() {
     fetchHistory();
     fetchGameAccounts();
     fetchAdminGames();
+    fetchPayoutMethods();
 
     // Zero-refresh live polling: fast updates as soon as admin approves/rejects
     const pollInterval = setInterval(() => {
@@ -358,22 +382,13 @@ export default function WithdrawPage() {
     }
   };
 
-  const payoutMethods = [
-    { id: 'cashapp', name: 'Cash App', placeholder: 'e.g. $YourCashtag' },
-    { id: 'crypto-btc', name: 'Bitcoin (BTC)', placeholder: 'e.g. bc1q... wallet address' },
-    { id: 'crypto-usdt', name: 'USDT (TRC20)', placeholder: 'e.g. TX... TRC20 address' },
-    { id: 'venmo', name: 'Venmo', placeholder: 'e.g. @YourVenmoHandle' },
-    { id: 'paypal', name: 'PayPal', placeholder: 'e.g. your-paypal@domain.com' },
-    { id: 'zelle', name: 'Zelle Pay', placeholder: 'e.g. phone number or email' },
-  ];
-
   const activeGameList = adminGames.length > 0
     ? adminGames.map((g) => cleanGameTitle(g.title))
     : (userGameAccounts.length > 0
         ? [...new Set(userGameAccounts.map((a) => cleanGameTitle(a.gameTitle)).filter(Boolean))]
         : []);
 
-  const presetAmounts = [20, 50, 100, 250, 500];
+  const presetAmounts = [10, 25, 50, 100, 250];
 
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] text-white flex flex-col font-sans selection:bg-[var(--neon-cyan)] selection:text-black">
@@ -491,7 +506,7 @@ export default function WithdrawPage() {
                     </span>
                     Game Platform &amp; Payout Method
                   </h3>
-                  <span className="text-xs text-slate-400">Min $20.00</span>
+                  <span className="text-xs text-[var(--neon-cyan)] font-bold">Instant 24/7 Dispatch (No Minimum)</span>
                 </div>
 
                 {/* Game Select & Account Detection */}

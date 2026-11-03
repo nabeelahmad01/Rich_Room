@@ -40,7 +40,7 @@ export default function DepositPage() {
 
   // Settings for Bonus System
   const [settings, setSettings] = useState({
-    welcomeBonusPercent: 300,
+    welcomeBonusPercent: 120,
     regularBonusPercent: 50,
   });
 
@@ -560,6 +560,57 @@ export default function DepositPage() {
                     );
                   })}
                 </div>
+
+                {/* DIRECT PAYMENT LINK & INSTRUCTIONS RIGHT UNDER GATEWAY SELECTION */}
+                {selectedGateway && (
+                  <div className="pt-4 border-t border-slate-800/80 space-y-3">
+                    {selectedGateway.paymentUrl && (
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-bold text-slate-300 uppercase block">
+                          Instant Payment Link:
+                        </span>
+                        <a
+                          href={selectedGateway.paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-3 px-4 rounded-xl text-black font-heading font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-lg"
+                          style={{
+                            background: 'var(--primary-gradient)',
+                            boxShadow: '0 0 20px var(--neon-cyan-glow)',
+                          }}
+                        >
+                          <span>OPEN &amp; PAY VIA {selectedGateway.name.toUpperCase()} NOW</span>
+                          <ExternalLink size={16} />
+                        </a>
+                      </div>
+                    )}
+
+                    {activeTagName && (
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                          Tag Name / Cashtag to Send To:
+                        </span>
+                        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
+                          <span className="font-mono font-black text-xs sm:text-sm text-amber-300 select-all break-all">
+                            {activeTagName}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(activeTagName, 'gwTag')}
+                            className="px-3 py-1.5 rounded-lg text-black text-xs font-bold flex items-center gap-1.5 flex-shrink-0 transition-all cursor-pointer hover:opacity-90"
+                            style={{
+                              background: 'var(--primary-gradient)',
+                              boxShadow: '0 0 10px var(--neon-cyan-glow)',
+                            }}
+                          >
+                            {copiedField === 'gwTag' ? <Check size={14} /> : <Copy size={14} />}
+                            <span>{copiedField === 'gwTag' ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Step 2: Choose Deposit Amount & Live Bonus Preview */}

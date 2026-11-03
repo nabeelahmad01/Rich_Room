@@ -44,6 +44,7 @@ export default function CyberSidebar({
     { label: 'My Game IDs', path: '/my-game-ids', icon: KeyRound, highlight: true },
     { label: 'Deposit Funds', path: '/deposit', icon: Wallet },
     { label: 'Redeem Cashout', path: '/withdraw', icon: Receipt },
+    { label: 'Cashout Rules', path: '/rules', icon: ShieldCheck, badge: 'RULES' },
     { label: 'Refer & Earn', path: '/referral', icon: Users, badge: 'REWARDS', glow: true },
     {
       label: '24/7 Live Support',

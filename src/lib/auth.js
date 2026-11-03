@@ -110,7 +110,14 @@ export async function getSessionUser(preferredType = null) {
       return adminToken ? verifyToken(adminToken) : null;
     }
     if (preferredType === 'player') {
-      return playerToken ? verifyToken(playerToken) : null;
+      if (playerToken) {
+        const verified = verifyToken(playerToken);
+        if (verified) return verified;
+      }
+      if (adminToken) {
+        return verifyToken(adminToken);
+      }
+      return null;
     }
 
     // Auto-detect admin context from referer

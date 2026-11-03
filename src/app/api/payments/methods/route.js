@@ -7,12 +7,29 @@ import { ensureDbInitialized } from '@/lib/initDb';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+let cachedMethods = null;
+let cacheTime = 0;
+const CACHE_TTL_MS = 15000;
+
+export function invalidatePaymentMethodsCache() {
+  cachedMethods = null;
+  cacheTime = 0;
+}
+
 // GET payment methods
 export async function GET(req) {
   try {
-    await ensureDbInitialized();
     const { searchParams } = new URL(req.url);
     const all = searchParams.get('all') === 'true';
+
+    // Serve from ultra-fast in-memory cache for active methods
+    const now = Date.now();
+    if (!all && cachedMethods && (now - cacheTime < CACHE_TTL_MS)) {
+      return NextResponse.json(
+        { success: true, methods: cachedMethods, fromCache: true },
+        { headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
 
     const db = await getDb();
     const methodsCol = db.collection('payment_methods');
@@ -20,32 +37,37 @@ export async function GET(req) {
     const query = all ? {} : { isActive: true };
     const methods = await methodsCol.find(query).toArray();
 
+    // Trigger non-blocking init in background only if empty
+    if (methods.length === 0) {
+      ensureDbInitialized().catch(() => {});
+    }
+
+    const formatted = methods.map(m => ({
+      id: m._id.toString(),
+      methodId: m.methodId,
+      name: m.name,
+      type: m.type || 'custom',
+      tag: m.tag || 'Instant',
+      tagName: m.tagName || m.accountDetails || m.cashtag || m.address || '',
+      accountDetails: m.accountDetails || m.tagName || m.cashtag || m.address || '',
+      cashtag: m.accountDetails || m.tagName || m.cashtag || '',
+      details: m.accountDetails || m.tagName || m.details || '',
+      instructions: m.instructions || '',
+      paymentUrl: m.paymentUrl || '',
+      qrCode: m.qrCode || '',
+      minDeposit: m.minDeposit || 10,
+      maxDeposit: m.maxDeposit || 5000,
+      isActive: m.isActive ?? true,
+    }));
+
+    if (!all) {
+      cachedMethods = formatted;
+      cacheTime = now;
+    }
+
     return NextResponse.json(
-      {
-        success: true,
-        methods: methods.map(m => ({
-          id: m._id.toString(),
-          methodId: m.methodId,
-          name: m.name,
-          type: m.type || 'custom',
-          tag: m.tag || 'Instant',
-          tagName: m.tagName || m.accountDetails || m.cashtag || m.address || '',
-          accountDetails: m.accountDetails || m.tagName || m.cashtag || m.address || '',
-          cashtag: m.accountDetails || m.tagName || m.cashtag || '',
-          details: m.accountDetails || m.tagName || m.details || '',
-          instructions: m.instructions || '',
-          paymentUrl: m.paymentUrl || '',
-          qrCode: m.qrCode || '',
-          minDeposit: m.minDeposit || 10,
-          maxDeposit: m.maxDeposit || 5000,
-          isActive: m.isActive ?? true,
-        })),
-      },
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        },
-      }
+      { success: true, methods: formatted },
+      { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -104,6 +126,7 @@ export async function POST(req) {
     };
 
     const res = await methodsCol.insertOne(newMethod);
+    invalidatePaymentMethodsCache();
     return NextResponse.json({
       success: true,
       id: res.insertedId.toString(),
@@ -179,6 +202,7 @@ export async function PUT(req) {
 
     const filter = getMethodFilter(id);
     await methodsCol.updateOne(filter, { $set: updateFields });
+    invalidatePaymentMethodsCache();
 
     return NextResponse.json({ success: true, message: 'Payment method updated successfully.' });
   } catch (error) {
@@ -214,6 +238,7 @@ export async function DELETE(req) {
     }
 
     await methodsCol.deleteOne(getMethodFilter(id));
+    invalidatePaymentMethodsCache();
     return NextResponse.json({ success: true, message: 'Payment method deleted.' });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

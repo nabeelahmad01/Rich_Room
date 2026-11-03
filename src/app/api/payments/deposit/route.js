@@ -71,7 +71,7 @@ export async function GET(req) {
       success: true,
       deposits: deposits.map(d => {
         const bonusType = d.bonusType || 'welcome';
-        const bonusPercent = d.bonusPercent ?? (bonusType === 'welcome' ? 300 : 50);
+        const bonusPercent = d.bonusPercent ?? (bonusType === 'welcome' ? 120 : 50);
         const bonusSC = d.bonusSC !== undefined ? d.bonusSC : Number(((d.amount * bonusPercent) / 100).toFixed(2));
         const totalSC = d.totalSC !== undefined ? d.totalSC : Number((d.amount + bonusSC).toFixed(2));
         const totalGC = d.totalGC !== undefined ? d.totalGC : (d.amount * 10000);
@@ -198,7 +198,7 @@ export async function POST(req) {
       ? 0
       : hasClaimedWelcome
       ? Number(settings?.regularBonusPercent ?? 50)
-      : Number(settings?.welcomeBonusPercent ?? 300);
+      : Number(settings?.welcomeBonusPercent ?? 120);
     const bonusMax = hasClaimedWelcome
       ? Number(settings?.regularBonusMax ?? 2500)
       : Number(settings?.welcomeBonusMax ?? 7500);
