@@ -1,7 +1,9 @@
 import { MongoClient } from 'mongodb';
 
-const primaryUri = process.env.MONGODB_URI || 'mongodb+srv://richroom35_db_user:sGBQ4YxdtBTqJKPU@cluster0.imudac1.mongodb.net/rich_room?retryWrites=true&w=majority&appName=Cluster0';
-const fallbackUri = 'mongodb+srv://webnexllc80_db_user:0761071Na@cluster0.dlhnyrp.mongodb.net/rich_room?retryWrites=true&w=majority&appName=Cluster0';
+const primaryUri = (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('cluster0.imudac1'))
+  ? process.env.MONGODB_URI
+  : 'mongodb+srv://webnexllc80_db_user:0761071Na@cluster0.dlhnyrp.mongodb.net/rich_room?retryWrites=true&w=majority&appName=Cluster0';
+const fallbackUri = 'mongodb+srv://richroom35_db_user:sGBQ4YxdtBTqJKPU@cluster0.imudac1.mongodb.net/rich_room?retryWrites=true&w=majority&appName=Cluster0';
 
 const options = {
   maxPoolSize: 50,

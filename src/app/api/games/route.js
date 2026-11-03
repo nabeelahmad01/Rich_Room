@@ -3,11 +3,14 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 let gamesCache = null;
 let gamesCacheTime = 0;
 const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache
 
-export function invalidateGamesCache() {
+function invalidateGamesCache() {
   gamesCache = null;
   gamesCacheTime = 0;
 }
