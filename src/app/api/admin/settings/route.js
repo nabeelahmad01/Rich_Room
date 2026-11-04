@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { getSessionUser, ROLES } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const db = await getDb();
     const settings = await db.collection('system_settings').findOne({ key: 'general' });
     const defaultSettings = {
-      siteName: 'Players Paradise',
+      siteName: 'Rich Room',
       welcomeBonusPercent: 120,
       welcomeBonusMax: 7500,
       welcomeBonusSpins: 150,
@@ -41,8 +43,8 @@ export async function GET() {
 export async function PUT(req) {
   try {
     const session = await getSessionUser();
-    if (!session || session.role !== ROLES.SUPER_ADMIN) {
-      return NextResponse.json({ success: false, error: 'Unauthorized. Super Admin only.' }, { status: 403 });
+    if (!session || ![ROLES.SUPER_ADMIN, ROLES.OPERATION_ADMIN, ROLES.FINANCIAL_MANAGER].includes(session.role)) {
+      return NextResponse.json({ success: false, error: 'Unauthorized staff action.' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -86,6 +88,27 @@ export async function PUT(req) {
       { $set: updateFields },
       { upsert: true }
     );
+
+    // Sync any currently PENDING freeplay requests to match the newly configured Freeplay amount
+    if (body.freeplayAmountSC !== undefined) {
+      const nextFp = Number(body.freeplayAmountSC);
+      await db.collection('accountRequests').updateMany(
+        {
+          status: 'PENDING',
+          $or: [{ isFreeplay: true }, { freeplayPending: true }],
+        },
+        {
+          $set: {
+            transferAmount: nextFp,
+            freeplayAmount: nextFp,
+          },
+        }
+      ).catch(() => {});
+      await db.collection('freeplay_tasks').updateMany(
+        { status: { $in: ['pending', 'email_sent'] } },
+        { $set: { amount: nextFp } }
+      ).catch(() => {});
+    }
 
     // Sync corresponding cards in promotions collection
     const promosCol = db.collection('promotions');

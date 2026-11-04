@@ -23,6 +23,7 @@ export default function FreeplayTaskModal({
   onSuccess,
 }) {
   const [mounted, setMounted] = useState(false);
+  const [liveFreeplayAmount, setLiveFreeplayAmount] = useState(freeplayAmount);
   const [adminGames, setAdminGames] = useState([]);
   const [selectedGame, setSelectedGame] = useState('');
   const [screenshot, setScreenshot] = useState('');
@@ -61,9 +62,22 @@ export default function FreeplayTaskModal({
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  // Fetch admin games on open
+  useEffect(() => {
+    setLiveFreeplayAmount(freeplayAmount);
+  }, [freeplayAmount]);
+
+  // Fetch admin games and latest configured Freeplay amount on open
   useEffect(() => {
     if (isOpen) {
+      fetch('/api/admin/settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.success && d?.settings?.freeplayAmountSC !== undefined) {
+            setLiveFreeplayAmount(Number(d.settings.freeplayAmountSC));
+          }
+        })
+        .catch(() => {});
+
       fetch('/api/games', { cache: 'no-store' })
         .then((r) => r.json())
         .then((d) => {
@@ -309,6 +323,9 @@ export default function FreeplayTaskModal({
     selectedGame && screenshot && !uploading && !submitting
   );
 
+  const numAmt = Number(liveFreeplayAmount ?? freeplayAmount ?? 5);
+  const displayAmt = numAmt % 1 === 0 ? numAmt.toFixed(0) : numAmt.toFixed(2);
+
   const modalContent = (
     <div
       className="fixed inset-0 z-[99999] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md overflow-hidden no-scrollbar"
@@ -345,7 +362,7 @@ export default function FreeplayTaskModal({
           <div className="min-w-0">
             <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--neon-cyan)]/15 border border-[var(--chrome-border)] text-[var(--neon-cyan)] text-[9.5px] font-mono font-black uppercase tracking-wider mb-0.5">
               <Sparkles size={10} />
-              <span>${Number(freeplayAmount).toFixed(0)} Freeplay Task</span>
+              <span>${displayAmt} Freeplay Task</span>
               {taskId && <span className="text-white">#{taskId}</span>}
             </div>
             <h2 className="text-sm sm:text-base font-heading font-black text-white m-0 tracking-wide leading-tight">
@@ -353,7 +370,7 @@ export default function FreeplayTaskModal({
             </h2>
             <p className="text-[10.5px] text-slate-300 m-0 leading-snug mt-0.5">
               Complete this 30-second verification task to claim your $
-              {Number(freeplayAmount).toFixed(0)} freeplay credits!
+              {displayAmt} freeplay credits!
             </p>
           </div>
         </div>
@@ -615,7 +632,7 @@ export default function FreeplayTaskModal({
               <>
                 <Gift size={14} />
                 <span>
-                  SUBMIT TASK &amp; CLAIM ${Number(freeplayAmount).toFixed(0)}{' '}
+                  SUBMIT TASK &amp; CLAIM ${displayAmt}{' '}
                   FREEPLAY &rarr;
                 </span>
               </>

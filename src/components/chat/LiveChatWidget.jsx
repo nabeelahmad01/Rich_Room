@@ -169,6 +169,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
         params.set('guestId', activeGuestId);
       }
 
+      params.set('markRead', isOpen ? 'true' : 'false');
       const endpoint = `/api/chat?${params.toString()}`;
 
       try {

@@ -3,6 +3,8 @@ import { getDb } from '@/lib/mongodb';
 import { getSessionUser } from '@/lib/auth';
 import { sendEmail } from '@/lib/email';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req) {
   try {
     const session = await getSessionUser();
@@ -43,19 +45,19 @@ export async function POST(req) {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Players Paradise - Freeplay Task</title>
+        <title>Rich Room - Freeplay Task</title>
       </head>
       <body style="margin: 0; padding: 0; background-color: #050714; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #ffffff;">
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #050714; padding: 25px 10px;">
           <tr>
             <td align="center">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background: #0c0824; border: 1.5px solid rgba(0, 240, 255, 0.35); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 240, 255, 0.15);">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background: #0c0824; border: 1.5px solid rgba(255, 215, 0, 0.35); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 215, 0, 0.15);">
                 
                 <!-- Brand Header -->
                 <tr>
-                  <td align="center" style="padding: 35px 20px 22px 20px; background: linear-gradient(135deg, #120a36 0%, #060417 100%); border-bottom: 1px solid rgba(0, 240, 255, 0.2);">
+                  <td align="center" style="padding: 35px 20px 22px 20px; background: linear-gradient(135deg, #120a36 0%, #060417 100%); border-bottom: 1px solid rgba(255, 215, 0, 0.2);">
                     <div style="font-size: 26px; font-weight: 900; letter-spacing: 3px; color: #ffffff; text-transform: uppercase;">
-                      PLAYERS<span style="color: #00F0FF;">PARADISE</span>
+                      RICH<span style="color: #FFD700;">ROOM</span>
                     </div>
                     <div style="font-size: 11px; letter-spacing: 2px; color: #a5b4fc; margin-top: 5px; text-transform: uppercase;">
                       VIP Sweepstakes &amp; Cyber Gaming Lounge
@@ -95,14 +97,14 @@ export async function POST(req) {
                           <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
                             <span style="display: inline-block; background: #00F0FF; color: #000; font-weight: 900; font-size: 12px; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; margin-right: 10px; flex-shrink: 0;">2</span>
                             <span style="font-size: 13.5px; color: #ffffff; line-height: 1.4;">
-                              Open your <strong>Primary Inbox</strong> and take a screenshot showing this Players Paradise verification email inside your Inbox.
+                              Open your <strong>Primary Inbox</strong> and take a screenshot showing this Rich Room verification email inside your Inbox.
                             </span>
                           </div>
 
                           <div style="display: flex; align-items: flex-start;">
                             <span style="display: inline-block; background: #00F0FF; color: #000; font-weight: 900; font-size: 12px; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; margin-right: 10px; flex-shrink: 0;">3</span>
                             <span style="font-size: 13.5px; color: #ffffff; line-height: 1.4;">
-                              Return to <strong>Players Paradise</strong>, upload your inbox screenshot in the Freeplay Task window, and submit!
+                              Return to <strong>Rich Room</strong>, upload your inbox screenshot in the Freeplay Task window, and submit!
                             </span>
                           </div>
                         </td>
@@ -132,10 +134,10 @@ export async function POST(req) {
                 <tr>
                   <td align="center" style="padding: 20px; background: #04030d; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 11px; color: #64748b; line-height: 1.6;">
                     <p style="margin: 0 0 6px 0; color: #cbd5e1; font-weight: 600;">
-                      Players Paradise • 24/7 Sweepstakes Gaming Lounge
+                      Rich Room • 24/7 Sweepstakes Gaming Lounge
                     </p>
                     <p style="margin: 0;">
-                      Sent to ${targetEmail} from verified@playersparadisehub.com
+                      Sent to ${targetEmail} from verified@richroom.games
                     </p>
                   </td>
                 </tr>
@@ -149,7 +151,7 @@ export async function POST(req) {
     `;
 
     const textTemplate = `
-Players Paradise - $${configuredAmount.toFixed(0)} Freeplay Bonus Task (Task #${taskId})
+Rich Room - $${configuredAmount.toFixed(0)} Freeplay Bonus Task (Task #${taskId})
 =========================================================
 
 Hello ${session?.username || name || 'Player'},
@@ -159,15 +161,15 @@ To claim your $${configuredAmount.toFixed(0)} Freeplay Bonus for ${gameTitle}, p
 1. If this email landed in your Spam/Junk folder, click "Report Not Spam" or "Move to Inbox".
 2. Open your Primary Inbox and take a screenshot showing this email inside your Inbox.
 3. You can draw lines/mask any personal emails below it.
-4. Return to Players Paradise and upload your screenshot to get your Freeplay approved!
+4. Return to Rich Room and upload your screenshot to get your Freeplay approved!
 
 Task Reference: ${taskId}
-Official Sender: verified@playersparadisehub.com
+Official Sender: verified@richroom.games
     `;
 
     const sendRes = await sendEmail({
       to: targetEmail,
-      subject: `Players Paradise: $${configuredAmount.toFixed(0)} Freeplay Verification & Inbox Task 🎁 [${taskId}]`,
+      subject: `Rich Room: $${configuredAmount.toFixed(0)} Freeplay Verification & Inbox Task 🎁 [${taskId}]`,
       text: textTemplate,
       html: htmlTemplate,
     });

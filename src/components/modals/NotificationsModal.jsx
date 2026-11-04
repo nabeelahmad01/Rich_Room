@@ -248,7 +248,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
         <div className="pt-3 border-t border-slate-800/60 mt-3 flex items-center justify-between text-[10px] text-slate-500 z-10">
           <span className="flex items-center gap-1">
             <ShieldCheck size={12} className="text-emerald-400" />
-            Official Players Paradise Hub
+            Official Rich Room Hub
           </span>
           <span>{notifs.length} total messages</span>
         </div>

@@ -175,7 +175,7 @@ function RegisterForm() {
         sessionStorage.removeItem('paradise_ref_code');
       } catch {}
 
-      setSuccessMsg('Account verified! Welcome to Players Paradise. Redirecting...');
+      setSuccessMsg('Account verified! Welcome to Rich Room. Redirecting...');
 
       try {
         const confetti = (await import('canvas-confetti')).default;

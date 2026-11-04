@@ -259,25 +259,25 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    // 1. FREEZE coins if this is a COIN_LOAD
+    // 1. DEDUCT coins immediately from player wallet (balanceSC) if this is a COIN_LOAD
     if (requestType === 'COIN_LOAD' && transferAmount > 0) {
+      const nextSC = Math.max(0, Number((currentSC - transferAmount).toFixed(2)));
       await usersCol.updateOne(
         { _id: user._id },
-        { $inc: { frozenBalance: transferAmount } }
+        { $set: { balanceSC: nextSC, updatedAt: new Date() } }
       );
 
       await ledgerCol.insertOne({
         userId: user._id.toString(),
         username: user.username,
-        type: 'game_load_freeze',
+        type: 'game_transfer',
         currency: 'SC',
-        amount: transferAmount,
+        amount: -transferAmount,
         balanceBefore: currentSC,
-        balanceAfter: currentSC,
-        frozenAmount: transferAmount,
+        balanceAfter: nextSC,
         performedBy: 'player',
         referenceId: gameTitle,
-        notes: `Frozen $${transferAmount.toFixed(2)} SC in escrow for loading into ${gameTitle}`,
+        notes: `Deducted $${transferAmount.toFixed(2)} SC from wallet for loading into ${gameTitle}`,
         createdAt: new Date(),
       });
     }
@@ -308,6 +308,7 @@ export async function POST(req) {
       gameAccountUsername: resolvedGameUsername || '',
       requestType,
       transferAmount,
+      deductedUpfront: requestType === 'COIN_LOAD' && transferAmount > 0,
       status: 'PENDING',
       createdAt: new Date(),
     };
@@ -329,7 +330,7 @@ export async function POST(req) {
       success: true,
       requestId: res.insertedId.toString(),
       message: requestType === 'COIN_LOAD'
-        ? `Load request for ${gameTitle} submitted! $${transferAmount.toFixed(2)} SC is frozen in escrow until staff approves or rejects.`
+        ? `Load request for ${gameTitle} submitted! $${transferAmount.toFixed(2)} SC has been deducted from your wallet.`
         : `Account request for ${gameTitle} submitted! Staff will issue your credentials shortly.`,
     });
   } catch (err) {
@@ -373,14 +374,19 @@ export async function PUT(req) {
     if (action === 'approve') {
       const gameAccountsCol = db.collection('gameAccounts');
 
-      // 1. Handle Freeplay bonus vs normal wallet coin load deduction
+      // 1. Handle Freeplay bonus (CREDIT player balanceSC) vs normal wallet coin load (DEDUCT player balanceSC)
       if (isFreeplay) {
         const user = await usersCol.findOne({ email: cleanEmail });
         if (user) {
           const oldSC = Number(user.balanceSC || 0);
+          const newSC = Number((oldSC + finalAmount).toFixed(2));
+
           await usersCol.updateOne(
             { _id: user._id },
             {
+              $inc: {
+                balanceSC: finalAmount,
+              },
               $set: {
                 freeplayClaimed: true,
                 freeplayClaimedAt: new Date(),
@@ -398,6 +404,7 @@ export async function PUT(req) {
             {
               $set: {
                 status: 'approved',
+                amount: finalAmount,
                 approvedBy: session.username,
                 approvedAt: new Date(),
               },
@@ -412,11 +419,11 @@ export async function PUT(req) {
               currency: 'SC',
               amount: finalAmount,
               balanceBefore: oldSC,
-              balanceAfter: oldSC,
+              balanceAfter: newSC,
               performedBy: session.username,
               staffRole: session.role,
               referenceId: targetRequest._id.toString(),
-              notes: `🎁 Freeplay Bonus ($${finalAmount.toFixed(2)} SC) allotted into ${cleanTitle} (Account ID: ${username || targetRequest.userName})`,
+              notes: `🎁 Freeplay Bonus (+$${finalAmount.toFixed(2)} SC) approved & credited to account for ${cleanTitle} (Account ID: ${username || targetRequest.userName})`,
               createdAt: new Date(),
             });
           }
@@ -425,33 +432,63 @@ export async function PUT(req) {
         const user = await usersCol.findOne({ email: cleanEmail });
         if (user) {
           const oldSC = Number(user.balanceSC || 0);
-          const newSC = Number(Math.max(0, oldSC - finalAmount).toFixed(2));
-
-          await usersCol.updateOne(
-            { _id: user._id },
-            {
-              $inc: {
-                balanceSC: -finalAmount,
-                frozenBalance: -originalFrozen,
-              },
+          if (targetRequest.deductedUpfront) {
+            // Balance was already deducted upfront when player submitted Load Coin
+            const diff = Number((originalFrozen - finalAmount).toFixed(2));
+            const newSC = Math.max(0, Number((oldSC + diff).toFixed(2)));
+            if (diff !== 0) {
+              await usersCol.updateOne(
+                { _id: user._id },
+                { $set: { balanceSC: newSC, updatedAt: new Date() } }
+              );
             }
-          );
+            if (finalAmount > 0) {
+              await ledgerCol.insertOne({
+                userId: user._id.toString(),
+                username: user.username,
+                type: 'game_transfer',
+                currency: 'SC',
+                amount: -finalAmount,
+                balanceBefore: Number((oldSC + originalFrozen).toFixed(2)),
+                balanceAfter: newSC,
+                performedBy: session.username,
+                staffRole: session.role,
+                referenceId: targetRequest._id.toString(),
+                notes: `Game account coin load approved into ${cleanTitle} (Account ID: ${username || targetRequest.userName})${finalAmount !== originalFrozen ? ` [Amount adjusted by admin from $${originalFrozen} to $${finalAmount}]` : ''}`,
+                createdAt: new Date(),
+              });
+            }
+          } else {
+            // Legacy request where coins were frozen instead of deducted upfront
+            const newSC = Number(Math.max(0, oldSC - finalAmount).toFixed(2));
+            const newFrozen = Math.max(0, Number((Number(user.frozenBalance || 0) - originalFrozen).toFixed(2)));
+            await usersCol.updateOne(
+              { _id: user._id },
+              {
+                $set: {
+                  balanceSC: newSC,
+                  frozenBalance: newFrozen,
+                  updatedAt: new Date(),
+                },
+              }
+            );
 
-          if (finalAmount > 0) {
-            await ledgerCol.insertOne({
-              userId: user._id.toString(),
-              username: user.username,
-              type: 'game_transfer',
-              currency: 'SC',
-              amount: -finalAmount,
-              balanceBefore: oldSC,
-              balanceAfter: newSC,
-              performedBy: session.username,
-              staffRole: session.role,
-              referenceId: targetRequest._id.toString(),
-              notes: `Game account coin load into ${cleanTitle} (Account ID: ${username || targetRequest.userName})${finalAmount !== originalFrozen ? ` [Amount adjusted by admin from $${originalFrozen} to $${finalAmount}]` : ''}`,
-              createdAt: new Date(),
-            });
+            if (finalAmount > 0) {
+              await ledgerCol.insertOne({
+                userId: user._id.toString(),
+                username: user.username,
+                type: 'game_transfer',
+                currency: 'SC',
+                amount: -finalAmount,
+                balanceBefore: oldSC,
+                balanceAfter: newSC,
+                performedBy: session.username,
+                staffRole: session.role,
+                referenceId: targetRequest._id.toString(),
+                notes: `Game account coin load into ${cleanTitle} (Account ID: ${username || targetRequest.userName})${finalAmount !== originalFrozen ? ` [Amount adjusted by admin from $${originalFrozen} to $${finalAmount}]` : ''}`,
+                createdAt: new Date(),
+              });
+            }
           }
         }
       }
@@ -504,8 +541,8 @@ export async function PUT(req) {
       if (isFreeplay) {
         notifyPlayer({
           userEmail: cleanEmail,
-          title: `🎁 Freeplay Loaded: ${cleanTitle}!`,
-          message: `Your $${finalAmount.toFixed(2)} SC Freeplay has been verified & loaded into ${cleanTitle}! Username: ${username}`,
+          title: `🎁 $${finalAmount.toFixed(2)} Freeplay Approved: ${cleanTitle}!`,
+          message: `Your $${finalAmount.toFixed(2)} SC Freeplay has been approved and credited to your account (${cleanTitle} ID: ${username})!`,
           type: 'freeplay_approved',
           data: { gameTitle: cleanTitle, amount: String(finalAmount) },
         });
@@ -530,7 +567,7 @@ export async function PUT(req) {
       return NextResponse.json({
         success: true,
         message: isFreeplay
-          ? `🎁 Freeplay ($${finalAmount.toFixed(2)} SC) for ${cleanTitle} approved & credentials issued!`
+          ? `🎁 Freeplay ($${finalAmount.toFixed(2)} SC) approved & credited to player's account!`
           : finalAmount > 0
           ? `Coin load for ${cleanTitle} approved! $${finalAmount.toFixed(2)} SC deducted from player balance.`
           : `Credentials for ${cleanTitle} issued successfully!`,
@@ -556,28 +593,53 @@ export async function PUT(req) {
           }
         );
       } else if (originalFrozen > 0) {
-        // Unfreeze player's coins so they return to available balance
+        // Refund player's coins back to wallet balance (or unfreeze legacy request)
         const user = await usersCol.findOne({ email: cleanEmail });
         if (user) {
-          await usersCol.updateOne(
-            { _id: user._id },
-            { $inc: { frozenBalance: -originalFrozen } }
-          );
+          const oldSC = Number(user.balanceSC || 0);
+          if (targetRequest.deductedUpfront) {
+            const refundedSC = Number((oldSC + originalFrozen).toFixed(2));
+            await usersCol.updateOne(
+              { _id: user._id },
+              { $set: { balanceSC: refundedSC, updatedAt: new Date() } }
+            );
 
-          await ledgerCol.insertOne({
-            userId: user._id.toString(),
-            username: user.username,
-            type: 'game_load_unfreeze',
-            currency: 'SC',
-            amount: originalFrozen,
-            balanceBefore: user.balanceSC,
-            balanceAfter: user.balanceSC,
-            performedBy: session.username,
-            staffRole: session.role,
-            referenceId: targetRequest._id.toString(),
-            notes: `Game coin load rejected ($${originalFrozen} SC unfrozen & returned): ${reason}`,
-            createdAt: new Date(),
-          });
+            await ledgerCol.insertOne({
+              userId: user._id.toString(),
+              username: user.username,
+              type: 'game_load_refund',
+              currency: 'SC',
+              amount: originalFrozen,
+              balanceBefore: oldSC,
+              balanceAfter: refundedSC,
+              performedBy: session.username,
+              staffRole: session.role,
+              referenceId: targetRequest._id.toString(),
+              notes: `Game coin load rejected ($${originalFrozen.toFixed(2)} SC refunded to wallet): ${reason}`,
+              createdAt: new Date(),
+            });
+          } else {
+            const newFrozen = Math.max(0, Number((Number(user.frozenBalance || 0) - originalFrozen).toFixed(2)));
+            await usersCol.updateOne(
+              { _id: user._id },
+              { $set: { frozenBalance: newFrozen, updatedAt: new Date() } }
+            );
+
+            await ledgerCol.insertOne({
+              userId: user._id.toString(),
+              username: user.username,
+              type: 'game_load_unfreeze',
+              currency: 'SC',
+              amount: originalFrozen,
+              balanceBefore: oldSC,
+              balanceAfter: oldSC,
+              performedBy: session.username,
+              staffRole: session.role,
+              referenceId: targetRequest._id.toString(),
+              notes: `Game coin load rejected ($${originalFrozen} SC unfrozen & returned): ${reason}`,
+              createdAt: new Date(),
+            });
+          }
         }
       }
 

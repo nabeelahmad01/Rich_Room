@@ -215,6 +215,16 @@ export default function CoinOperationsDesk({ sessionUser }) {
       if (!data.success) {
         showAlert('error', data.message || 'Failed to approve load.');
         fetchData();
+      } else {
+        // Real-time balance sync for player window (0ms update without refresh)
+        try {
+          const syncChan = new BroadcastChannel('paradise_balance_sync');
+          syncChan.postMessage({ type: 'BALANCE_UPDATED', time: Date.now() });
+          syncChan.close();
+        } catch {}
+        try {
+          localStorage.setItem('paradise_user_balance_sync', String(Date.now()));
+        } catch {}
       }
     } catch {
       showAlert('error', 'Network error approving game load.');
@@ -257,6 +267,15 @@ export default function CoinOperationsDesk({ sessionUser }) {
       if (!data.success) {
         showAlert('error', data.message || 'Failed to reject request.');
         fetchData();
+      } else {
+        try {
+          const syncChan = new BroadcastChannel('paradise_balance_sync');
+          syncChan.postMessage({ type: 'BALANCE_UPDATED', time: Date.now() });
+          syncChan.close();
+        } catch {}
+        try {
+          localStorage.setItem('paradise_user_balance_sync', String(Date.now()));
+        } catch {}
       }
     } catch {
       showAlert('error', 'Network error rejecting request.');
@@ -2402,7 +2421,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1">
                   {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
-                    ? 'Freeplay bonus amount loaded into the player game account (will not deduct wallet balance).'
+                    ? "This Freeplay bonus ($ SC) will be credited directly into the player's account balance upon approval."
                     : "You can adjust this coin load amount. Exactly this amount will be deducted from player's balance."}
                 </p>
               </div>

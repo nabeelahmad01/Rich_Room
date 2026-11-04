@@ -32,19 +32,55 @@ export default function CyberHeroBanner({
     welcomeBonusTitle: 'WELCOME BONUS',
     welcomeBonusSubtitle: 'Get a 120% bonus on your first deposit! Instant approval & fast cashouts.',
     welcomeBonusActive: true,
+    freeplayAmountSC: 5,
+    freeplayActive: true,
   });
   const [freeplayModalOpen, setFreeplayModalOpen] = useState(false);
 
-  React.useEffect(() => {
+  const loadSettings = React.useCallback(() => {
     fetch('/api/admin/settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.success && d?.settings) {
-          setBonusSettings(d.settings);
+          setBonusSettings((prev) => ({ ...prev, ...d.settings }));
         }
       })
       .catch(() => {});
   }, []);
+
+  React.useEffect(() => {
+    loadSettings();
+
+    let chan = null;
+    try {
+      chan = new BroadcastChannel('paradise_settings_sync');
+      chan.onmessage = (e) => {
+        if (e.data?.settings) {
+          setBonusSettings((prev) => ({ ...prev, ...e.data.settings }));
+        } else {
+          loadSettings();
+        }
+      };
+    } catch {}
+
+    const onStorage = (e) => {
+      if (e.key === 'paradise_settings_sync') loadSettings();
+    };
+    const onFocus = () => loadSettings();
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      if (chan) chan.close();
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [loadSettings]);
+
+  const formatFpAmt = (val) => {
+    const n = Number(val ?? 5);
+    return n % 1 === 0 ? n.toFixed(0) : n.toFixed(2);
+  };
 
   const handleGetFreeplay = () => {
     if (!user) {
@@ -52,6 +88,7 @@ export default function CyberHeroBanner({
       else router.push('/register');
       return;
     }
+    loadSettings();
     setFreeplayFeedback(null);
     setFreeplayModalOpen(true);
   };
@@ -110,7 +147,7 @@ export default function CyberHeroBanner({
                   {bonusSettings?.welcomeBonusTitle || 'WELCOME BONUS'}
                 </div>
                 <div className="font-heading font-extrabold text-base sm:text-lg text-white">
-                  {bonusSettings?.welcomeBonusPercent ?? 120}% Match Bonus + Free 10,000 GC Credits
+                  {bonusSettings?.welcomeBonusPercent ?? 120}% Match Bonus
                 </div>
                 {bonusSettings?.welcomeBonusSubtitle && (
                   <p className="text-[11px] text-slate-300 mt-0.5 leading-snug m-0">
@@ -149,7 +186,7 @@ export default function CyberHeroBanner({
                 className="cyber-btn-cyan py-3 px-6 text-sm font-black flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.3)]"
               >
                 <Gift size={17} className="text-black" />
-                <span>GET ${Number(bonusSettings?.freeplayAmountSC ?? 5).toFixed(0)} FREEPLAY</span>
+                <span>GET ${formatFpAmt(bonusSettings?.freeplayAmountSC)} FREEPLAY</span>
               </button>
             )}
 

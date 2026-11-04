@@ -179,24 +179,25 @@ export async function POST(req) {
             .limit(100)
             .toArray();
 
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://richroom.games';
           for (const u of targetUsers) {
             if (u.email) {
               const html = `
-                <div style="background-color: #070514; color: #FFFFFF; padding: 40px 24px; font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 540px; margin: auto; border-radius: 16px; border: 1px solid rgba(0, 240, 255, 0.35); text-align: center;">
-                  <img src="https://playersparadisehub.com/logo.png" alt="Players Paradise" style="height: 52px; margin-bottom: 8px;" />
-                  <h1 style="color: #00F0FF; margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px;">PLAYERS PARADISE</h1>
-                  <p style="color: #E026D8; font-size: 11px; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 2px;">Official Player Broadcast</p>
-                  <div style="background: #0E0A24; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 22px; text-align: left; margin: 20px 0;">
+                <div style="background-color: #070514; color: #FFFFFF; padding: 40px 24px; font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 540px; margin: auto; border-radius: 16px; border: 1px solid rgba(255, 215, 0, 0.35); text-align: center;">
+                  <img src="${appUrl}/logo.png" alt="Rich Room" style="height: 52px; margin-bottom: 8px;" />
+                  <h1 style="color: #FFD700; margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px;">RICH ROOM</h1>
+                  <p style="color: #00F0FF; font-size: 11px; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 2px;">Official Player Broadcast</p>
+                  <div style="background: #0E0A24; border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; padding: 22px; text-align: left; margin: 20px 0;">
                     <h2 style="font-size: 18px; margin: 0 0 10px 0; color: #FFFFFF;">${title.trim()}</h2>
                     <p style="font-size: 14px; color: #CBD5E1; line-height: 1.6; margin: 0;">${message.trim()}</p>
                   </div>
-                  <a href="${url && url.startsWith('http') ? url : `https://playersparadisehub.com${url}`}" style="display: inline-block; background: linear-gradient(135deg, #00F0FF 0%, #E026D8 100%); color: #070514; font-weight: 900; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-size: 14px; letter-spacing: 0.5px;">
+                  <a href="${url && url.startsWith('http') ? url : `${appUrl}${url || ''}`}" style="display: inline-block; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #070514; font-weight: 900; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-size: 14px; letter-spacing: 0.5px;">
                     ACCESS NOW &amp; PLAY
                   </a>
-                  <p style="margin-top: 30px; font-size: 11px; color: #64748B;">You received this update because you are a registered player at Players Paradise.</p>
+                  <p style="margin-top: 30px; font-size: 11px; color: #64748B;">You received this update because you are a registered player at Rich Room.</p>
                 </div>
               `;
-              sendEmail({ to: u.email, subject: `🎰 Players Paradise: ${title.trim()}`, html }).catch(() => {});
+              sendEmail({ to: u.email, subject: `🎰 Rich Room: ${title.trim()}`, html }).catch(() => {});
             }
           }
         } catch (emailErr) {
@@ -233,7 +234,7 @@ export async function PUT(req) {
     const subsCol = db.collection('subscriptions');
     const usersCol = db.collection('users');
 
-    const effectiveEmail = email || (session?.email ? session.email.toLowerCase().trim() : (fcmToken ? `device_${fcmToken.slice(-10)}@push.playersparadisehub.com` : 'anonymous@push.playersparadisehub.com'));
+    const effectiveEmail = email || (session?.email ? session.email.toLowerCase().trim() : (fcmToken ? `device_${fcmToken.slice(-10)}@push.richroom.games` : 'anonymous@push.richroom.games'));
     const effectiveUserId = session?.userId ? session.userId.toString() : (body.userId ? body.userId.toString() : null);
     const effectiveUsername = session?.username || body.username || (effectiveEmail.includes('@') ? effectiveEmail.split('@')[0] : 'Player');
     const effectiveRole = session?.role || body.role || 'player';

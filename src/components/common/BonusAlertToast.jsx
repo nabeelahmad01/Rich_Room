@@ -26,7 +26,7 @@ export default function BonusAlertToast({ onAllowed }) {
       try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          new Notification('Players Paradise Bonus Alerts Activated!', {
+          new Notification('Rich Room Bonus Alerts Activated!', {
             body: 'You are now set up to receive VIP coin drop notifications and redemption updates.',
             icon: '/icons/icon-192.png',
           });

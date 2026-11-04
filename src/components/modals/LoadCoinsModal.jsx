@@ -86,8 +86,39 @@ export default function LoadCoinsModal({
       setLoading(false);
 
       if (data.success) {
-        setSuccessMsg(`🎉 $${amt.toFixed(2)} SC frozen in escrow and submitted to coin desk for ${gameTitle}!`);
+        setSuccessMsg(`🎉 $${amt.toFixed(2)} SC deducted from your wallet and submitted to Coin Desk for ${gameTitle}!`);
         window.dispatchEvent(new CustomEvent('balanceUpdated'));
+        try {
+          const bChan = new BroadcastChannel('paradise_balance_sync');
+          bChan.postMessage({ type: 'BALANCE_UPDATED', time: Date.now() });
+          bChan.close();
+        } catch {}
+        try {
+          localStorage.setItem('paradise_user_balance_sync', String(Date.now()));
+        } catch {}
+        try {
+          const sChan = new BroadcastChannel('paradise_staff_alerts');
+          sChan.postMessage({
+            type: 'NEW_COIN_LOAD',
+            amount: amt,
+            username: user.username,
+            gameTitle,
+            time: Date.now(),
+          });
+          sChan.close();
+        } catch {}
+        try {
+          localStorage.setItem(
+            'paradise_staff_event',
+            JSON.stringify({
+              type: 'NEW_COIN_LOAD',
+              amount: amt,
+              username: user.username,
+              gameTitle,
+              time: Date.now(),
+            })
+          );
+        } catch {}
         if (onSuccess) onSuccess(data);
         setTimeout(() => {
           onClose();

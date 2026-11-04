@@ -561,21 +561,22 @@ export async function PUT(req) {
 
             // D. Email Notification to Referrer
             if (referrer.email) {
+              const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://richroom.games';
               sendEmail({
                 to: referrer.email,
-                subject: `🎁 $${bonusSC.toFixed(2)} SC Referral Bonus Added to Your Wallet!`,
+                subject: `🎁 $${bonusSC.toFixed(2)} SC Referral Bonus Added to Your Rich Room Wallet!`,
                 html: `
-                  <div style="background-color: #070514; color: #FFFFFF; padding: 32px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 500px; margin: auto; border-radius: 16px; border: 1px solid rgba(0, 240, 255, 0.4); text-align: center;">
-                    <img src="https://playersparadisehub.com/logo.png" alt="Players Paradise" style="height: 48px; margin-bottom: 12px;" />
-                    <h1 style="color: #00F0FF; margin: 0; font-size: 20px; font-weight: 900;">PLAYERS PARADISE</h1>
-                    <p style="color: #E026D8; font-size: 11px; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 2px;">Referral Reward Earned</p>
-                    <div style="background: #0E0A24; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 20px; text-align: left; margin: 20px 0;">
+                  <div style="background-color: #070514; color: #FFFFFF; padding: 32px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 500px; margin: auto; border-radius: 16px; border: 1px solid rgba(255, 215, 0, 0.4); text-align: center;">
+                    <img src="${appUrl}/logo.png" alt="Rich Room" style="height: 48px; margin-bottom: 12px;" />
+                    <h1 style="color: #FFD700; margin: 0; font-size: 20px; font-weight: 900;">RICH ROOM</h1>
+                    <p style="color: #00F0FF; font-size: 11px; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 2px;">Referral Reward Earned</p>
+                    <div style="background: #0E0A24; border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; padding: 20px; text-align: left; margin: 20px 0;">
                       <h2 style="font-size: 16px; margin: 0 0 10px 0; color: #10B981;">+$${bonusSC.toFixed(2)} SC Credited to Your Wallet</h2>
                       <p style="font-size: 13px; color: #CBD5E1; line-height: 1.6; margin: 0;">
                         Your referred friend <b>@${user.username}</b> made their first deposit of <b>$${deposit.amount}</b>. Based on our <b>${referralPercent}%</b> referral rate, your bonus has been credited straight into your wallet!
                       </p>
                     </div>
-                    <a href="https://playersparadisehub.com/wallet" style="display: inline-block; background: linear-gradient(135deg, #00F0FF 0%, #E026D8 100%); color: #070514; font-weight: 900; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-size: 13px;">
+                    <a href="${appUrl}/wallet" style="display: inline-block; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #070514; font-weight: 900; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-size: 13px;">
                       VIEW WALLET &amp; PLAY
                     </a>
                   </div>
@@ -602,7 +603,7 @@ export async function PUT(req) {
       // Send confirmation email
       sendEmail({
         to: user.email,
-        subject: `Deposit Confirmed: ${creditedSC} SC credited to your Players Paradise wallet!`,
+        subject: `Deposit Confirmed: ${creditedSC} SC credited to your Rich Room wallet!`,
         html: `<p>Hi ${user.username}, your deposit of $${deposit.amount} via ${deposit.methodName} was verified and ${creditedSC} SC (+ ${creditedGC.toLocaleString()} GC) was credited to your account. Best of luck at the tables!</p>`,
       }).catch(() => {});
 

@@ -109,8 +109,8 @@ export default function ReferralPage() {
 
   const origin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
-    : (process.env.NEXT_PUBLIC_APP_URL || 'https://playersparadisehub.com');
-  const referralCode = stats?.referralCode || user?.referralCode || user?.username || 'PARADISE';
+    : (process.env.NEXT_PUBLIC_APP_URL || 'https://richroom.games');
+  const referralCode = stats?.referralCode || user?.referralCode || user?.username || 'RICHROOM';
   const referralUrl = `${origin}/register?ref=${referralCode}`;
 
   return (
@@ -173,7 +173,7 @@ export default function ReferralPage() {
                 Log In to Get Your Referral Link
               </h2>
               <p className="text-xs text-slate-400">
-                Create a free Players Paradise account to unlock your unique referral code, track invited players, and cash out affiliate earnings.
+                Create a free Rich Room account to unlock your unique referral code, track invited players, and cash out affiliate earnings.
               </p>
               <div className="flex gap-3 justify-center pt-2">
                 <button

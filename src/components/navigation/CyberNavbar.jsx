@@ -14,7 +14,8 @@ import {
   Sparkles,
   ShieldCheck,
   KeyRound,
-  Gift
+  Gift,
+  Headphones
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
 import { diffSet, areEqual } from '@/lib/fastDiff';

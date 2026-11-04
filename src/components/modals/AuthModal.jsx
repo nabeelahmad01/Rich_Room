@@ -1432,7 +1432,7 @@ export default function AuthModal({
           >
             {tab === 'login' ? (
               <p style={{ fontSize: '11.5px', color: '#9A91A8', margin: 0, fontFamily: 'Lexend, sans-serif' }}>
-                New to Players Paradise Hub?{' '}
+                New to Rich Room?{' '}
                 <button
                   type="button"
                   onClick={() => {

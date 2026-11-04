@@ -166,7 +166,7 @@ export async function PUT(req) {
       if (user?.email) {
         sendEmail({
           to: user.email,
-          subject: 'Players Paradise - KYC Verified!',
+          subject: 'Rich Room - KYC Verified!',
           html: `<p>Hi ${user.username}, your US identity verification has been approved! You can now request instant cash prize redemptions.</p>`,
         }).catch(() => {});
       }

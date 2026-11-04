@@ -388,7 +388,7 @@ export default function ChatPage() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Direct encrypted line to Players Paradise VIP Hospitality Staff. Typical reply under 1 minute.
+                  Direct encrypted line to Rich Room VIP Hospitality Staff. Typical reply under 1 minute.
                 </p>
               </div>
             </div>

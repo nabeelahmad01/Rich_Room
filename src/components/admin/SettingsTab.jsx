@@ -18,13 +18,13 @@ export default function SettingsTab({
   onSaveSettings,
 }) {
   const [form, setForm] = useState({
-    siteName: settings.siteName || 'Players Paradise Hub',
+    siteName: settings.siteName || 'Rich Room',
     welcomeBonusSC: settings.welcomeBonusSC || 5.0,
     dailyBonusSC: settings.dailyBonusSC || 1.0,
     minWithdrawal: settings.minWithdrawal || 25.0,
     maintenanceMode: !!settings.maintenanceMode,
-    supportEmail: settings.supportEmail || 'support@playersparadisehub.com',
-    telegramSupport: settings.telegramSupport || '@PlayersParadiseSupport',
+    supportEmail: settings.supportEmail || 'support@richroom.games',
+    telegramSupport: settings.telegramSupport || '@RichRoomSupport',
     whatsappSupport: settings.whatsappSupport || '+1 (555) 727-2347',
   });
   const [saving, setSaving] = useState(false);

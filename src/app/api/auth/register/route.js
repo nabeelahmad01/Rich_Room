@@ -214,7 +214,7 @@ export async function POST(req) {
     // Send welcome email in background
     sendEmail({
       to: cleanEmail,
-      subject: 'Welcome to Players Paradise!',
+      subject: 'Welcome to Rich Room!',
       html: getWelcomeEmailTemplate(cleanUsername),
     }).catch(() => {});
 
@@ -229,7 +229,7 @@ export async function POST(req) {
 
     const response = NextResponse.json({
       success: true,
-      message: 'Account registered & verified! Welcome to Players Paradise.',
+      message: 'Account registered & verified! Welcome to Rich Room.',
       user: {
         userId,
         username: cleanUsername,

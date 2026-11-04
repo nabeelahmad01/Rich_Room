@@ -5,6 +5,8 @@ import { getSessionUser } from '@/lib/auth';
 import { notifyStaff } from '@/lib/notify';
 import { findUserGameAccount } from '@/lib/gameAccounts';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Check Freeplay eligibility, configured amount, and task status
 export async function GET(req) {
   try {

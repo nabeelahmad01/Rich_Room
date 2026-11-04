@@ -3,6 +3,8 @@ import { getSessionUser, ROLES, safeIdFilter, getUserFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Helper to identify authorized staff roles
  */
@@ -60,7 +62,7 @@ async function buildStaffInbox(chatCol) {
         // Enrich customer name if previously unknown
         if (
           customerName &&
-          (conv.username === 'Player' || conv.username === 'Players Paradise Support')
+          (conv.username === 'Player' || conv.username === 'Players Paradise Support' || conv.username === 'Rich Room Support')
         ) {
           conv.username = customerName;
         }
@@ -74,9 +76,12 @@ async function buildStaffInbox(chatCol) {
       }
     }
 
-    return Array.from(convMap.values()).sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    return Array.from(convMap.values()).sort((a, b) => {
+      const aUnread = (a.unreadCount || 0) > 0 || Boolean(a.unreadStaff);
+      const bUnread = (b.unreadCount || 0) > 0 || Boolean(b.unreadStaff);
+      if (aUnread !== bUnread) return aUnread ? -1 : 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
   } catch (err) {
     console.error('buildStaffInbox error:', err);
     return [];
@@ -88,11 +93,16 @@ async function buildStaffInbox(chatCol) {
 // ============================================================================
 export async function GET(req) {
   try {
-    const session = await getSessionUser();
     const { searchParams } = new URL(req.url);
     const conversationId = (searchParams.get('conversationId') || '').trim();
     const guestId = (searchParams.get('guestId') || '').trim();
     const inbox = searchParams.get('inbox') === 'true';
+    const adminMode = inbox || searchParams.get('admin') === 'true';
+    const markRead = searchParams.get('markRead') === 'true';
+
+    const session = adminMode
+      ? (await getSessionUser('admin')) || (await getSessionUser())
+      : await getSessionUser('player');
 
     // Must have a session OR a guestId
     if (!session && !guestId) {
@@ -104,10 +114,13 @@ export async function GET(req) {
 
     const db = await getDb();
     const chatCol = db.collection('chat_messages');
-    const isStaff = session && isStaffRole(session.role);
+    const isStaff = Boolean(adminMode && session && isStaffRole(session.role));
 
     // 1. Staff Inbox Request
-    if (isStaff && inbox) {
+    if (inbox) {
+      if (!session || !isStaffRole(session.role)) {
+        return NextResponse.json({ success: false, error: 'Unauthorized staff inbox request.' }, { status: 403 });
+      }
       const activeConvs = await buildStaffInbox(chatCol);
       return NextResponse.json({ success: true, conversations: activeConvs });
     }
@@ -116,7 +129,7 @@ export async function GET(req) {
     let targetConvIds = [];
     if (isStaff && conversationId && conversationId !== 'all') {
       targetConvIds = [conversationId];
-    } else if (session && session.userId && session.role === 'player') {
+    } else if (!isStaff && session && session.userId && (session.role === 'player' || !guestId)) {
       // Authenticated player: strictly isolated to their own user credentials
       targetConvIds.push(String(session.userId));
       if (session.username) targetConvIds.push(session.username);
@@ -135,7 +148,13 @@ export async function GET(req) {
     // 3. Fetch conversation messages
     let query;
     if (isStaff && conversationId) {
-      query = { conversationId };
+      query = {
+        $or: [
+          { conversationId },
+          { customerUserId: conversationId },
+          { userId: conversationId },
+        ],
+      };
     } else {
       query = {
         $or: [
@@ -152,20 +171,26 @@ export async function GET(req) {
       .limit(200)
       .toArray();
 
-    // 4. Mark unread messages as read
+    // 4. Mark unread messages as read ONLY when actively opened/viewed
     if (isStaff) {
-      // Staff reading player messages
-      await chatCol
-        .updateMany(
-          {
-            $or: [{ conversationId: { $in: targetConvIds } }, { customerUserId: { $in: targetConvIds } }],
-            senderRole: 'player',
-            read: false,
-          },
-          { $set: { read: true } }
-        )
-        .catch(() => {});
-    } else {
+      if (markRead) {
+        // Staff actively viewing this conversation in Admin Chat tab
+        await chatCol
+          .updateMany(
+            {
+              $or: [
+                { conversationId: { $in: targetConvIds } },
+                { customerUserId: { $in: targetConvIds } },
+                { userId: { $in: targetConvIds } },
+              ],
+              senderRole: 'player',
+              read: false,
+            },
+            { $set: { read: true } }
+          )
+          .catch(() => {});
+      }
+    } else if (searchParams.get('markRead') !== 'false') {
       // Player reading staff messages
       await chatCol
         .updateMany(
@@ -214,7 +239,6 @@ export async function GET(req) {
 // ============================================================================
 export async function POST(req) {
   try {
-    const session = await getSessionUser();
     let body;
     try {
       body = await req.json();
@@ -235,6 +259,11 @@ export async function POST(req) {
       guestName,
     } = body;
 
+    const isExplicitStaffReply = Boolean(body.isStaffReply);
+    const session = isExplicitStaffReply
+      ? (await getSessionUser('admin')) || (await getSessionUser())
+      : await getSessionUser('player');
+
     // Authorization check: Never reject a player/guest inquiry with 401
     const cleanGuestParam = (guestId || conversationId || '').trim();
     const effectiveGuestId =
@@ -254,7 +283,8 @@ export async function POST(req) {
     const chatCol = db.collection('chat_messages');
 
     const isStaff = session && isStaffRole(session.role);
-    const isExplicitStaffReply = Boolean(body.isStaffReply || (isStaff && targetUserId));
+    const shouldReplyAsStaff = Boolean(isExplicitStaffReply && isStaff);
+    const hasPlayerSession = Boolean(session && (session.role === 'player' || (!guestId && !isExplicitStaffReply)));
 
     let resolvedConvId;
     let customerUserId;
@@ -264,22 +294,22 @@ export async function POST(req) {
     let senderRole = 'player';
     let staffName = null;
 
-    if (isExplicitStaffReply) {
+    if (shouldReplyAsStaff) {
       // Scenario A: Staff replying in Admin Concierge Desk
       resolvedConvId = String(conversationId || targetUserId).trim();
       customerUserId = String(targetUserId || resolvedConvId).trim();
       customerUsername = String(targetUsername || 'Player').trim();
       senderRole = 'staff';
       senderUserId = session.userId;
-      senderUsername = 'Players Paradise Support';
+      senderUsername = 'Rich Room Support';
       staffName = session.username;
-    } else if (session) {
+    } else if (hasPlayerSession) {
       // Scenario B: Logged-in user inquiry from front-end widget or /chat page
       const sessionDbUser = await db.collection('users').findOne(getUserFilter(session));
-      const cleanUid = sessionDbUser?._id ? sessionDbUser._id.toString() : session.userId;
+      const cleanUid = sessionDbUser?._id ? sessionDbUser._id.toString() : String(session.userId);
       resolvedConvId = cleanUid;
       customerUserId = cleanUid;
-      customerUsername = sessionDbUser?.username || session.username;
+      customerUsername = sessionDbUser?.username || session.username || 'Player';
       senderRole = 'player';
       senderUserId = cleanUid;
       senderUsername = customerUsername;

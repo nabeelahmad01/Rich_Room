@@ -451,6 +451,14 @@ export default function AdminPortal({ initialTab }) {
         if (data.settings) {
           setSysSettings(prev => ({ ...prev, ...data.settings }));
         }
+        try {
+          const settingsChan = new BroadcastChannel('paradise_settings_sync');
+          settingsChan.postMessage({ type: 'SETTINGS_UPDATED', settings: data.settings, time: Date.now() });
+          settingsChan.close();
+        } catch {}
+        try {
+          localStorage.setItem('paradise_settings_sync', String(Date.now()));
+        } catch {}
         fetchAdminPromotions();
         setTimeout(() => setBonusSaveMessage(null), 3500);
       } else {
@@ -885,11 +893,11 @@ export default function AdminPortal({ initialTab }) {
 
       if (typeof document !== 'undefined') {
         if (totalPending > 0) {
-          document.title = `(${totalPending}) Players Paradise | Admin Operations`;
+          document.title = `(${totalPending}) Rich Room | Admin Operations`;
           updateFaviconBadge(totalPending);
           if ('setAppBadge' in navigator) navigator.setAppBadge(totalPending).catch(() => {});
         } else {
-          document.title = 'Players Paradise | Admin Operations';
+          document.title = 'Rich Room | Admin Operations';
           updateFaviconBadge(0);
           if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
         }
@@ -1166,23 +1174,14 @@ export default function AdminPortal({ initialTab }) {
           username: uName,
         });
 
-        // Fast zero-delay inbox refresh
+        // Fast zero-delay inbox refresh (do NOT mark conversation read in background so unread badge stays visible!)
         fetch('/api/chat?inbox=true', { cache: 'no-store' })
           .then((r) => r.json())
           .then((d) => {
-            if (d.success) setChatConversations(d.conversations || []);
+            if (d.success) diffSet(setChatConversations, d.conversations || []);
           })
           .catch(() => {});
 
-        // If conversation is currently open or matches payload, fetch its messages
-        if (payload.conversationId) {
-          fetch(`/api/chat?conversationId=${encodeURIComponent(payload.conversationId)}`, { cache: 'no-store' })
-            .then((r) => r.json())
-            .then((d) => {
-              if (d.success) setChatMessages(d.messages);
-            })
-            .catch(() => {});
-        }
         syncRequestsAndAlerts();
       }
     };
@@ -1324,18 +1323,31 @@ export default function AdminPortal({ initialTab }) {
     };
   }, [user, activeTab, ledgerFilterUser, ledgerFilterType, accountReqFilter, userSearchQuery, allotmentSearch]);
 
-  // Load chat messages when active conversation selected
+  // Load chat messages when active conversation selected AND admin is on chat tab
   useEffect(() => {
-    if (!activeChatConv) return;
+    if (!activeChatConv || activeTab !== 'chat') return;
     const fetchChatMsgs = () => {
-      fetch(`/api/chat?conversationId=${activeChatConv._id}`)
+      fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { cache: 'no-store' })
         .then(r => r.json())
-        .then(d => { if (d.success) diffSet(setChatMessages, d.messages || []); });
+        .then(d => {
+          if (d.success) {
+            diffSet(setChatMessages, d.messages || []);
+            // Clear unread badge in local state once opened
+            setChatConversations(prev =>
+              prev.map(c =>
+                c._id === activeChatConv._id && ((c.unreadCount || 0) > 0 || c.unreadStaff)
+                  ? { ...c, unreadCount: 0, unreadStaff: false }
+                  : c
+              )
+            );
+          }
+        })
+        .catch(() => {});
     };
     fetchChatMsgs();
     const interval = setInterval(fetchChatMsgs, 1200);
     return () => clearInterval(interval);
-  }, [activeChatConv]);
+  }, [activeChatConv, activeTab]);
 
   // Auto-scroll chat messages to bottom ONLY on new message or conversation change
   useEffect(() => {
@@ -1415,7 +1427,7 @@ export default function AdminPortal({ initialTab }) {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#070514', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F8FAFC', fontFamily: 'Lexend, sans-serif', fontWeight: 800 }}>
-        Loading Players Paradise Staff Portal...
+        Loading Rich Room Staff Portal...
       </div>
     );
   }
@@ -1428,7 +1440,7 @@ export default function AdminPortal({ initialTab }) {
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <img
               src="/images/logo.png"
-              alt="Players Paradise Hub"
+              alt="Rich Room"
               style={{
                 height: '84px',
                 width: 'auto',
@@ -1531,7 +1543,7 @@ export default function AdminPortal({ initialTab }) {
       id: 'chat',
       label: 'Live Support Desk',
       icon: MessageSquare,
-      badge: chatConversations.filter(c => Boolean(c.unreadStaff || (c.unreadCount && c.unreadCount > 0))).length,
+      badge: chatConversations.reduce((acc, c) => acc + Number(c.unreadCount || (c.unreadStaff ? 1 : 0)), 0),
       category: 'Operations',
     },
     { id: 'games', label: 'Games Library', icon: Gamepad2, category: 'Catalog & Players' },
@@ -3874,21 +3886,28 @@ export default function AdminPortal({ initialTab }) {
               return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
             };
 
-            const totalUnreadChat = chatConversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+            const totalUnreadChat = chatConversations.reduce((acc, c) => acc + Number(c.unreadCount || (c.unreadStaff ? 1 : 0)), 0);
 
-            const filteredChatConvs = chatConversations.filter(c => {
-              const q = chatSearchQuery.trim().toLowerCase();
-              const matchesSearch = !q ||
-                (c.username && c.username.toLowerCase().includes(q)) ||
-                (c.lastMessage && c.lastMessage.toLowerCase().includes(q));
-              if (chatFilterTab === 'unread') {
-                return matchesSearch && ((c.unreadCount || 0) > 0);
-              }
-              return matchesSearch;
-            });
+            const filteredChatConvs = chatConversations
+              .filter(c => {
+                const q = chatSearchQuery.trim().toLowerCase();
+                const matchesSearch = !q ||
+                  (c.username && c.username.toLowerCase().includes(q)) ||
+                  (c.lastMessage && c.lastMessage.toLowerCase().includes(q));
+                if (chatFilterTab === 'unread') {
+                  return matchesSearch && ((c.unreadCount || 0) > 0 || Boolean(c.unreadStaff));
+                }
+                return matchesSearch;
+              })
+              .sort((a, b) => {
+                const aUnread = (a.unreadCount || 0) > 0 || Boolean(a.unreadStaff);
+                const bUnread = (b.unreadCount || 0) > 0 || Boolean(b.unreadStaff);
+                if (aUnread !== bUnread) return aUnread ? -1 : 1;
+                return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+              });
 
             const cannedReplies = [
-              "👋 Hello! How may Players Paradise Concierge assist you today?",
+              "👋 Hello! How may Rich Room Concierge assist you today?",
               "✅ Your deposit has been confirmed and credited to your wallet!",
               "⏳ Your withdrawal request is currently being reviewed by finance.",
               "📸 Please provide a clear screenshot receipt of your transfer.",
@@ -3906,7 +3925,7 @@ export default function AdminPortal({ initialTab }) {
                 id: `temp_${Date.now()}`,
                 conversationId: activeChatConv._id,
                 userId: activeChatConv.userId,
-                username: user?.username || 'Players Paradise Support',
+                username: user?.username || 'Rich Room Support',
                 senderRole: 'staff',
                 text: text,
                 imageUrl: imagePayload || null,
@@ -3930,7 +3949,7 @@ export default function AdminPortal({ initialTab }) {
                     isStaffReply: true,
                   }),
                 });
-                const res = await fetch(`/api/chat?conversationId=${activeChatConv._id}`);
+                const res = await fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`);
                 const d = await res.json();
                 if (d.success) setChatMessages(d.messages);
                 const cRes = await fetch('/api/chat?inbox=true');
@@ -4001,7 +4020,7 @@ export default function AdminPortal({ initialTab }) {
                       onClick={() => {
                         fetch('/api/chat?inbox=true').then(r => r.json()).then(d => { if (d.success) setChatConversations(d.conversations); });
                         if (activeChatConv) {
-                          fetch(`/api/chat?conversationId=${activeChatConv._id}`).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
+                          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
                         }
                       }}
                       className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white flex items-center gap-1.5 text-xs font-bold transition"
@@ -4095,38 +4114,59 @@ export default function AdminPortal({ initialTab }) {
                       ) : (
                         filteredChatConvs.map((c) => {
                           const isSelected = activeChatConv?._id === c._id;
-                          const hasUnread = (c.unreadCount || 0) > 0;
+                          const unreadNum = Number(c.unreadCount || (c.unreadStaff ? 1 : 0));
+                          const hasUnread = unreadNum > 0;
                           return (
                             <div
                               key={c._id}
                               onClick={() => setActiveChatConv(c)}
-                              className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border ${isSelected
+                              className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border relative ${isSelected
                                 ? 'bg-gradient-to-r from-cyan-950/60 via-[#191444] to-[#120f35] border-cyan-400/60 shadow-[0_0_15px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/30'
                                 : hasUnread
-                                  ? 'bg-[#1b123d]/70 hover:bg-[#22174d] border-red-500/30'
+                                  ? 'bg-gradient-to-r from-rose-950/70 via-[#24123b] to-[#160f30] hover:from-rose-900/70 border-rose-500/70 shadow-[0_0_18px_rgba(244,63,94,0.28)] ring-1 ring-rose-500/40'
                                   : 'bg-white/[0.02] hover:bg-white/[0.06] border-transparent'
                                 }`}
                             >
                               <div className="flex items-start gap-3">
                                 {/* Avatar */}
                                 <div className="relative shrink-0">
-                                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600/40 via-cyan-500/20 to-amber-500/20 border border-white/20 flex items-center justify-center text-white font-black text-sm uppercase shadow-sm">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm uppercase shadow-sm border ${
+                                    hasUnread
+                                      ? 'bg-gradient-to-tr from-rose-600/60 via-amber-500/40 to-purple-600/40 border-rose-400/70'
+                                      : 'bg-gradient-to-tr from-purple-600/40 via-cyan-500/20 to-amber-500/20 border-white/20'
+                                  }`}>
                                     {c.username ? c.username.charAt(0) : 'P'}
                                   </div>
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0e0a24]" />
+                                  <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0e0a24] ${
+                                    hasUnread ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'
+                                  }`} />
+                                  {hasUnread && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-rose-500 border-2 border-[#0e0a24]" />
+                                  )}
                                 </div>
 
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between gap-1 mb-1">
-                                    <span className={`text-xs font-black truncate ${isSelected ? 'text-cyan-300' : 'text-white'}`}>
-                                      {c.username || 'Anonymous'}
-                                    </span>
-                                    <span className="text-[10px] text-gray-500 shrink-0 font-medium">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className={`text-xs font-black truncate ${
+                                        isSelected ? 'text-cyan-300' : hasUnread ? 'text-rose-200' : 'text-white'
+                                      }`}>
+                                        {c.username || 'Anonymous'}
+                                      </span>
+                                      {hasUnread && (
+                                        <span className="shrink-0 px-1.5 py-0.2 rounded bg-rose-500/30 border border-rose-400/50 text-rose-200 font-black text-[8px] uppercase tracking-wider animate-pulse">
+                                          NEW MSG
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className={`text-[10px] shrink-0 font-bold ${hasUnread ? 'text-rose-300' : 'text-gray-500'}`}>
                                       {formatChatTime(c.updatedAt)}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-gray-400 truncate leading-tight">
+                                  <p className={`text-[11px] truncate leading-tight ${
+                                    hasUnread ? 'text-white font-bold' : 'text-gray-400'
+                                  }`}>
                                     {c.lastSenderRole === 'staff' ? (
                                       <span className="text-cyan-400 font-semibold">You: </span>
                                     ) : null}
@@ -4136,8 +4176,8 @@ export default function AdminPortal({ initialTab }) {
 
                                 {/* Unread Pill */}
                                 {hasUnread && (
-                                  <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px] shadow-sm animate-pulse">
-                                    {c.unreadCount}
+                                  <span className="shrink-0 min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white font-black text-[10px] flex items-center justify-center shadow-[0_0_12px_rgba(244,63,94,0.8)] animate-bounce">
+                                    {unreadNum}
                                   </span>
                                 )}
                               </div>
@@ -4227,7 +4267,7 @@ export default function AdminPortal({ initialTab }) {
                           <div className="flex items-center justify-center my-1">
                             <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[10px] text-gray-400 font-medium flex items-center gap-1.5">
                               <ShieldCheck size={12} className="text-cyan-400" />
-                              Immutable Players Paradise Support Session
+                              Immutable Rich Room Support Session
                             </span>
                           </div>
 
@@ -4439,7 +4479,7 @@ export default function AdminPortal({ initialTab }) {
                           </div>
 
                           <h3 className="text-2xl font-black text-white tracking-wide mb-2">
-                            Players Paradise Concierge Terminal
+                            Rich Room Concierge Terminal
                           </h3>
                           <p className="text-xs text-gray-400 leading-relaxed mb-6">
                             Select an active player inquiry from the left to start live messaging, review tickets, or view player 360° profiles.
@@ -4824,15 +4864,15 @@ export default function AdminPortal({ initialTab }) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-cyan-400 to-purple-500 flex items-center justify-center text-[10px] font-black text-black">
-                              PP
+                              RR
                             </div>
-                            <span className="text-[11px] font-bold text-gray-300">PLAYERS PARADISE VIP</span>
+                            <span className="text-[11px] font-bold text-gray-300">RICH ROOM VIP</span>
                           </div>
                           <span className="text-[10px] text-gray-500 font-mono">now</span>
                         </div>
                         <div>
                           <p className="text-xs font-black text-white line-clamp-1">
-                            {pushTitle || '⚡ FLASH DROP: Free $10 SC on Players Paradise!'}
+                            {pushTitle || '⚡ FLASH DROP: Free $10 SC on Rich Room!'}
                           </p>
                           <p className="text-[11px] text-gray-300 line-clamp-3 leading-relaxed mt-0.5">
                             {pushBody || 'Log in now to claim your exclusive VIP loyalty bonus. Tap here to open your player wallet!'}

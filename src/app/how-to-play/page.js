@@ -81,7 +81,7 @@ export default function HowToPlayPage() {
               <span>PLAYER ONBOARDING MANUAL</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black font-heading text-white">
-              HOW TO PLAY AT <span className="text-[var(--neon-cyan)]">PLAYERS PARADISE</span>
+              HOW TO PLAY AT <span className="text-[var(--neon-cyan)]">RICH ROOM</span>
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-xl mx-auto">
               Follow our 4 simple steps to start spinning, fish hunting, and redeeming cash prizes today.
