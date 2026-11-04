@@ -14,6 +14,28 @@ export async function GET(req) {
     const type = searchParams.get('type'); // 'ACCOUNT_CREATION' | 'COIN_LOAD' | 'all'
 
     const db = await getDb();
+
+    // Auto-migrate any legacy freeplay requests from 'account_requests' (underscore) into 'accountRequests'
+    try {
+      const legacyDocs = await db.collection('account_requests').find({}).toArray();
+      if (legacyDocs.length > 0) {
+        for (const doc of legacyDocs) {
+          const { _id, ...rest } = doc;
+          const fpAmt = Number(doc.freeplayAmount || doc.transferAmount || 5);
+          await db.collection('accountRequests').insertOne({
+            ...rest,
+            userEmail: (doc.userEmail || '').toLowerCase().trim(),
+            requestType: 'COIN_LOAD',
+            transferAmount: fpAmt,
+            isFreeplay: true,
+            freeplayPending: true,
+            freeplayAmount: fpAmt,
+          });
+          await db.collection('account_requests').deleteOne({ _id });
+        }
+      }
+    } catch {}
+
     const query = {};
 
     if (email) {
@@ -26,6 +48,8 @@ export async function GET(req) {
 
     if (type === 'ACCOUNT_CREATION') {
       query.$and = [
+        { isFreeplay: { $ne: true } },
+        { freeplayPending: { $ne: true } },
         {
           $or: [
             { requestType: 'ACCOUNT_CREATION' },
@@ -43,6 +67,8 @@ export async function GET(req) {
         {
           $or: [
             { requestType: 'COIN_LOAD' },
+            { isFreeplay: true },
+            { freeplayPending: true },
             {
               $and: [
                 { requestType: { $ne: 'ACCOUNT_CREATION' } },
@@ -62,20 +88,29 @@ export async function GET(req) {
 
     return NextResponse.json({
       success: true,
-      accountRequests: requests.map(r => ({
-        id: r._id.toString(),
-        userEmail: r.userEmail,
-        userName: r.userName || r.userEmail?.split('@')[0],
-        gameTitle: r.gameTitle,
-        gameId: r.gameId || '',
-        requestType: r.requestType || (Number(r.transferAmount || 0) > 0 ? 'COIN_LOAD' : 'ACCOUNT_CREATION'),
-        status: r.status || 'PENDING',
-        gameAccountUsername: r.gameAccountUsername || '',
-        gameAccountPassword: r.gameAccountPassword || '',
-        transferAmount: Number(r.transferAmount || 0),
-        rejectionReason: r.rejectionReason || r.rejectReason || '',
-        createdAt: r.createdAt || new Date(),
-      })),
+      accountRequests: requests.map(r => {
+        const isFp = Boolean(r.isFreeplay || r.freeplayPending);
+        const fpAmt = Number(r.freeplayAmount || r.transferAmount || 0);
+        return {
+          id: r._id.toString(),
+          userEmail: r.userEmail,
+          userName: r.userName || r.userEmail?.split('@')[0],
+          gameTitle: r.gameTitle,
+          gameId: r.gameId || '',
+          requestType: isFp ? 'COIN_LOAD' : (r.requestType || (Number(r.transferAmount || 0) > 0 ? 'COIN_LOAD' : 'ACCOUNT_CREATION')),
+          status: r.status || 'PENDING',
+          gameAccountUsername: r.gameAccountUsername || '',
+          gameAccountPassword: r.gameAccountPassword || '',
+          transferAmount: isFp ? (fpAmt || 5) : Number(r.transferAmount || 0),
+          isFreeplay: isFp,
+          freeplayPending: isFp,
+          freeplayAmount: fpAmt,
+          freeplayScreenshot: r.freeplayScreenshot || r.screenshot || '',
+          freeplayTaskId: r.freeplayTaskId || '',
+          rejectionReason: r.rejectionReason || r.rejectReason || '',
+          createdAt: r.createdAt || new Date(),
+        };
+      }),
     });
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
@@ -329,7 +364,8 @@ export async function PUT(req) {
     const ledgerCol = db.collection('ledger');
     const cleanEmail = targetRequest.userEmail.toLowerCase().trim();
     const cleanTitle = targetRequest.gameTitle;
-    const originalFrozen = Number(targetRequest.transferAmount || 0);
+    const isFreeplay = Boolean(targetRequest.isFreeplay || targetRequest.freeplayPending);
+    const originalFrozen = Number(targetRequest.transferAmount || targetRequest.freeplayAmount || 0);
 
     // Allow staff to adjust load amount if specified
     const finalAmount = body.transferAmount !== undefined ? Math.max(0, Number(body.transferAmount)) : originalFrozen;
@@ -337,8 +373,55 @@ export async function PUT(req) {
     if (action === 'approve') {
       const gameAccountsCol = db.collection('gameAccounts');
 
-      // 1. Permanently deduct balance and clear frozen escrow
-      if (originalFrozen > 0 || finalAmount > 0) {
+      // 1. Handle Freeplay bonus vs normal wallet coin load deduction
+      if (isFreeplay) {
+        const user = await usersCol.findOne({ email: cleanEmail });
+        if (user) {
+          const oldSC = Number(user.balanceSC || 0);
+          await usersCol.updateOne(
+            { _id: user._id },
+            {
+              $set: {
+                freeplayClaimed: true,
+                freeplayClaimedAt: new Date(),
+              },
+            }
+          );
+
+          await db.collection('freeplay_tasks').updateMany(
+            {
+              $or: [
+                ...(targetRequest.freeplayTaskId ? [{ taskId: targetRequest.freeplayTaskId }] : []),
+                { email: cleanEmail, status: 'pending' },
+              ],
+            },
+            {
+              $set: {
+                status: 'approved',
+                approvedBy: session.username,
+                approvedAt: new Date(),
+              },
+            }
+          );
+
+          if (finalAmount > 0) {
+            await ledgerCol.insertOne({
+              userId: user._id.toString(),
+              username: user.username,
+              type: 'freeplay_bonus',
+              currency: 'SC',
+              amount: finalAmount,
+              balanceBefore: oldSC,
+              balanceAfter: oldSC,
+              performedBy: session.username,
+              staffRole: session.role,
+              referenceId: targetRequest._id.toString(),
+              notes: `🎁 Freeplay Bonus ($${finalAmount.toFixed(2)} SC) allotted into ${cleanTitle} (Account ID: ${username || targetRequest.userName})`,
+              createdAt: new Date(),
+            });
+          }
+        }
+      } else if (originalFrozen > 0 || finalAmount > 0) {
         const user = await usersCol.findOne({ email: cleanEmail });
         if (user) {
           const oldSC = Number(user.balanceSC || 0);
@@ -418,7 +501,15 @@ export async function PUT(req) {
       }
 
       // Instant in-app & push notification
-      if (finalAmount > 0) {
+      if (isFreeplay) {
+        notifyPlayer({
+          userEmail: cleanEmail,
+          title: `🎁 Freeplay Loaded: ${cleanTitle}!`,
+          message: `Your $${finalAmount.toFixed(2)} SC Freeplay has been verified & loaded into ${cleanTitle}! Username: ${username}`,
+          type: 'freeplay_approved',
+          data: { gameTitle: cleanTitle, amount: String(finalAmount) },
+        });
+      } else if (finalAmount > 0) {
         notifyPlayer({
           userEmail: cleanEmail,
           title: `Game Loaded: ${cleanTitle}! ⚡`,
@@ -438,15 +529,34 @@ export async function PUT(req) {
 
       return NextResponse.json({
         success: true,
-        message: finalAmount > 0
+        message: isFreeplay
+          ? `🎁 Freeplay ($${finalAmount.toFixed(2)} SC) for ${cleanTitle} approved & credentials issued!`
+          : finalAmount > 0
           ? `Coin load for ${cleanTitle} approved! $${finalAmount.toFixed(2)} SC deducted from player balance.`
           : `Credentials for ${cleanTitle} issued successfully!`,
       });
     } else if (action === 'cancel' || action === 'reject') {
       const reason = body.reason || body.rejectionReason || 'Staff desk rejected request or platform currently unavailable.';
 
-      // Unfreeze player's coins so they return to available balance
-      if (originalFrozen > 0) {
+      if (isFreeplay) {
+        await db.collection('freeplay_tasks').updateMany(
+          {
+            $or: [
+              ...(targetRequest.freeplayTaskId ? [{ taskId: targetRequest.freeplayTaskId }] : []),
+              { email: cleanEmail, status: 'pending' },
+            ],
+          },
+          {
+            $set: {
+              status: 'rejected',
+              rejectionReason: reason,
+              rejectedBy: session.username,
+              rejectedAt: new Date(),
+            },
+          }
+        );
+      } else if (originalFrozen > 0) {
+        // Unfreeze player's coins so they return to available balance
         const user = await usersCol.findOne({ email: cleanEmail });
         if (user) {
           await usersCol.updateOne(
@@ -485,15 +595,19 @@ export async function PUT(req) {
 
       notifyPlayer({
         userEmail: cleanEmail,
-        title: `${cleanTitle} Request Update ⚠️`,
-        message: `Your request for ${cleanTitle} was rejected: ${reason}`,
+        title: isFreeplay ? `Freeplay Task Update: ${cleanTitle} ⚠️` : `${cleanTitle} Request Update ⚠️`,
+        message: isFreeplay
+          ? `Your Freeplay task for ${cleanTitle} was declined: ${reason}`
+          : `Your request for ${cleanTitle} was rejected: ${reason}`,
         type: 'account_rejected',
         data: { gameTitle: cleanTitle },
       });
 
       return NextResponse.json({
         success: true,
-        message: 'Request rejected. Coins unfrozen and reason note logged for player.',
+        message: isFreeplay
+          ? 'Freeplay task rejected and reason note sent to player.'
+          : 'Request rejected. Coins unfrozen and reason note logged for player.',
       });
     }
 

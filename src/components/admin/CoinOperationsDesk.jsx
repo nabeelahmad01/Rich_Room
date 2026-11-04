@@ -112,32 +112,38 @@ export default function CoinOperationsDesk({ sessionUser }) {
     };
   }, []);
 
-  // Filtered Load Requests (Strictly COIN_LOAD requests only)
+  // Filtered Load Requests (COIN_LOAD & FREEPLAY requests)
   const pendingLoads = useMemo(() => {
+    const q = loadSearch.toLowerCase().trim();
     return loadRequests.filter(
       (r) =>
         r.status === 'PENDING' &&
-        (r.requestType === 'COIN_LOAD' || Number(r.transferAmount || 0) > 0) &&
-        (loadSearch === '' ||
-          r.userEmail?.toLowerCase().includes(loadSearch.toLowerCase()) ||
-          r.userName?.toLowerCase().includes(loadSearch.toLowerCase()) ||
-          r.gameTitle?.toLowerCase().includes(loadSearch.toLowerCase()))
+        (r.requestType === 'COIN_LOAD' || r.isFreeplay || r.freeplayPending || Number(r.transferAmount || 0) > 0) &&
+        (q === '' ||
+          r.userEmail?.toLowerCase().includes(q) ||
+          r.userName?.toLowerCase().includes(q) ||
+          r.gameTitle?.toLowerCase().includes(q) ||
+          r.freeplayTaskId?.toLowerCase().includes(q) ||
+          ((r.isFreeplay || r.freeplayPending) && 'freeplay'.includes(q)))
     );
   }, [loadRequests, loadSearch]);
 
   const historyLoads = useMemo(() => {
+    const q = loadSearch.toLowerCase().trim();
     return loadRequests.filter((r) => {
       if (r.status === 'PENDING') return false;
-      if (r.requestType !== 'COIN_LOAD' && (!r.transferAmount || Number(r.transferAmount) <= 0)) return false;
+      if (r.requestType !== 'COIN_LOAD' && !r.isFreeplay && !r.freeplayPending && (!r.transferAmount || Number(r.transferAmount) <= 0)) return false;
       if (loadFilter !== 'all') {
         if (loadFilter === 'approved' && r.status !== 'READY') return false;
         if (loadFilter === 'rejected' && r.status !== 'REJECTED' && r.status !== 'CANCELLED') return false;
       }
-      if (loadSearch) {
+      if (q) {
         return (
-          r.userEmail?.toLowerCase().includes(loadSearch.toLowerCase()) ||
-          r.userName?.toLowerCase().includes(loadSearch.toLowerCase()) ||
-          r.gameTitle?.toLowerCase().includes(loadSearch.toLowerCase())
+          r.userEmail?.toLowerCase().includes(q) ||
+          r.userName?.toLowerCase().includes(q) ||
+          r.gameTitle?.toLowerCase().includes(q) ||
+          r.freeplayTaskId?.toLowerCase().includes(q) ||
+          ((r.isFreeplay || r.freeplayPending) && 'freeplay'.includes(q))
         );
       }
       return true;
@@ -719,104 +725,155 @@ export default function CoinOperationsDesk({ sessionUser }) {
               <>
                 {/* Mobile Cards View (Visible on mobile screens) */}
                 <div className="block sm:hidden space-y-3">
-                  {pendingLoads.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-xl p-3.5 space-y-3 shadow-md"
-                      style={{
-                        backgroundColor: '#070514',
-                        border: '1px solid rgba(0, 240, 255, 0.3)',
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs uppercase shrink-0"
-                            style={{
-                              backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                              color: '#00F0FF',
-                              border: '1px solid rgba(0, 240, 255, 0.3)',
-                            }}
-                          >
-                            {(item.userName || item.userEmail || 'U').charAt(0).toUpperCase()}
+                  {pendingLoads.map((item) => {
+                    const isFp = Boolean(item.isFreeplay || item.freeplayPending);
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-xl p-3.5 space-y-3 shadow-md"
+                        style={{
+                          backgroundColor: '#070514',
+                          border: isFp ? '1px solid rgba(255, 215, 0, 0.45)' : '1px solid rgba(0, 240, 255, 0.3)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs uppercase shrink-0"
+                              style={{
+                                backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                color: '#00F0FF',
+                                border: '1px solid rgba(0, 240, 255, 0.3)',
+                              }}
+                            >
+                              {(item.userName || item.userEmail || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="overflow-hidden">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="text-xs font-black text-white m-0 truncate">{item.userName || item.userEmail?.split('@')[0]}</p>
+                                {isFp && (
+                                  <span
+                                    className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider"
+                                    style={{
+                                      backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                                      color: '#FFD700',
+                                      border: '1px solid rgba(255, 215, 0, 0.5)',
+                                    }}
+                                  >
+                                    🎁 FREEPLAY
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-gray-400 block truncate">{item.userEmail}</span>
+                            </div>
                           </div>
-                          <div className="overflow-hidden">
-                            <p className="text-xs font-black text-white m-0 truncate">{item.userName || item.userEmail?.split('@')[0]}</p>
-                            <span className="text-[10px] text-gray-400 block truncate">{item.userEmail}</span>
-                          </div>
-                        </div>
-                        <span
-                          className="px-2.5 py-1 rounded-lg text-xs font-black shrink-0 font-mono"
-                          style={{
-                            backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                            color: '#00F0FF',
-                            border: '1px solid rgba(0, 240, 255, 0.35)',
-                          }}
-                        >
-                          ${Number(item.transferAmount || 0).toFixed(2)} SC
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-white/5">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold"
-                            style={{
-                              backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                              border: '1px solid rgba(255, 255, 255, 0.1)',
-                              color: '#FFFFFF',
-                            }}
-                          >
-                            <Gamepad2 size={12} className="text-[#00F0FF]" /> {item.gameTitle}
-                          </span>
-                          {item.gameAccountUsername && (
-                            <span className="text-[10.5px] font-mono font-bold text-[#34D399] bg-emerald-950/70 border border-emerald-500/35 px-2 py-0.5 rounded-lg">
-                              @{item.gameAccountUsername}
+                          <div className="text-right shrink-0">
+                            <span
+                              className="px-2.5 py-1 rounded-lg text-xs font-black shrink-0 font-mono inline-block"
+                              style={{
+                                backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                color: '#00F0FF',
+                                border: '1px solid rgba(0, 240, 255, 0.35)',
+                              }}
+                            >
+                              ${Number(item.transferAmount || 0).toFixed(2)} SC
                             </span>
-                          )}
+                            {isFp && (
+                              <span className="block text-[9.5px] font-black text-amber-300 mt-0.5 uppercase tracking-wider">
+                                Freeplay Bonus
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-[10.5px] text-gray-400 font-mono">
-                          {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setApproveLoadModal({
-                              open: true,
-                              item,
-                              username: item.gameAccountUsername || item.userName || item.userEmail?.split('@')[0],
-                              password: item.gameAccountPassword || 'VegasWin777!',
-                              transferAmount: Number(item.transferAmount || 0),
-                            })
-                          }
-                          className="py-2.5 px-3 rounded-xl text-[#070514] font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
-                          style={{
-                            background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                            boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)',
-                          }}
-                        >
-                          <Check size={14} strokeWidth={3} />
-                          <span>Approve</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRejectLoadModal({ open: true, item, reason: '' })}
-                          className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
-                          style={{
-                            backgroundColor: 'rgba(244, 63, 94, 0.15)',
-                            border: '1px solid rgba(244, 63, 94, 0.35)',
-                            color: '#fda4af',
-                          }}
-                        >
-                          <X size={14} />
-                          <span>Reject</span>
-                        </button>
+                        <div className="flex items-center justify-between text-xs pt-2 border-t border-white/5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold"
+                              style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              <Gamepad2 size={12} className="text-[#00F0FF]" /> {item.gameTitle}
+                            </span>
+                            {item.gameAccountUsername && (
+                              <span className="text-[10.5px] font-mono font-bold text-[#34D399] bg-emerald-950/70 border border-emerald-500/35 px-2 py-0.5 rounded-lg">
+                                @{item.gameAccountUsername}
+                              </span>
+                            )}
+                            {item.freeplayTaskId && (
+                              <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/35 px-2 py-0.5 rounded-lg">
+                                #{item.freeplayTaskId}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10.5px] text-gray-400 font-mono">
+                            {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+
+                        {item.freeplayScreenshot && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setScreenshotModal({
+                                open: true,
+                                src: item.freeplayScreenshot,
+                                title: `${item.userName || item.userEmail} - Freeplay Inbox Proof (${item.gameTitle})`,
+                              })
+                            }
+                            className="w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
+                            style={{
+                              backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                              border: '1px solid rgba(255, 215, 0, 0.4)',
+                              color: '#FFD700',
+                            }}
+                          >
+                            <Eye size={13} />
+                            <span>View Freeplay Inbox Proof 👁️</span>
+                          </button>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setApproveLoadModal({
+                                open: true,
+                                item,
+                                username: item.gameAccountUsername || item.userName || item.userEmail?.split('@')[0],
+                                password: item.gameAccountPassword || 'VegasWin777!',
+                                transferAmount: Number(item.transferAmount || 0),
+                              })
+                            }
+                            className="py-2.5 px-3 rounded-xl text-[#070514] font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            style={{
+                              background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
+                              boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)',
+                            }}
+                          >
+                            <Check size={14} strokeWidth={3} />
+                            <span>{isFp ? 'Approve Freeplay' : 'Approve'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRejectLoadModal({ open: true, item, reason: '' })}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+                            style={{
+                              backgroundColor: 'rgba(244, 63, 94, 0.15)',
+                              border: '1px solid rgba(244, 63, 94, 0.35)',
+                              color: '#fda4af',
+                            }}
+                          >
+                            <X size={14} />
+                            <span>Reject</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Desktop Table View (Hidden on mobile) */}
@@ -828,157 +885,239 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 >
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '760px', backgroundColor: '#070514' }}>
                     <colgroup>
-                      <col style={{ width: '28%' }} />
+                      <col style={{ width: '26%' }} />
                       <col style={{ width: '22%' }} />
+                      <col style={{ width: '20%' }} />
+                      <col style={{ width: '14%' }} />
                       <col style={{ width: '18%' }} />
-                      <col style={{ width: '16%' }} />
-                      <col style={{ width: '16%' }} />
                     </colgroup>
                     <thead style={{ backgroundColor: '#04020a', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
                       <tr>
                         <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Player</th>
                         <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Game Platform</th>
-                        <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Load Amount</th>
+                        <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Load Amount &amp; Type</th>
                         <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date &amp; Time</th>
                         <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#9A91A8', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Admin Decision</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {pendingLoads.map((item) => (
-                        <tr key={item.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: 'rgba(0, 240, 255, 0.02)' }}>
-                          <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div
-                                style={{
-                                  width: '34px',
-                                  height: '34px',
-                                  borderRadius: '10px',
-                                  backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                  border: '1px solid rgba(0, 240, 255, 0.3)',
-                                  color: '#00F0FF',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontWeight: 900,
-                                  fontSize: '12px',
-                                }}
-                              >
-                                {(item.userName || item.userEmail || 'U').charAt(0).toUpperCase()}
+                      {pendingLoads.map((item) => {
+                        const isFp = Boolean(item.isFreeplay || item.freeplayPending);
+                        return (
+                          <tr
+                            key={item.id}
+                            style={{
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                              backgroundColor: isFp ? 'rgba(255, 215, 0, 0.04)' : 'rgba(0, 240, 255, 0.02)',
+                            }}
+                          >
+                            <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div
+                                  style={{
+                                    width: '34px',
+                                    height: '34px',
+                                    borderRadius: '10px',
+                                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                                    color: '#00F0FF',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 900,
+                                    fontSize: '12px',
+                                  }}
+                                >
+                                  {(item.userName || item.userEmail || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>{item.userName || item.userEmail?.split('@')[0]}</p>
+                                    {isFp && (
+                                      <span
+                                        style={{
+                                          padding: '2px 8px',
+                                          borderRadius: '999px',
+                                          backgroundColor: 'rgba(255, 215, 0, 0.18)',
+                                          border: '1px solid rgba(255, 215, 0, 0.5)',
+                                          color: '#FFD700',
+                                          fontSize: '10px',
+                                          fontWeight: 900,
+                                          letterSpacing: '0.5px',
+                                        }}
+                                      >
+                                        🎁 FREEPLAY
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span style={{ fontSize: '11px', color: '#9A91A8' }}>{item.userEmail}</span>
+                                </div>
                               </div>
-                              <div>
-                                <p style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>{item.userName || item.userEmail?.split('@')[0]}</p>
-                                <span style={{ fontSize: '11px', color: '#9A91A8' }}>{item.userEmail}</span>
+                            </td>
+
+                            <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '5px 12px',
+                                    borderRadius: '10px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                                    color: '#FFFFFF',
+                                    fontFamily: 'Lexend, sans-serif',
+                                    fontSize: '12px',
+                                    fontWeight: 800,
+                                  }}
+                                >
+                                  <Gamepad2 size={13} color="#00F0FF" />
+                                  <span>{item.gameTitle}</span>
+                                </span>
+                                {item.gameAccountUsername && (
+                                  <span style={{ fontSize: '10.5px', color: '#34D399', fontFamily: 'monospace', fontWeight: 700 }}>
+                                    ID: @{item.gameAccountUsername}
+                                  </span>
+                                )}
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '5px 12px',
-                                borderRadius: '10px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                                border: '1px solid rgba(255, 255, 255, 0.12)',
-                                color: '#FFFFFF',
-                                fontFamily: 'Lexend, sans-serif',
-                                fontSize: '12px',
-                                fontWeight: 800,
-                              }}
-                            >
-                              <Gamepad2 size={13} color="#00F0FF" />
-                              <span>{item.gameTitle}</span>
-                            </span>
-                          </td>
+                            <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span
+                                    style={{
+                                      display: 'inline-block',
+                                      padding: '4px 12px',
+                                      borderRadius: '8px',
+                                      backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                      border: '1px solid rgba(0, 240, 255, 0.35)',
+                                      color: '#00F0FF',
+                                      fontFamily: 'Lexend, sans-serif',
+                                      fontSize: '13px',
+                                      fontWeight: 900,
+                                    }}
+                                  >
+                                    ${Number(item.transferAmount || 0).toFixed(2)} SC
+                                  </span>
+                                  {isFp && (
+                                    <span
+                                      style={{
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        backgroundColor: 'rgba(16, 185, 129, 0.18)',
+                                        border: '1px solid rgba(16, 185, 129, 0.45)',
+                                        color: '#6ee7b7',
+                                        fontSize: '10px',
+                                        fontWeight: 900,
+                                        textTransform: 'uppercase',
+                                      }}
+                                    >
+                                      FREEPLAY BONUS
+                                    </span>
+                                  )}
+                                </div>
+                                {item.freeplayScreenshot && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setScreenshotModal({
+                                        open: true,
+                                        src: item.freeplayScreenshot,
+                                        title: `${item.userName || item.userEmail} - Freeplay Inbox Proof (${item.gameTitle})`,
+                                      })
+                                    }
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '5px',
+                                      padding: '3px 9px',
+                                      borderRadius: '7px',
+                                      backgroundColor: 'rgba(255, 215, 0, 0.14)',
+                                      border: '1px solid rgba(255, 215, 0, 0.4)',
+                                      color: '#FFD700',
+                                      fontSize: '10.5px',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    <Eye size={12} />
+                                    <span>View Proof 👁️ {item.freeplayTaskId ? `(#${item.freeplayTaskId})` : ''}</span>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
 
-                          <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                padding: '4px 12px',
-                                borderRadius: '8px',
-                                backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                border: '1px solid rgba(0, 240, 255, 0.35)',
-                                color: '#00F0FF',
-                                fontFamily: 'Lexend, sans-serif',
-                                fontSize: '13px',
-                                fontWeight: 900,
-                              }}
-                            >
-                              ${Number(item.transferAmount || 0).toFixed(2)} SC
-                            </span>
-                          </td>
+                            <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#CBD5E1', fontSize: '12px', fontWeight: 700 }}>
+                                <Clock size={12} color="#9A91A8" />
+                                <span>{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                              <span style={{ fontSize: '10px', color: '#9A91A8' }}>
+                                {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </td>
 
-                          <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#CBD5E1', fontSize: '12px', fontWeight: 700 }}>
-                              <Clock size={12} color="#9A91A8" />
-                              <span>{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                            <span style={{ fontSize: '10px', color: '#9A91A8' }}>
-                              {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </span>
-                          </td>
+                            <td style={{ padding: '14px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setApproveLoadModal({
+                                      open: true,
+                                      item,
+                                      username: item.gameAccountUsername || item.userName || item.userEmail?.split('@')[0],
+                                      password: item.gameAccountPassword || 'VegasWin777!',
+                                      transferAmount: Number(item.transferAmount || 0),
+                                    })
+                                  }
+                                  style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '10px',
+                                    background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
+                                    border: 'none',
+                                    color: '#070514',
+                                    fontSize: '12px',
+                                    fontFamily: 'Lexend, sans-serif',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 4px 14px rgba(0, 240, 255, 0.35)',
+                                  }}
+                                >
+                                  <Check size={14} strokeWidth={3} />
+                                  <span>{isFp ? 'Approve Freeplay' : 'Approve & Deduct'}</span>
+                                </button>
 
-                          <td style={{ padding: '14px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setApproveLoadModal({
-                                    open: true,
-                                    item,
-                                    username: item.gameAccountUsername || item.userName || item.userEmail?.split('@')[0],
-                                    password: item.gameAccountPassword || 'VegasWin777!',
-                                    transferAmount: Number(item.transferAmount || 0),
-                                  })
-                                }
-                                style={{
-                                  padding: '8px 16px',
-                                  borderRadius: '10px',
-                                  background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                                  border: 'none',
-                                  color: '#070514',
-                                  fontSize: '12px',
-                                  fontFamily: 'Lexend, sans-serif',
-                                  fontWeight: 900,
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  boxShadow: '0 4px 14px rgba(0, 240, 255, 0.35)',
-                                }}
-                              >
-                                <Check size={14} strokeWidth={3} />
-                                <span>Approve &amp; Deduct</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setRejectLoadModal({ open: true, item, reason: '' })}
-                                style={{
-                                  padding: '8px 14px',
-                                  borderRadius: '10px',
-                                  backgroundColor: 'rgba(244, 63, 94, 0.15)',
-                                  border: '1px solid rgba(244, 63, 94, 0.35)',
-                                  color: '#fda4af',
-                                  fontSize: '12px',
-                                  fontFamily: 'Lexend, sans-serif',
-                                  fontWeight: 800,
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                }}
-                              >
-                                <X size={14} />
-                                <span>Reject with Note</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <button
+                                  type="button"
+                                  onClick={() => setRejectLoadModal({ open: true, item, reason: '' })}
+                                  style={{
+                                    padding: '8px 14px',
+                                    borderRadius: '10px',
+                                    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+                                    border: '1px solid rgba(244, 63, 94, 0.35)',
+                                    color: '#fda4af',
+                                    fontSize: '12px',
+                                    fontFamily: 'Lexend, sans-serif',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <X size={14} />
+                                  <span>Reject with Note</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1092,24 +1231,39 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 <div className="block sm:hidden space-y-2.5">
                   {historyLoads.map((item) => {
                     const isReady = item.status === 'READY';
+                    const isFp = Boolean(item.isFreeplay || item.freeplayPending);
                     return (
                       <div
                         key={item.id}
                         className="rounded-xl p-3.5 text-xs space-y-2"
                         style={{
                           backgroundColor: '#070514',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          border: isFp ? '1px solid rgba(255, 215, 0, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
                         }}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-white text-xs">{item.userName || item.userEmail?.split('@')[0]}</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-white text-xs">{item.userName || item.userEmail?.split('@')[0]}</span>
+                            {isFp && (
+                              <span
+                                className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                                style={{
+                                  backgroundColor: 'rgba(255, 215, 0, 0.18)',
+                                  color: '#FFD700',
+                                  border: '1px solid rgba(255, 215, 0, 0.45)',
+                                }}
+                              >
+                                🎁 FREEPLAY
+                              </span>
+                            )}
+                          </div>
                           <span className="font-mono font-black text-[#00F0FF] text-xs">${Number(item.transferAmount || 0).toFixed(2)} SC</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-gray-400">
                           <span className="inline-flex items-center gap-1"><Gamepad2 size={11} className="text-[#00F0FF]" /> {item.gameTitle}</span>
                           <span>{new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                         </div>
-                        <div>
+                        <div className="flex items-center justify-between gap-2">
                           {isReady ? (
                             <span
                               className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black"
@@ -1132,6 +1286,26 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             >
                               <XCircle size={11} /> REJECTED {item.rejectionReason ? `· "${item.rejectionReason}"` : ''}
                             </span>
+                          )}
+                          {item.freeplayScreenshot && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setScreenshotModal({
+                                  open: true,
+                                  src: item.freeplayScreenshot,
+                                  title: `${item.userName || item.userEmail} - Freeplay Proof`,
+                                })
+                              }
+                              className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer"
+                              style={{
+                                backgroundColor: 'rgba(255, 215, 0, 0.14)',
+                                border: '1px solid rgba(255, 215, 0, 0.4)',
+                                color: '#FFD700',
+                              }}
+                            >
+                              Proof 👁️
+                            </button>
                           )}
                         </div>
                       </div>
@@ -1166,10 +1340,28 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     <tbody>
                       {historyLoads.map((item) => {
                         const isReady = item.status === 'READY';
+                        const isFp = Boolean(item.isFreeplay || item.freeplayPending);
                         return (
                           <tr key={item.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                              <p style={{ margin: 0, fontSize: '12.5px', fontWeight: 800, color: '#FFFFFF' }}>{item.userName || item.userEmail?.split('@')[0]}</p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <p style={{ margin: 0, fontSize: '12.5px', fontWeight: 800, color: '#FFFFFF' }}>{item.userName || item.userEmail?.split('@')[0]}</p>
+                                {isFp && (
+                                  <span
+                                    style={{
+                                      padding: '2px 7px',
+                                      borderRadius: '999px',
+                                      backgroundColor: 'rgba(255, 215, 0, 0.16)',
+                                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                                      color: '#FFD700',
+                                      fontSize: '9.5px',
+                                      fontWeight: 900,
+                                    }}
+                                  >
+                                    🎁 FREEPLAY
+                                  </span>
+                                )}
+                              </div>
                               <span style={{ fontSize: '11px', color: '#9A91A8' }}>{item.userEmail}</span>
                             </td>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12px', color: '#E2E8F0', fontWeight: 700 }}>
@@ -1179,7 +1371,32 @@ export default function CoinOperationsDesk({ sessionUser }) {
                               </span>
                             </td>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: '#00F0FF', fontWeight: 800, fontFamily: 'monospace' }}>
-                              ${Number(item.transferAmount || 0).toFixed(2)} SC
+                              <div>${Number(item.transferAmount || 0).toFixed(2)} SC</div>
+                              {item.freeplayScreenshot && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setScreenshotModal({
+                                      open: true,
+                                      src: item.freeplayScreenshot,
+                                      title: `${item.userName || item.userEmail} - Freeplay Proof`,
+                                    })
+                                  }
+                                  style={{
+                                    marginTop: '4px',
+                                    padding: '2px 7px',
+                                    borderRadius: '6px',
+                                    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                                    color: '#FFD700',
+                                    fontSize: '10px',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  View Proof 👁️
+                                </button>
+                              )}
                             </td>
                             <td style={{ padding: '12px 16px' }}>
                               {isReady ? (
@@ -2058,9 +2275,15 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 </div>
                 <div>
                   <h3 className="text-base font-black text-white m-0 tracking-wide">
-                    Approve Game Load &amp; Deduct Balance
+                    {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                      ? 'Approve Freeplay & Load Game 🎁'
+                      : 'Approve Game Load & Deduct Balance'}
                   </h3>
-                  <p className="text-[11px] text-gray-400 m-0">Confirm credentials and credit sweepstakes portal</p>
+                  <p className="text-[11px] text-gray-400 m-0">
+                    {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                      ? 'Verify Inbox screenshot and issue Freeplay credentials'
+                      : 'Confirm credentials and credit sweepstakes portal'}
+                  </p>
                 </div>
               </div>
               <button
@@ -2079,28 +2302,83 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 border: '1px solid rgba(0, 240, 255, 0.25)',
               }}
             >
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-gray-400">Player:</span>
-                <strong className="text-white">{approveLoadModal.item?.userName}</strong>
+                <div className="flex items-center gap-1.5">
+                  <strong className="text-white">{approveLoadModal.item?.userName}</strong>
+                  {(approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending) && (
+                    <span className="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-amber-500/20 border border-amber-400/50 text-amber-300">
+                      🎁 FREEPLAY
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Game Platform:</span>
                 <strong className="text-[#00F0FF]">{approveLoadModal.item?.gameTitle}</strong>
               </div>
               <div className="flex justify-between pt-1 border-t border-white/10">
-                <span className="text-gray-300 font-bold">Transfer Deduct Amount:</span>
+                <span className="text-gray-300 font-bold">
+                  {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                    ? 'Freeplay Allotment Amount:'
+                    : 'Transfer Deduct Amount:'}
+                </span>
                 <strong className="text-[#00F0FF] text-sm font-mono">
                   ${Number(approveLoadModal.item?.transferAmount || 0).toFixed(2)} SC
                 </strong>
               </div>
             </div>
 
+            {approveLoadModal.item?.freeplayScreenshot && (
+              <div
+                className="rounded-xl p-2.5 flex items-center justify-between gap-3"
+                style={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                  border: '1px solid rgba(255, 215, 0, 0.35)',
+                }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img
+                    src={approveLoadModal.item.freeplayScreenshot}
+                    alt="Inbox Proof"
+                    className="w-12 h-10 rounded-lg object-cover bg-black border border-white/15 shrink-0"
+                  />
+                  <div className="truncate">
+                    <div className="text-xs font-black text-amber-300 truncate">Inbox Screenshot Proof Attached</div>
+                    {approveLoadModal.item.freeplayTaskId && (
+                      <div className="text-[10px] font-mono text-gray-400">Ref: #{approveLoadModal.item.freeplayTaskId}</div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setScreenshotModal({
+                      open: true,
+                      src: approveLoadModal.item.freeplayScreenshot,
+                      title: `${approveLoadModal.item.userName} - Freeplay Inbox Proof`,
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-black shrink-0 cursor-pointer"
+                  style={{
+                    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                    border: '1px solid rgba(255, 215, 0, 0.5)',
+                    color: '#FFD700',
+                  }}
+                >
+                  Zoom 👁️
+                </button>
+              </div>
+            )}
+
             <form onSubmit={handleApproveLoadSubmit} className="space-y-4">
               {/* Editable Coin Amount Field */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[11px] font-bold text-[#FBBF24] uppercase tracking-wider">
-                    Coins to Load / Deduct ($ SC) — Editable
+                    {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                      ? 'Freeplay Coins to Load ($ SC) — Editable'
+                      : 'Coins to Load / Deduct ($ SC) — Editable'}
                   </label>
                   <span className="text-[10.5px] text-gray-400">
                     Requested: <strong className="text-white">${Number(approveLoadModal.item?.transferAmount || 0).toFixed(2)} SC</strong>
@@ -2123,7 +2401,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1">
-                  You can adjust this coin load amount. Exactly this amount will be deducted from player's balance.
+                  {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                    ? 'Freeplay bonus amount loaded into the player game account (will not deduct wallet balance).'
+                    : "You can adjust this coin load amount. Exactly this amount will be deducted from player's balance."}
                 </p>
               </div>
 
@@ -2180,7 +2460,11 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   }}
                 >
                   <Check size={14} strokeWidth={3} />
-                  <span>Confirm &amp; Deduct</span>
+                  <span>
+                    {approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending
+                      ? 'Confirm & Load Freeplay'
+                      : 'Confirm & Deduct'}
+                  </span>
                 </button>
               </div>
             </form>

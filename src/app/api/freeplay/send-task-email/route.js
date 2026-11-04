@@ -21,7 +21,7 @@ export async function POST(req) {
     const settingsDoc = await db.collection('system_settings').findOne({ key: 'general' });
     const configuredAmount = settingsDoc?.freeplayAmountSC !== undefined 
       ? Number(settingsDoc.freeplayAmountSC) 
-      : 3.0;
+      : 5.0;
 
     const taskId = `FP-${Math.floor(100000 + Math.random() * 900000)}`;
 

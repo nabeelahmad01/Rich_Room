@@ -1,22 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
 import {
   X,
   Gift,
-  Mail,
   Upload,
   CheckCircle2,
   AlertCircle,
-  Clock,
   Sparkles,
   RefreshCw,
   Trash2,
-  ShieldCheck,
-  Gamepad2,
-  ArrowRight,
-  ExternalLink,
 } from 'lucide-react';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
@@ -24,9 +19,10 @@ export default function FreeplayTaskModal({
   isOpen,
   onClose,
   user,
-  freeplayAmount = 3,
+  freeplayAmount = 5,
   onSuccess,
 }) {
+  const [mounted, setMounted] = useState(false);
   const [adminGames, setAdminGames] = useState([]);
   const [selectedGame, setSelectedGame] = useState('');
   const [screenshot, setScreenshot] = useState('');
@@ -41,6 +37,20 @@ export default function FreeplayTaskModal({
   const initialEmailSentRef = useRef(false);
 
   const targetEmail = user?.email || '';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock background page scroll while modal is open so no outer scrollbar appears
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -60,11 +70,16 @@ export default function FreeplayTaskModal({
           if (d.success && Array.isArray(d.games) && d.games.length > 0) {
             const cleanList = d.games.map((g) => ({
               ...g,
-              title: cleanGameTitle(g.title || '')
+              title: cleanGameTitle(g.title || ''),
             }));
             diffSet(setAdminGames, cleanList);
             setSelectedGame((prev) => {
-              if (prev && cleanList.some((g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim())) {
+              if (
+                prev &&
+                cleanList.some(
+                  (g) => g.title.toLowerCase().trim() === prev.toLowerCase().trim()
+                )
+              ) {
                 return prev;
               }
               return cleanList[0]?.title || '';
@@ -83,11 +98,14 @@ export default function FreeplayTaskModal({
     }
   }, [isOpen, targetEmail]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSendEmail = async (isManual = false) => {
     if (!targetEmail) {
-      setStatusMsg({ type: 'error', text: 'Please sign in or provide a valid email address.' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Please sign in or provide a valid email address.',
+      });
       return;
     }
     if (isManual && resendCooldown > 0) return;
@@ -116,11 +134,17 @@ export default function FreeplayTaskModal({
             : 'Verification task email sent! Follow the instructions below.',
         });
       } else {
-        setStatusMsg({ type: 'error', text: data.message || 'Could not send verification email.' });
+        setStatusMsg({
+          type: 'error',
+          text: data.message || 'Could not send verification email.',
+        });
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg({ type: 'error', text: 'Network error sending verification email.' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Network error sending verification email.',
+      });
     } finally {
       setEmailSending(false);
     }
@@ -132,7 +156,10 @@ export default function FreeplayTaskModal({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setStatusMsg({ type: 'error', text: 'Please upload a valid image (PNG, JPG, or WebP).' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Please upload a valid image (PNG, JPG, or WebP).',
+      });
       return;
     }
 
@@ -164,7 +191,10 @@ export default function FreeplayTaskModal({
         const compressed = canvas.toDataURL('image/jpeg', 0.8);
         setScreenshot(compressed);
         setUploading(false);
-        setStatusMsg({ type: 'success', text: 'Inbox screenshot attached and ready!' });
+        setStatusMsg({
+          type: 'success',
+          text: 'Inbox screenshot attached and ready!',
+        });
       };
       img.onerror = () => {
         setScreenshot(event.target.result);
@@ -182,11 +212,17 @@ export default function FreeplayTaskModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedGame) {
-      setStatusMsg({ type: 'error', text: 'Please select a casino game platform.' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Please select a casino game platform.',
+      });
       return;
     }
     if (!screenshot) {
-      setStatusMsg({ type: 'error', text: 'Please upload your Inbox screenshot proof.' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Please upload your Inbox screenshot proof.',
+      });
       return;
     }
 
@@ -208,72 +244,116 @@ export default function FreeplayTaskModal({
       if (res.ok && data.success) {
         try {
           confetti({
-            particleCount: 100,
-            spread: 70,
+            particleCount: 90,
+            spread: 65,
             origin: { y: 0.6 },
-            colors: ['#00F0FF', '#C026D3', '#F59E0B', '#10B981'],
+            colors: ['#FFD700', '#00F0FF', '#F59E0B', '#10B981'],
           });
+        } catch {}
+
+        // Broadcast real-time event to Admin Coins Allotment Desk (0ms)
+        try {
+          const staffChannel = new BroadcastChannel('paradise_staff_alerts');
+          staffChannel.postMessage({
+            type: 'NEW_COIN_LOAD',
+            isFreeplay: true,
+            gameTitle: selectedGame,
+            userName: user?.username || targetEmail.split('@')[0],
+            amount: data.amount || freeplayAmount,
+          });
+          staffChannel.close();
+        } catch {}
+        try {
+          localStorage.setItem(
+            'paradise_staff_event',
+            JSON.stringify({
+              type: 'NEW_COIN_LOAD',
+              isFreeplay: true,
+              gameTitle: selectedGame,
+              userName: user?.username || targetEmail.split('@')[0],
+              amount: data.amount || freeplayAmount,
+              time: Date.now(),
+            })
+          );
         } catch {}
 
         if (onSuccess) onSuccess(data);
         setStatusMsg({
           type: 'success',
-          text: data.message || 'Freeplay task submitted successfully! Staff is reviewing your proof.',
+          text:
+            data.message ||
+            'Freeplay task submitted! Staff will verify your proof in Coins Allotment.',
         });
 
         setTimeout(() => {
           onClose();
-        }, 2200);
+        }, 2000);
       } else {
-        setStatusMsg({ type: 'error', text: data.message || 'Failed to submit task proof.' });
+        setStatusMsg({
+          type: 'error',
+          text: data.message || 'Failed to submit task proof.',
+        });
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg({ type: 'error', text: 'Network error submitting task proof.' });
+      setStatusMsg({
+        type: 'error',
+        text: 'Network error submitting task proof.',
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const canSubmit = Boolean(selectedGame && screenshot && !uploading && !submitting);
+  const canSubmit = Boolean(
+    selectedGame && screenshot && !uploading && !submitting
+  );
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-xl rounded-3xl border border-[var(--chrome-border)] bg-[var(--bg-card)] p-5 sm:p-7 shadow-[0_20px_70px_rgba(0,0,0,0.9),0_0_40px_var(--neon-cyan-glow)] my-8 text-white space-y-5">
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md overflow-hidden no-scrollbar"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-[460px] rounded-2xl border border-[var(--chrome-border)] bg-[#0f0c05] p-3.5 sm:p-4 shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_30px_var(--neon-cyan-glow)] text-white space-y-2.5 overflow-hidden no-scrollbar"
+      >
         {/* Ambient Top Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-32 bg-[var(--neon-cyan)]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-64 h-20 bg-[var(--neon-cyan)]/15 rounded-full blur-2xl pointer-events-none" />
 
         {/* Close Button */}
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer z-20"
+          aria-label="Close Freeplay Modal"
+          className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-slate-900/90 border border-white/15 text-slate-300 hover:text-white hover:border-[var(--neon-cyan)] flex items-center justify-center transition cursor-pointer z-20"
         >
-          <X size={18} />
+          <X size={15} />
         </button>
 
-        {/* Modal Header */}
-        <div className="flex items-center gap-3.5 border-b border-white/10 pb-4">
+        {/* Modal Header (Compact & Never Clipped) */}
+        <div className="flex items-center gap-3 border-b border-white/10 pb-2.5 pr-8 relative z-10">
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-black font-black shrink-0"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-black font-black shrink-0"
             style={{
               background: 'var(--primary-gradient)',
-              boxShadow: '0 0 20px var(--neon-cyan-glow)',
+              boxShadow: '0 0 16px var(--neon-cyan-glow)',
             }}
           >
-            <Gift size={24} className="text-black" />
+            <Gift size={20} className="text-black" />
           </div>
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--neon-cyan)]/15 border border-[var(--chrome-border)] text-[var(--neon-cyan)] text-[10px] font-mono font-black uppercase tracking-wider mb-1">
-              <Sparkles size={11} />
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--neon-cyan)]/15 border border-[var(--chrome-border)] text-[var(--neon-cyan)] text-[9.5px] font-mono font-black uppercase tracking-wider mb-0.5">
+              <Sparkles size={10} />
               <span>${Number(freeplayAmount).toFixed(0)} Freeplay Task</span>
               {taskId && <span className="text-white">#{taskId}</span>}
             </div>
-            <h2 className="text-lg sm:text-xl font-heading font-black text-white m-0 tracking-wide">
+            <h2 className="text-sm sm:text-base font-heading font-black text-white m-0 tracking-wide leading-tight">
               FREEPLAY VERIFICATION TASK
             </h2>
-            <p className="text-xs text-slate-300 m-0 leading-relaxed">
-              Complete this 30-second verification task to claim your ${Number(freeplayAmount).toFixed(0)} freeplay credits!
+            <p className="text-[10.5px] text-slate-300 m-0 leading-snug mt-0.5">
+              Complete this 30-second verification task to claim your $
+              {Number(freeplayAmount).toFixed(0)} freeplay credits!
             </p>
           </div>
         </div>
@@ -281,33 +361,35 @@ export default function FreeplayTaskModal({
         {/* Status Messages */}
         {statusMsg && (
           <div
-            className={`p-3 rounded-xl border flex items-center gap-2.5 text-xs font-bold ${
+            className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-2 text-[11px] font-bold leading-snug ${
               statusMsg.type === 'success'
-                ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                : 'bg-red-950/70 border-red-500/50 text-red-200'
+                ? 'bg-emerald-950/75 border-emerald-500/50 text-emerald-200'
+                : 'bg-red-950/75 border-red-500/50 text-red-200'
             }`}
           >
             {statusMsg.type === 'success' ? (
-              <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+              <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
             ) : (
-              <AlertCircle size={16} className="text-red-400 shrink-0" />
+              <AlertCircle size={14} className="text-red-400 shrink-0" />
             )}
-            <span className="leading-relaxed">{statusMsg.text}</span>
+            <span>{statusMsg.text}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           {/* Step 1: Select Game Platform */}
-          <div className="space-y-2">
-            <label className="text-xs font-black text-[var(--neon-cyan)] uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-[var(--neon-cyan)] text-black flex items-center justify-center text-[10px] font-black">
+          <div className="space-y-1.5">
+            <label className="text-[10.5px] font-black text-[var(--neon-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded-full bg-[var(--neon-cyan)] text-black flex items-center justify-center text-[9.5px] font-black shrink-0">
                 1
               </span>
               <span>Select Casino Game Platform:</span>
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
               {(() => {
-                const activeGames = adminGames.map((g) => cleanGameTitle(g.title));
+                const activeGames = adminGames.map((g) =>
+                  cleanGameTitle(g.title)
+                );
                 return activeGames.map((game) => {
                   const isSelected = selectedGame === game;
                   return (
@@ -315,20 +397,21 @@ export default function FreeplayTaskModal({
                       key={game}
                       type="button"
                       onClick={() => setSelectedGame(game)}
-                      className={`py-2 px-3 rounded-xl text-xs font-black font-heading transition border cursor-pointer text-center ${
+                      className={`py-1.5 px-2 rounded-lg text-[10.5px] leading-tight font-black font-heading transition border cursor-pointer text-center truncate ${
                         isSelected
                           ? 'text-black font-black'
-                          : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700'
+                          : 'bg-slate-900/85 text-slate-300 border-slate-800 hover:border-slate-700'
                       }`}
                       style={
                         isSelected
                           ? {
                               background: 'var(--primary-gradient)',
-                              boxShadow: '0 0 15px var(--neon-cyan-glow)',
+                              boxShadow: '0 0 12px var(--neon-cyan-glow)',
                               border: '1px solid var(--chrome-border)',
                             }
                           : undefined
                       }
+                      title={game}
                     >
                       {game}
                     </button>
@@ -339,13 +422,13 @@ export default function FreeplayTaskModal({
           </div>
 
           {/* Step 2: Verification Task Email Dispatch Info */}
-          <div className="p-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--chrome-border)] space-y-3">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--chrome-border)] space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-[var(--neon-cyan)] text-black flex items-center justify-center text-[10px] font-black">
+              <div className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-[var(--neon-cyan)] text-black flex items-center justify-center text-[9.5px] font-black shrink-0">
                   2
                 </span>
-                <span className="text-xs font-black text-white uppercase tracking-wider">
+                <span className="text-[10.5px] font-black text-white uppercase tracking-wider">
                   Verification Email Sent
                 </span>
               </div>
@@ -353,9 +436,12 @@ export default function FreeplayTaskModal({
                 type="button"
                 onClick={() => handleSendEmail(true)}
                 disabled={emailSending || resendCooldown > 0}
-                className="text-[11px] font-bold text-[var(--neon-cyan)] hover:brightness-125 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                className="text-[10.5px] font-bold text-[var(--neon-cyan)] hover:brightness-125 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
               >
-                <RefreshCw size={12} className={emailSending ? 'animate-spin' : ''} />
+                <RefreshCw
+                  size={11}
+                  className={emailSending ? 'animate-spin' : ''}
+                />
                 <span>
                   {emailSending
                     ? 'Sending...'
@@ -366,37 +452,44 @@ export default function FreeplayTaskModal({
               </button>
             </div>
 
-            <div className="text-xs text-slate-300 leading-relaxed space-y-1.5 font-mono">
-              <p className="m-0">
-                Dispatched to: <strong className="text-cyan-300">{targetEmail}</strong>
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-[10.5px] text-slate-300 font-mono">
+              <span className="truncate">
+                Dispatched to:{' '}
+                <strong className="text-cyan-300">{targetEmail}</strong>
+              </span>
               {taskId && (
-                <p className="m-0">
-                  Task Reference ID: <strong className="text-amber-400">{taskId}</strong>
-                </p>
+                <span>
+                  Ref ID: <strong className="text-amber-400">{taskId}</strong>
+                </span>
               )}
             </div>
 
-            {/* Instruction Checklist */}
-            <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-slate-200 space-y-2">
-              <div className="flex items-start gap-2">
-                <span className="w-4 h-4 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">
+            {/* Compact Instruction Checklist */}
+            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10.5px] text-slate-200 space-y-1 leading-snug">
+              <div className="flex items-start gap-1.5">
+                <span className="w-3.5 h-3.5 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
                   ✓
                 </span>
                 <span>
-                  Check your <strong>Spam / Junk folder</strong>. If there, click <strong className="text-emerald-400">&quot;Report Not Spam&quot;</strong> or <strong>&quot;Move to Inbox&quot;</strong>.
+                  Check your <strong>Spam / Junk folder</strong>. If there,
+                  click{' '}
+                  <strong className="text-emerald-400">
+                    &quot;Report Not Spam&quot;
+                  </strong>{' '}
+                  or <strong>&quot;Move to Inbox&quot;</strong>.
                 </span>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="w-4 h-4 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">
+              <div className="flex items-start gap-1.5">
+                <span className="w-3.5 h-3.5 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
                   ✓
                 </span>
                 <span>
-                  Open your <strong>Primary Inbox</strong> and take a screenshot showing the Players Paradise verification email inside your Inbox.
+                  Open your <strong>Primary Inbox</strong> and take a screenshot
+                  showing the verification email inside your Inbox.
                 </span>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="w-4 h-4 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">
+              <div className="flex items-start gap-1.5">
+                <span className="w-3.5 h-3.5 rounded-full bg-cyan-400 text-black flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
                   ✓
                 </span>
                 <span>
@@ -405,21 +498,24 @@ export default function FreeplayTaskModal({
               </div>
             </div>
 
-            <p className="text-[10.5px] text-cyan-300/80 m-0 leading-relaxed italic">
-              🔒 Privacy Tip: You can blur out or draw lines over other personal emails in your screenshot.
+            <p className="text-[9.5px] text-cyan-300/80 m-0 leading-tight italic">
+              🔒 Privacy Tip: You can blur out or draw lines over other personal
+              emails in your screenshot.
             </p>
           </div>
 
           {/* Step 3: Screenshot Upload Proof Dropzone */}
-          <div className="space-y-2">
-            <label className="text-xs font-black text-cyan-300 uppercase tracking-wider flex items-center justify-between">
+          <div className="space-y-1.5">
+            <label className="text-[10.5px] font-black text-cyan-300 uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-cyan-500 text-black flex items-center justify-center text-[10px] font-black">
+                <span className="w-4 h-4 rounded-full bg-cyan-500 text-black flex items-center justify-center text-[9.5px] font-black shrink-0">
                   3
                 </span>
                 <span>Upload Inbox Screenshot Proof:</span>
               </span>
-              <span className="text-[10.5px] text-slate-400 lowercase font-normal">PNG, JPG, or WebP</span>
+              <span className="text-[9.5px] text-slate-400 lowercase font-normal">
+                png, jpg, or webp
+              </span>
             </label>
 
             <input
@@ -433,52 +529,63 @@ export default function FreeplayTaskModal({
             {!screenshot ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="p-6 rounded-2xl border-2 border-dashed border-cyan-500/35 hover:border-cyan-400 bg-slate-900/50 hover:bg-slate-900/80 transition flex flex-col items-center justify-center gap-2 cursor-pointer text-center"
+                className="py-2.5 px-3.5 rounded-xl border border-dashed border-cyan-500/40 hover:border-cyan-400 bg-slate-900/55 hover:bg-slate-900/85 transition flex items-center justify-center gap-3 cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                  {uploading ? <RefreshCw size={22} className="animate-spin" /> : <Upload size={22} />}
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                  {uploading ? (
+                    <RefreshCw size={16} className="animate-spin" />
+                  ) : (
+                    <Upload size={16} />
+                  )}
                 </div>
-                <div>
-                  <span className="text-xs font-black text-white block">
-                    {uploading ? 'Processing Image...' : 'Click to Upload Inbox Screenshot Proof'}
+                <div className="text-left">
+                  <span className="text-[11px] font-black text-white block leading-tight">
+                    {uploading
+                      ? 'Processing Image...'
+                      : 'Click to Upload Inbox Screenshot Proof'}
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[9.5px] text-slate-400">
                     Supports PNG, JPG, JPEG, or WebP
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-2xl overflow-hidden border border-emerald-500/50 bg-[#070514] space-y-2 p-2">
-                <img
-                  src={screenshot}
-                  alt="Inbox proof"
-                  className="w-full max-h-48 object-contain rounded-xl bg-black"
-                />
-                <div className="flex items-center justify-between px-2 pt-1">
-                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 size={14} />
-                    <span>Proof Attached &amp; Ready</span>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white font-bold cursor-pointer transition"
-                    >
-                      Change
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setScreenshot('');
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-500/40 text-red-300 hover:bg-red-900 text-xs font-bold flex items-center gap-1 cursor-pointer transition"
-                    >
-                      <Trash2 size={12} />
-                      <span>Remove</span>
-                    </button>
+              <div className="rounded-xl border border-emerald-500/50 bg-[#070514] p-2 flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img
+                    src={screenshot}
+                    alt="Inbox proof"
+                    className="w-16 h-12 object-contain rounded-lg bg-black border border-white/10 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 size={13} className="shrink-0" />
+                      <span className="truncate">Proof Attached &amp; Ready</span>
+                    </span>
+                    <span className="text-[9.5px] text-slate-400 block">
+                      Ready for Coins Allotment verification
+                    </span>
                   </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10.5px] text-white font-bold cursor-pointer transition"
+                  >
+                    Change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScreenshot('');
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="px-2 py-1 rounded-lg bg-red-950/80 border border-red-500/40 text-red-300 hover:bg-red-900 text-[10.5px] font-bold flex items-center gap-1 cursor-pointer transition"
+                  >
+                    <Trash2 size={11} />
+                    <span>Remove</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -488,26 +595,29 @@ export default function FreeplayTaskModal({
           <button
             type="submit"
             disabled={!canSubmit}
-            className={`w-full py-3.5 px-6 rounded-2xl font-heading font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`w-full py-2.5 px-4 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
               canSubmit
-                ? 'cyber-btn-cyan shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:scale-[1.01] active:scale-[0.99]'
+                ? 'cyber-btn-cyan shadow-[0_0_20px_rgba(255,215,0,0.35)] hover:scale-[1.01] active:scale-[0.99]'
                 : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
             }`}
           >
             {submitting ? (
               <>
-                <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 <span>SUBMITTING TASK PROOF...</span>
               </>
             ) : !screenshot ? (
               <>
-                <Upload size={16} />
+                <Upload size={14} />
                 <span>ATTACH INBOX SCREENSHOT TO SUBMIT</span>
               </>
             ) : (
               <>
-                <Gift size={16} />
-                <span>SUBMIT TASK &amp; CLAIM ${Number(freeplayAmount).toFixed(0)} FREEPLAY &rarr;</span>
+                <Gift size={14} />
+                <span>
+                  SUBMIT TASK &amp; CLAIM ${Number(freeplayAmount).toFixed(0)}{' '}
+                  FREEPLAY &rarr;
+                </span>
               </>
             )}
           </button>
@@ -515,4 +625,6 @@ export default function FreeplayTaskModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -1002,18 +1002,25 @@ export default function AdminPortal({ initialTab }) {
         setActiveAlertToast((curr) => (curr?.type === 'redemption' ? null : curr));
       }
 
-      // 4. Incoming coin load requests
+      // 4. Incoming coin load / freeplay allotment requests
       if (pendingCoinLoads.length > (prevCountsRef.current.coinLoads || 0)) {
         const newest = pendingCoinLoads[0];
+        const isFp = Boolean(newest?.isFreeplay || newest?.freeplayPending);
         playAdminChime();
-        const alertTitle = '⚡ New Coin Load Request!';
-        const alertBody = `$${Number(newest?.transferAmount || 0).toFixed(2)} SC load for ${newest?.gameTitle || 'Game'} from ${newest?.userName || 'Player'}`;
+        const alertTitle = isFp ? '🎁 New Freeplay Allotment Request!' : '⚡ New Coin Load Request!';
+        const alertBody = isFp
+          ? `$${Number(newest?.transferAmount || 0).toFixed(2)} SC Freeplay for ${newest?.gameTitle || 'Game'} from ${newest?.userName || 'Player'}`
+          : `$${Number(newest?.transferAmount || 0).toFixed(2)} SC load for ${newest?.gameTitle || 'Game'} from ${newest?.userName || 'Player'}`;
         sendDesktopNotification(alertTitle, alertBody, '/admin/coins_allotment');
         setActiveAlertToast({
           type: 'coin_load',
           title: alertTitle,
-          message: `$${Number(newest?.transferAmount || 0).toFixed(2)} SC load for ${newest?.gameTitle || 'Game'}`,
-          subtext: `From ${newest?.userName || 'Player'} • Escrow Frozen in Wallet`,
+          message: isFp
+            ? `🎁 $${Number(newest?.transferAmount || 0).toFixed(2)} SC Freeplay for ${newest?.gameTitle || 'Game'}`
+            : `$${Number(newest?.transferAmount || 0).toFixed(2)} SC load for ${newest?.gameTitle || 'Game'}`,
+          subtext: isFp
+            ? `From ${newest?.userName || 'Player'} • Inbox Proof Attached`
+            : `From ${newest?.userName || 'Player'} • Escrow Frozen in Wallet`,
           targetTab: 'coins_allotment',
           targetSubTab: 'loads',
         });

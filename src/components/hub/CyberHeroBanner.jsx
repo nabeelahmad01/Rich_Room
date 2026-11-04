@@ -149,7 +149,7 @@ export default function CyberHeroBanner({
                 className="cyber-btn-cyan py-3 px-6 text-sm font-black flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.3)]"
               >
                 <Gift size={17} className="text-black" />
-                <span>GET ${Number(bonusSettings?.freeplayAmountSC ?? 3).toFixed(0)} FREEPLAY</span>
+                <span>GET ${Number(bonusSettings?.freeplayAmountSC ?? 5).toFixed(0)} FREEPLAY</span>
               </button>
             )}
 
@@ -203,7 +203,7 @@ export default function CyberHeroBanner({
         isOpen={freeplayModalOpen}
         onClose={() => setFreeplayModalOpen(false)}
         user={user}
-        freeplayAmount={bonusSettings?.freeplayAmountSC ?? 3}
+        freeplayAmount={bonusSettings?.freeplayAmountSC ?? 5}
         onSuccess={(data) => {
           setFreeplayFeedback({
             type: 'success',
