@@ -216,7 +216,7 @@ export default function AdminPortal({ initialTab }) {
   const [newGame, setNewGame] = useState({
     title: '',
     provider: 'Players Paradise Studio',
-    thumbnail: '/images/vegas-777.webp',
+    thumbnail: '/images/vegas-777.svg',
     badge: 'HOT',
     url: '',
     isActive: true,
@@ -2787,7 +2787,7 @@ export default function AdminPortal({ initialTab }) {
                           setNewGame({
                             title: '',
                             provider: 'Players Paradise Studio',
-                            thumbnail: '/images/vegas-777.webp',
+                            thumbnail: '/images/vegas-777.svg',
                             badge: 'HOT',
                             url: '',
                             isActive: true,
@@ -3064,7 +3064,7 @@ export default function AdminPortal({ initialTab }) {
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                  src={g.thumbnail || '/images/vegas-777.webp'}
+                                  src={g.thumbnail || '/images/vegas-777.svg'}
                                   alt={g.title}
                                   className="w-full h-full object-cover"
                                 />
@@ -3174,7 +3174,7 @@ export default function AdminPortal({ initialTab }) {
                                     id: g.id || g._id,
                                     title: g.title || '',
                                     provider: g.provider || 'Players Paradise Studio',
-                                    thumbnail: g.thumbnail || '/images/vegas-777.webp',
+                                    thumbnail: g.thumbnail || '/images/vegas-777.svg',
                                     badge: g.badge || (g.isHot ? 'HOT' : ''),
                                     url: g.url || '',
                                     isActive: g.isActive !== false,
@@ -3269,7 +3269,7 @@ export default function AdminPortal({ initialTab }) {
                                   >
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
-                                      src={g.thumbnail || '/images/vegas-777.webp'}
+                                      src={g.thumbnail || '/images/vegas-777.svg'}
                                       alt={g.title}
                                       className="w-full h-full object-cover"
                                     />
@@ -3385,7 +3385,7 @@ export default function AdminPortal({ initialTab }) {
                                         id: g.id || g._id,
                                         title: g.title || '',
                                         provider: g.provider || 'Players Paradise Studio',
-                                        thumbnail: g.thumbnail || '/images/vegas-777.webp',
+                                        thumbnail: g.thumbnail || '/images/vegas-777.svg',
                                         badge: g.badge || (g.isHot ? 'HOT' : ''),
                                         url: g.url || '',
                                         isActive: g.isActive !== false,
@@ -3580,7 +3580,7 @@ export default function AdminPortal({ initialTab }) {
                               }}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={editingGame.thumbnail || '/images/vegas-777.webp'} alt="Cover Preview" className="w-full h-full object-cover" />
+                              <img src={editingGame.thumbnail || '/images/vegas-777.svg'} alt="Cover Preview" className="w-full h-full object-cover" />
                             </div>
                             <label
                               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer text-xs font-bold transition-all"

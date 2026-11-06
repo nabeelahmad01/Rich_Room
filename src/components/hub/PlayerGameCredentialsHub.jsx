@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Key,
@@ -26,6 +25,12 @@ import {
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 
+const DEFAULT_GAME_THUMB = '/images/vegas-777.svg';
+
+function normalizeGameTitleKey(s) {
+  return cleanGameTitle(String(s || '')).toLowerCase().trim();
+}
+
 export default function PlayerGameAccountsHub({
   user,
   games = [],
@@ -45,14 +50,33 @@ export default function PlayerGameAccountsHub({
   const [requestSuccessMsg, setRequestSuccessMsg] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
+  /** Match catalog row by stored gameId first, then normalized title (handles typos vs admin catalog). */
+  const matchGameForAccount = useCallback(
+    (acc) => {
+      if (acc?.gameId) {
+        const idStr = String(acc.gameId);
+        const byId = games.find(
+          (g) =>
+            String(g.id || g._id || g.gameId || '') === idStr ||
+            String(g.gameId || '') === idStr
+        );
+        if (byId) return byId;
+      }
+      const key = normalizeGameTitleKey(acc?.gameTitle);
+      if (!key) return null;
+      return games.find((g) => normalizeGameTitleKey(g.title || g.name) === key);
+    },
+    [games]
+  );
+
   const fetchAccountsAndRequests = async (isSilent = false) => {
     if (!user?.email) return;
 
     if (!isSilent) setLoading(true);
     try {
       const [credRes, reqRes] = await Promise.all([
-        fetch(`/api/game-accounts?email=${encodeURIComponent(user.email)}`, { cache: 'no-store' }),
-        fetch(`/api/account-requests?email=${encodeURIComponent(user.email)}`, { cache: 'no-store' }),
+        fetch(`/api/game-accounts?email=${encodeURIComponent(user.email)}`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`/api/account-requests?email=${encodeURIComponent(user.email)}`, { credentials: 'include', cache: 'no-store' }),
       ]);
 
       const credData = await credRes.json();
@@ -72,8 +96,9 @@ export default function PlayerGameAccountsHub({
         // Step 1: Collect all verified READY credentials first
         reqData.accountRequests.forEach((req) => {
           if (req.status === 'READY') {
+            const reqKey = normalizeGameTitleKey(req.gameTitle);
             const alreadyExists = readyList.some(
-              (a) => a.gameTitle?.toLowerCase().trim() === req.gameTitle?.toLowerCase().trim()
+              (a) => normalizeGameTitleKey(a.gameTitle) === reqKey
             );
             if (!alreadyExists) {
               readyList.push({
@@ -91,9 +116,10 @@ export default function PlayerGameAccountsHub({
         reqData.accountRequests.forEach((req) => {
           if (req.status === 'READY') return;
 
+          const reqTitleKey = normalizeGameTitleKey(req.gameTitle);
           const hasActiveAccount = readyList.some(
             (a) =>
-              (a.gameTitle && req.gameTitle && a.gameTitle.toLowerCase().trim() === req.gameTitle.toLowerCase().trim()) ||
+              (a.gameTitle && req.gameTitle && normalizeGameTitleKey(a.gameTitle) === reqTitleKey) ||
               (a.gameId && req.gameId && String(a.gameId) === String(req.gameId))
           );
 
@@ -109,6 +135,17 @@ export default function PlayerGameAccountsHub({
             }
           }
         });
+      }
+
+      // Ensure each row has gameId + thumbnail (from games catalog / API) for correct artwork
+      for (let i = 0; i < readyList.length; i++) {
+        const row = readyList[i];
+        const m = matchGameForAccount(row);
+        readyList[i] = {
+          ...row,
+          gameId: row.gameId || m?.gameId || m?.id || m?._id || '',
+          thumbnail: row.thumbnail || m?.thumbnail || m?.image || m?.imageUrl,
+        };
       }
 
       diffSet(setActiveAccounts, readyList);
@@ -206,6 +243,7 @@ export default function PlayerGameAccountsHub({
     try {
       const res = await fetch('/api/account-requests', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gameTitle,
@@ -418,10 +456,13 @@ export default function PlayerGameAccountsHub({
             }}
           >
             {activeAccounts.map((acc, index) => {
-              const matchedGame = games.find(
-                (g) => (g.title || g.name || '').toLowerCase().trim() === (acc.gameTitle || '').toLowerCase().trim()
-              );
-              const thumb = matchedGame?.thumbnail || '/images/vegas-777.webp';
+              const matchedGame = matchGameForAccount(acc);
+              const thumbSrc =
+                (acc.thumbnail && String(acc.thumbnail).trim()) ||
+                matchedGame?.thumbnail ||
+                matchedGame?.image ||
+                matchedGame?.imageUrl ||
+                DEFAULT_GAME_THUMB;
               const isPasswordVisible = showPasswordMap[`acc_${index}`];
 
               return (
@@ -453,11 +494,11 @@ export default function PlayerGameAccountsHub({
                           flexShrink: 0,
                         }}
                       >
-                        <Image
-                          src={thumb}
-                          alt={acc.gameTitle}
-                          fill
-                          style={{ objectFit: 'cover' }}
+                        {/* eslint-disable-next-line @next/next/no-img-element — data:image admin uploads must bypass next/image */}
+                        <img
+                          src={thumbSrc}
+                          alt={acc.gameTitle || 'Game'}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>

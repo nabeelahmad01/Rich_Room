@@ -516,6 +516,7 @@ export async function PUT(req) {
           $set: {
             userEmail: cleanEmail,
             gameTitle: cleanTitle,
+            gameId: targetRequest.gameId || null,
             username: username || cleanEmail.split('@')[0],
             password: password || 'VegasWin777!',
             status: 'READY',
