@@ -26,9 +26,11 @@ export async function POST(req) {
     const usersCol = db.collection('users');
 
     // 1. Direct ENV Admin Credentials Synchronization Check
-    const envAdminUser = (process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase();
-    const envAdminEmail = (process.env.ADMIN_EMAIL || 'admin@richroom.com').trim().toLowerCase();
-    const envAdminPass = (process.env.ADMIN_PASSWORD || 'Paradise@2026!').trim();
+    const adminUsernameRaw = (process.env.ADMIN_USERNAME || 'admin').trim();
+    const adminEmailRaw = (process.env.ADMIN_EMAIL || 'admin@richroom.com').trim();
+    const envAdminUser = adminUsernameRaw.toLowerCase();
+    const envAdminEmail = adminEmailRaw.toLowerCase();
+    const envAdminPass = (process.env.ADMIN_PASSWORD || '').trim();
 
     const isEnvAdminAttempt =
       Boolean(envAdminPass) &&
@@ -43,14 +45,14 @@ export async function POST(req) {
       user = await usersCol.findOne({
         $or: [
           { role: ROLES.SUPER_ADMIN },
-          { username: (process.env.ADMIN_USERNAME || 'admin').trim() },
-          { email: (process.env.ADMIN_EMAIL || 'admin@richroom.com').trim() },
+          { username: adminUsernameRaw },
+          { email: adminEmailRaw },
         ],
       });
 
       const newAdminHash = await bcrypt.hash(envAdminPass, 10);
-      const targetUser = (process.env.ADMIN_USERNAME || 'admin').trim();
-      const targetEmail = (process.env.ADMIN_EMAIL || 'admin@richroom.com').trim();
+      const targetUser = adminUsernameRaw;
+      const targetEmail = adminEmailRaw;
 
       if (!user) {
         const newAdminDoc = {

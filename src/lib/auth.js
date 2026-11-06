@@ -110,38 +110,23 @@ export async function getSessionUser(preferredType = null) {
       return adminToken ? verifyToken(adminToken) : null;
     }
     if (preferredType === 'player') {
-      if (playerToken) {
-        const verified = verifyToken(playerToken);
-        if (verified) return verified;
-      }
-      if (adminToken) {
-        return verifyToken(adminToken);
-      }
-      return null;
+      // Never treat admin_session as a player login — keeps staff /admin separate from player site
+      if (!playerToken) return null;
+      return verifyToken(playerToken);
     }
 
-    // Auto-detect admin context from referer
+    // Auto-detect: admin portal requests → admin cookie only; everything else → player cookies only
     try {
       const { headers } = require('next/headers');
       const reqHeaders = await headers();
       const referer = reqHeaders.get('referer') || '';
       if (referer.includes('/admin')) {
-        if (adminToken) {
-          const verifiedAdmin = verifyToken(adminToken);
-          if (verifiedAdmin) return verifiedAdmin;
-        }
+        return adminToken ? verifyToken(adminToken) : null;
       }
     } catch {}
 
-    // If player token exists, return verified player session
     if (playerToken) {
-      const verifiedPlayer = verifyToken(playerToken);
-      if (verifiedPlayer) return verifiedPlayer;
-    }
-
-    // Fallback to admin session if present
-    if (adminToken) {
-      return verifyToken(adminToken);
+      return verifyToken(playerToken);
     }
 
     return null;

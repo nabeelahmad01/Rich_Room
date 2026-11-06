@@ -7,7 +7,8 @@
     "dev": "next dev -p 3008",
     "build": "next build",
     "start": "next start -p 3008",
-    "lint": "eslint"
+    "lint": "eslint",
+    "update-admin-env": "node scripts/update-admin-env.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

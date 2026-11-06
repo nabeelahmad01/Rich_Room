@@ -41,101 +41,108 @@ export async function ensureDbInitialized() {
 
       const envAdminUser = (process.env.ADMIN_USERNAME || 'admin').trim();
       const envAdminEmail = (process.env.ADMIN_EMAIL || 'admin@richroom.com').trim();
-      const envAdminPass = (process.env.ADMIN_PASSWORD || 'Paradise@2026!').trim();
-      const envStaffPass = (process.env.STAFF_PASSWORD || 'Staff@2026!').trim();
+      const envAdminPass = (process.env.ADMIN_PASSWORD || '').trim();
+      const envStaffPass = (process.env.STAFF_PASSWORD || '').trim();
 
-      const adminPasswordHash = await bcrypt.hash(envAdminPass, 10);
-      const staffPasswordHash = await bcrypt.hash(envStaffPass, 10);
-
-      // Always ensure Super Admin account exists with current ENV credentials
-      await usersCol.updateOne(
-        {
-          $or: [
-            { username: envAdminUser },
-            { email: envAdminEmail },
-            { role: ROLES.SUPER_ADMIN },
-          ],
-        },
-        {
-          $set: {
-            username: envAdminUser,
-            email: envAdminEmail,
-            passwordHash: adminPasswordHash,
-            role: ROLES.SUPER_ADMIN,
-            isBanned: false,
-            updatedAt: new Date(),
+      if (!envAdminPass) {
+        console.warn('[initDb] ADMIN_PASSWORD is not set in environment — super-admin seed/sync is skipped. Set it in .env and restart.');
+      } else {
+        const adminPasswordHash = await bcrypt.hash(envAdminPass, 10);
+        // Always ensure Super Admin account exists with current ENV credentials
+        await usersCol.updateOne(
+          {
+            $or: [
+              { username: envAdminUser },
+              { email: envAdminEmail },
+              { role: ROLES.SUPER_ADMIN },
+            ],
           },
-          $setOnInsert: {
-            balanceSC: 50000.0,
-            balanceGC: 10000000,
-            kycStatus: 'approved',
-            vipTier: 'Paradise Legend',
-            createdAt: new Date(),
+          {
+            $set: {
+              username: envAdminUser,
+              email: envAdminEmail,
+              passwordHash: adminPasswordHash,
+              role: ROLES.SUPER_ADMIN,
+              isBanned: false,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: {
+              balanceSC: 50000.0,
+              balanceGC: 10000000,
+              kycStatus: 'approved',
+              vipTier: 'Paradise Legend',
+              createdAt: new Date(),
+            },
           },
-        },
-        { upsert: true }
-      );
+          { upsert: true }
+        );
+      }
 
-    // 3. Ensure staff roles exist
-    await usersCol.updateOne(
-      { username: 'financemanager' },
-      {
-        $set: {
-          username: 'financemanager',
-          email: 'finance@playersparadisehub.com',
-          passwordHash: staffPasswordHash,
-          role: ROLES.FINANCIAL_MANAGER,
-          balanceSC: 5000.0,
-          balanceGC: 500000,
-          kycStatus: 'approved',
-          vipTier: 'Diamond Elite',
-          isBanned: false,
-          updatedAt: new Date(),
-        },
-        $setOnInsert: { createdAt: new Date() },
-      },
-      { upsert: true }
-    );
+      if (!envStaffPass) {
+        console.warn('[initDb] STAFF_PASSWORD is not set — default staff accounts are not synced. Set STAFF_PASSWORD in .env and restart.');
+      } else {
+        const staffPasswordHash = await bcrypt.hash(envStaffPass, 10);
+        // Ensure staff roles exist
+        await usersCol.updateOne(
+          { username: 'financemanager' },
+          {
+            $set: {
+              username: 'financemanager',
+              email: (process.env.STAFF_FINANCE_EMAIL || 'finance@playersparadisehub.com').trim(),
+              passwordHash: staffPasswordHash,
+              role: ROLES.FINANCIAL_MANAGER,
+              balanceSC: 5000.0,
+              balanceGC: 500000,
+              kycStatus: 'approved',
+              vipTier: 'Diamond Elite',
+              isBanned: false,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
+          },
+          { upsert: true }
+        );
 
-    await usersCol.updateOne(
-      { username: 'coinmanager' },
-      {
-        $set: {
-          username: 'coinmanager',
-          email: 'coins@playersparadisehub.com',
-          passwordHash: staffPasswordHash,
-          role: ROLES.COIN_MANAGER,
-          balanceSC: 2500.0,
-          balanceGC: 250000,
-          kycStatus: 'approved',
-          vipTier: 'Gold Titan',
-          isBanned: false,
-          updatedAt: new Date(),
-        },
-        $setOnInsert: { createdAt: new Date() },
-      },
-      { upsert: true }
-    );
+        await usersCol.updateOne(
+          { username: 'coinmanager' },
+          {
+            $set: {
+              username: 'coinmanager',
+              email: (process.env.STAFF_COINS_EMAIL || 'coins@playersparadisehub.com').trim(),
+              passwordHash: staffPasswordHash,
+              role: ROLES.COIN_MANAGER,
+              balanceSC: 2500.0,
+              balanceGC: 250000,
+              kycStatus: 'approved',
+              vipTier: 'Gold Titan',
+              isBanned: false,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
+          },
+          { upsert: true }
+        );
 
-    await usersCol.updateOne(
-      { username: 'chatsupport' },
-      {
-        $set: {
-          username: 'chatsupport',
-          email: 'support@playersparadisehub.com',
-          passwordHash: staffPasswordHash,
-          role: ROLES.CHAT_SUPPORT,
-          balanceSC: 1000.0,
-          balanceGC: 100000,
-          kycStatus: 'approved',
-          vipTier: 'Silver Cyber',
-          isBanned: false,
-          updatedAt: new Date(),
-        },
-        $setOnInsert: { createdAt: new Date() },
-      },
-      { upsert: true }
-    );
+        await usersCol.updateOne(
+          { username: 'chatsupport' },
+          {
+            $set: {
+              username: 'chatsupport',
+              email: (process.env.STAFF_SUPPORT_EMAIL || 'support@playersparadisehub.com').trim(),
+              passwordHash: staffPasswordHash,
+              role: ROLES.CHAT_SUPPORT,
+              balanceSC: 1000.0,
+              balanceGC: 100000,
+              kycStatus: 'approved',
+              vipTier: 'Silver Cyber',
+              isBanned: false,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
+          },
+          { upsert: true }
+        );
+      }
 
     // 2. Ensure Games catalog
     const gamesCol = db.collection('games');
