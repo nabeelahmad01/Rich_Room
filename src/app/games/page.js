@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { gamesCacheKey, readGamesFromSession, writeGamesToSession } from '@/lib/gamesClientCache';
 
 export default function GamesPage() {
   const router = useRouter();
@@ -34,7 +35,9 @@ export default function GamesPage() {
   const [games, setGames] = useState([]);
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => typeof window === 'undefined' || !readGamesFromSession(gamesCacheKey(category, search))
+  );
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -86,7 +89,16 @@ export default function GamesPage() {
   };
 
   const loadGames = async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
+    const key = gamesCacheKey(category, search);
+    if (!isSilent) {
+      const cached = readGamesFromSession(key);
+      if (cached) {
+        diffSet(setGames, cached.map((g) => ({ ...g, title: cleanGameTitle(g.title || '') })));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    }
     try {
       let url = '/api/games';
       const params = new URLSearchParams();
@@ -102,6 +114,7 @@ export default function GamesPage() {
           title: cleanGameTitle(g.title || '')
         }));
         diffSet(setGames, cleanList);
+        writeGamesToSession(key, cleanList);
       }
     } catch {}
     if (!isSilent) setLoading(false);
@@ -380,9 +393,16 @@ export default function GamesPage() {
             </h3>
           </div>
 
-          {/* Grid */}
-          {loading ? (
-            <p className="text-xs text-center text-slate-500 py-16">LOADING GAMES CATALOG...</p>
+          {/* Grid — show skeleton when empty fetch; avoid full-page flash if cache hydrated */}
+          {loading && games.length === 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 py-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-slate-800/80 bg-slate-900/40 aspect-[4/5] animate-pulse"
+                />
+              ))}
+            </div>
           ) : games.length === 0 ? (
             <p className="text-xs text-center text-slate-400 py-16">No games found in this category.</p>
           ) : (

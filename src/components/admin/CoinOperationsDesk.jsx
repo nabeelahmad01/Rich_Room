@@ -21,6 +21,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { diffSet } from '@/lib/fastDiff';
+import { mergeAccountRequestsOptimistic, mergeRedemptionsOptimistic } from '@/lib/mergeAdminLists';
 
 export default function CoinOperationsDesk({ sessionUser }) {
   const [activeSection, setActiveSection] = useState('loads'); // 'loads' | 'cashouts'
@@ -54,19 +55,20 @@ export default function CoinOperationsDesk({ sessionUser }) {
   const fetchData = async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
+      const fetchOpts = { credentials: 'include', cache: 'no-store' };
       const [loadsRes, cashoutsRes] = await Promise.all([
-        fetch('/api/account-requests?type=COIN_LOAD&status=all'),
-        fetch('/api/payments/withdraw?status=all'),
+        fetch('/api/account-requests?type=COIN_LOAD&status=all', fetchOpts),
+        fetch('/api/payments/withdraw?status=all', fetchOpts),
       ]);
 
       const loadsData = await loadsRes.json();
       const cashoutsData = await cashoutsRes.json();
 
       if (loadsData.success) {
-        diffSet(setLoadRequests, loadsData.accountRequests || []);
+        diffSet(setLoadRequests, (prev) => mergeAccountRequestsOptimistic(prev, loadsData.accountRequests || []));
       }
       if (cashoutsData.success) {
-        diffSet(setCashoutRequests, cashoutsData.redemptions || []);
+        diffSet(setCashoutRequests, (prev) => mergeRedemptionsOptimistic(prev, cashoutsData.redemptions || []));
       }
     } catch (err) {
       console.error('Error fetching coin desk data:', err);
@@ -201,6 +203,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
     try {
       const res = await fetch('/api/account-requests', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: targetItem.id,
@@ -255,6 +258,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
     try {
       const res = await fetch('/api/account-requests', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: targetItem.id,
@@ -296,6 +300,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
     try {
       const res = await fetch('/api/payments/withdraw', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           redemptionId,
@@ -366,6 +371,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
     try {
       const res = await fetch('/api/payments/withdraw', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           redemptionId: targetItem.id,

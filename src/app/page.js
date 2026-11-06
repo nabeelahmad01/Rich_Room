@@ -24,6 +24,7 @@ import SubscriptionPromoModal from '@/components/modals/SubscriptionPromoModal';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import KycModal from '@/components/modals/KycModal';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { gamesCacheKey, readGamesFromSession, writeGamesToSession } from '@/lib/gamesClientCache';
 import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 
@@ -76,7 +77,9 @@ export default function HomePage() {
   const [games, setGames] = useState([]);
   const [category, setCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [loadingGames, setLoadingGames] = useState(true);
+  const [loadingGames, setLoadingGames] = useState(
+    () => typeof window === 'undefined' || !readGamesFromSession(gamesCacheKey('all', ''))
+  );
   const [userGameAccounts, setUserGameAccounts] = useState([]);
   const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
 
@@ -126,8 +129,14 @@ export default function HomePage() {
 
   // Load Games
   const loadGames = async () => {
-    // Only show loading spinner on cold initial load
-    if (games.length === 0) setLoadingGames(true);
+    const key = gamesCacheKey(category, searchTerm);
+    const cached = readGamesFromSession(key);
+    if (cached) {
+      diffSet(setGames, cached.map((g) => ({ ...g, title: cleanGameTitle(g.title) })));
+      setLoadingGames(false);
+    } else if (games.length === 0) {
+      setLoadingGames(true);
+    }
     try {
       let url = '/api/games';
       const params = new URLSearchParams();
@@ -143,6 +152,7 @@ export default function HomePage() {
           title: cleanGameTitle(g.title),
         }));
         diffSet(setGames, sanitized);
+        writeGamesToSession(key, sanitized);
       }
     } catch (err) {
       console.error(err);
@@ -471,9 +481,14 @@ export default function HomePage() {
             </div>
 
             {/* Games Grid */}
-            {loadingGames ? (
-              <div className="py-20 text-center text-slate-500 font-mono text-sm">
-                SYNCHRONIZING VERIFIED PLATFORMS...
+            {loadingGames && games.length === 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 py-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border border-slate-800/80 bg-slate-900/40 aspect-[4/5] animate-pulse"
+                  />
+                ))}
               </div>
             ) : games.length === 0 ? (
               <div className="py-16 text-center space-y-2 text-slate-400">

@@ -81,6 +81,11 @@ import {
   requestDesktopNotificationPermission,
 } from '@/lib/soundAlerts';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import {
+  mergeDepositsOptimistic,
+  mergeRedemptionsOptimistic,
+  mergeAccountRequestsOptimistic,
+} from '@/lib/mergeAdminLists';
 
 export default function AdminPortal({ initialTab }) {
   const [user, setUser] = useState(null);
@@ -428,6 +433,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           welcomeBonusPercent: Number(sysSettings?.welcomeBonusPercent ?? 300),
@@ -475,7 +481,7 @@ export default function AdminPortal({ initialTab }) {
   const fetchAdminPromotions = async () => {
     setLoadingAdminPromos(true);
     try {
-      const res = await fetch('/api/promotions?admin=true', { cache: 'no-store' });
+      const res = await fetch('/api/promotions?admin=true', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success) {
         setAdminPromos(data.promotions || []);
@@ -491,6 +497,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch(`/api/promotions?id=${encodeURIComponent(promoId)}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       const data = await res.json();
       if (data.success) {
@@ -510,6 +517,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/promotions', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ _id: promoId, active: nextState }),
       });
@@ -535,6 +543,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/promotions', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newPromoForm,
@@ -572,9 +581,13 @@ export default function AdminPortal({ initialTab }) {
   const [coinLoadRequests, setCoinLoadRequests] = useState([]);
 
   const fetchAccountRequests = () => {
-    fetch(`/api/account-requests?type=ACCOUNT_CREATION&status=${accountReqFilter}`)
+    fetch(`/api/account-requests?type=ACCOUNT_CREATION&status=${accountReqFilter}`, { credentials: 'include' })
       .then(r => r.json())
-      .then(d => { if (d.success) setAccountRequests(d.accountRequests || []); })
+      .then(d => {
+        if (d.success) {
+          setAccountRequests((prev) => mergeAccountRequestsOptimistic(prev, d.accountRequests || []));
+        }
+      })
       .catch(() => { });
   };
 
@@ -614,6 +627,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/account-requests', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: targetReq.id,
@@ -650,6 +664,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       await fetch('/api/account-requests', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action: 'cancel', reason }),
       });
@@ -675,7 +690,7 @@ export default function AdminPortal({ initialTab }) {
   const [allotmentLedgerFilter, setAllotmentLedgerFilter] = useState('all');
 
   const fetchAllotmentData = (searchQuery = allotmentSearch) => {
-    fetch(`/api/coins/allotment?q=${encodeURIComponent(searchQuery)}`)
+    fetch(`/api/coins/allotment?q=${encodeURIComponent(searchQuery)}`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => {
         if (d.success) {
@@ -692,7 +707,7 @@ export default function AdminPortal({ initialTab }) {
       })
       .catch(() => { });
 
-    fetch('/api/coins/allotment?history=true')
+    fetch('/api/coins/allotment?history=true', { credentials: 'include' })
       .then(r => r.json())
       .then(d => {
         if (d.success) setAllotmentHistory(d.history || []);
@@ -733,6 +748,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/coins/allotment', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerId: selectedPlayer.id,
@@ -766,7 +782,7 @@ export default function AdminPortal({ initialTab }) {
   // Check current session
   const fetchSession = async () => {
     try {
-      const res = await fetch('/api/auth/me?admin=true', { cache: 'no-store' });
+      const res = await fetch('/api/auth/me?admin=true', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user && data.user.role !== 'player') {
         setUser(data.user);
@@ -847,11 +863,11 @@ export default function AdminPortal({ initialTab }) {
     if (!user) return;
     try {
       const [depRes, withRes, reqRes, loadRes, chatRes] = await Promise.allSettled([
-        fetch('/api/payments/deposit?status=all&lightweight=true', { cache: 'no-store' }),
-        fetch('/api/payments/withdraw?status=all&lightweight=true', { cache: 'no-store' }),
-        fetch('/api/account-requests?type=ACCOUNT_CREATION&status=all', { cache: 'no-store' }),
-        fetch('/api/account-requests?type=COIN_LOAD&status=all', { cache: 'no-store' }),
-        fetch('/api/chat?inbox=true', { cache: 'no-store' }),
+        fetch('/api/payments/deposit?status=all&lightweight=true', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/payments/withdraw?status=all&lightweight=true', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/account-requests?type=ACCOUNT_CREATION&status=all', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/account-requests?type=COIN_LOAD&status=all', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' }),
       ]);
 
       const depData = depRes.status === 'fulfilled' ? await depRes.value.json().catch(() => ({})) : {};
@@ -861,16 +877,16 @@ export default function AdminPortal({ initialTab }) {
       const chatData = chatRes.status === 'fulfilled' ? await chatRes.value.json().catch(() => ({})) : {};
 
       if (depData.success) {
-        diffSet(setDeposits, depData.deposits || []);
+        diffSet(setDeposits, (prev) => mergeDepositsOptimistic(prev, depData.deposits || []));
       }
       if (withData.success) {
-        diffSet(setRedemptions, withData.redemptions || []);
+        diffSet(setRedemptions, (prev) => mergeRedemptionsOptimistic(prev, withData.redemptions || []));
       }
       if (reqData.success) {
-        diffSet(setAccountRequests, reqData.accountRequests || []);
+        diffSet(setAccountRequests, (prev) => mergeAccountRequestsOptimistic(prev, reqData.accountRequests || []));
       }
       if (loadData.success) {
-        diffSet(setCoinLoadRequests, loadData.accountRequests || []);
+        diffSet(setCoinLoadRequests, (prev) => mergeAccountRequestsOptimistic(prev, loadData.accountRequests || []));
       }
       if (chatData.success && Array.isArray(chatData.conversations)) {
         diffSet(setChatConversations, chatData.conversations);
@@ -918,9 +934,11 @@ export default function AdminPortal({ initialTab }) {
           chat: unreadChatCount,
         };
 
-        // Alert on initial load if pending items are waiting
+        // Alert on initial load if pending items are waiting (include sound — same as live updates)
         if (pendingDeps.length > 0) {
           const newest = pendingDeps[0];
+          unlockAudioContext();
+          playAdminChime();
           setActiveAlertToast({
             type: 'deposit',
             title: `💰 Pending Deposit ($${Number(newest?.amount || 0).toFixed(2)})`,
@@ -931,6 +949,8 @@ export default function AdminPortal({ initialTab }) {
           });
         } else if (pendingWith.length > 0) {
           const newest = pendingWith[0];
+          unlockAudioContext();
+          playAdminChime();
           setActiveAlertToast({
             type: 'redemption',
             title: `💸 Pending Cashout ($${Number(newest?.amount || 0).toFixed(2)})`,
@@ -938,6 +958,17 @@ export default function AdminPortal({ initialTab }) {
             subtext: `Via ${newest?.payoutMethod || 'Direct'}`,
             targetTab: 'finance',
             targetSubTab: 'redemptions',
+          });
+        } else if (pendingReqs.length > 0) {
+          const newest = pendingReqs[0];
+          unlockAudioContext();
+          playAdminChime();
+          setActiveAlertToast({
+            type: 'account',
+            title: '🎯 Pending Game ID Request',
+            message: `${newest?.gameTitle || 'Game'} request from ${newest?.userName || 'Player'}`,
+            subtext: 'Tap to review & issue credentials',
+            targetTab: 'account_requests',
           });
         }
 
@@ -1016,6 +1047,7 @@ export default function AdminPortal({ initialTab }) {
       if (pendingCoinLoads.length > (prevCountsRef.current.coinLoads || 0)) {
         const newest = pendingCoinLoads[0];
         const isFp = Boolean(newest?.isFreeplay || newest?.freeplayPending);
+        unlockAudioContext();
         playAdminChime();
         const alertTitle = isFp ? '🎁 New Freeplay Allotment Request!' : '⚡ New Coin Load Request!';
         const alertBody = isFp
@@ -1041,6 +1073,7 @@ export default function AdminPortal({ initialTab }) {
       // 5. Incoming coin cashout proof verifications
       if (pendingCoinCashouts.length > (prevCountsRef.current.coinCashouts || 0)) {
         const newest = pendingCoinCashouts[0];
+        unlockAudioContext();
         playAdminChime();
         const alertTitle = '🎮 New Cashout Verification (Coins Desk)!';
         const alertBody = `$${Number(newest?.amount || 0).toFixed(2)} SC for ${newest?.username || 'Player'} - ${newest?.gameTitle || 'Game'}`;
@@ -1078,7 +1111,7 @@ export default function AdminPortal({ initialTab }) {
         });
 
         if (activeTab === 'chat' && activeChatConv?._id) {
-          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}`, { cache: 'no-store' })
+          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}`, { credentials: 'include', cache: 'no-store' })
             .then((r) => r.json())
             .then((d) => {
               if (d.success) setChatMessages(d.messages);
@@ -1177,7 +1210,7 @@ export default function AdminPortal({ initialTab }) {
         });
 
         // Fast zero-delay inbox refresh (do NOT mark conversation read in background so unread badge stays visible!)
-        fetch('/api/chat?inbox=true', { cache: 'no-store' })
+        fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' })
           .then((r) => r.json())
           .then((d) => {
             if (d.success) diffSet(setChatConversations, d.conversations || []);
@@ -1240,25 +1273,25 @@ export default function AdminPortal({ initialTab }) {
     const loadData = () => {
       if (document.hidden) return;
       if (activeTab === 'overview') {
-        fetch('/api/admin/stats', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStats, d.stats); });
+        fetch('/api/admin/stats', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStats, d.stats); });
       } else if (activeTab === 'games') {
-        fetch('/api/games?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => {
+        fetch('/api/games?all=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => {
           if (d.success && d.games) {
             const cleanList = d.games.map(g => ({ ...g, title: cleanGameTitle(g.title || '') }));
             diffSet(setGames, cleanList);
           }
         });
       } else if (activeTab === 'finance') {
-        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
-        fetch('/api/payments/cashout-methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setCashoutMethods, d.methods || []); });
-        fetch('/api/payments/deposit?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setDeposits, d.deposits || []); });
-        fetch('/api/payments/withdraw?status=all&lightweight=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setRedemptions, d.redemptions || []); });
+        fetch('/api/payments/methods?all=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
+        fetch('/api/payments/cashout-methods?all=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setCashoutMethods, d.methods || []); });
+        fetch('/api/payments/deposit?status=all&lightweight=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setDeposits, (prev) => mergeDepositsOptimistic(prev, d.deposits || [])); });
+        fetch('/api/payments/withdraw?status=all&lightweight=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setRedemptions, (prev) => mergeRedemptionsOptimistic(prev, d.redemptions || [])); });
       } else if (activeTab === 'ledger') {
-        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { cache: 'no-store' })
+        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { credentials: 'include', cache: 'no-store' })
           .then(r => r.json())
           .then(d => { if (d.success) diffSet(setLedgerRecords, d.records || []); });
       } else if (activeTab === 'chat') {
-        fetch('/api/chat?inbox=true', { cache: 'no-store' })
+        fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' })
           .then(r => r.json())
           .then(d => {
             if (d.success) {
@@ -1275,31 +1308,31 @@ export default function AdminPortal({ initialTab }) {
             }
           });
       } else if (activeTab === 'promos') {
-        fetch('/api/notifications?admin=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setBroadcastLogs, d.broadcasts || []); });
+        fetch('/api/notifications?admin=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setBroadcastLogs, d.broadcasts || []); });
         fetchAdminPromotions();
       } else if (activeTab === 'affiliates' || activeTab === 'affiliate_commissions') {
-        fetch('/api/affiliates?mode=admin', { cache: 'no-store' }).then(r => r.json()).then(d => {
+        fetch('/api/affiliates?mode=admin', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => {
           if (d.success) {
             diffSet(setAffiliates, d.affiliates || []);
             diffSet(setAffiliateSummary, d.summary || null);
           }
         });
       } else if (activeTab === 'staff') {
-        fetch('/api/admin/staff', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStaffList, d.staff || []); });
+        fetch('/api/admin/staff', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setStaffList, d.staff || []); });
       } else if (activeTab === 'account_requests') {
         fetchAccountRequests();
       } else if (activeTab === 'coins_allotment') {
         fetchAllotmentData();
       } else if (activeTab === 'users') {
-        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setUsersList, d.users || []); });
+        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setUsersList, d.users || []); });
       } else if (activeTab === 'gateways') {
-        fetch('/api/payments/methods?all=true', { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
+        fetch('/api/payments/methods?all=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setPaymentMethods, d.methods || []); });
       } else if (activeTab === 'tx_search') {
-        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setLedgerRecords, d.records || []); });
+        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) diffSet(setLedgerRecords, d.records || []); });
       } else if (activeTab === 'settings') {
         if (!settingsLoadedRef.current) {
           settingsLoadedRef.current = true;
-          fetch('/api/admin/settings', { cache: 'no-store' })
+          fetch('/api/admin/settings', { credentials: 'include', cache: 'no-store' })
             .then(r => r.json())
             .then(d => { if (d.success && d.settings) diffSet(setSysSettings, d.settings); });
           fetchAdminPromotions();
@@ -1329,7 +1362,7 @@ export default function AdminPortal({ initialTab }) {
   useEffect(() => {
     if (!activeChatConv || activeTab !== 'chat') return;
     const fetchChatMsgs = () => {
-      fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { cache: 'no-store' })
+      fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { credentials: 'include', cache: 'no-store' })
         .then(r => r.json())
         .then(d => {
           if (d.success) {
@@ -1372,6 +1405,7 @@ export default function AdminPortal({ initialTab }) {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: loginId, password: loginPassword, isAdminLogin: true }),
       });
@@ -1389,6 +1423,7 @@ export default function AdminPortal({ initialTab }) {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isAdminLogout: true }),
     });
@@ -3159,7 +3194,7 @@ export default function AdminPortal({ initialTab }) {
                                   onClick={() => {
                                     if (confirm(`Remove ${g.title} from catalog?`)) {
                                       setGames(prev => prev.filter(item => item.id !== g.id));
-                                      fetch(`/api/games?id=${g.id}`, { method: 'DELETE' }).catch(err => console.error(err));
+                                      fetch(`/api/games?id=${g.id}`, { method: 'DELETE', credentials: 'include' }).catch(err => console.error(err));
                                     }
                                   }}
                                   className="p-2 rounded-xl transition-all cursor-pointer"
@@ -3370,7 +3405,7 @@ export default function AdminPortal({ initialTab }) {
                                       type="button"
                                       onClick={async () => {
                                         if (confirm(`Remove ${g.title} from catalog?`)) {
-                                          await fetch(`/api/games?id=${g.id}`, { method: 'DELETE' });
+                                          await fetch(`/api/games?id=${g.id}`, { method: 'DELETE', credentials: 'include' });
                                           setGames(games.filter(item => item.id !== g.id));
                                         }
                                       }}
@@ -3689,6 +3724,7 @@ export default function AdminPortal({ initialTab }) {
                 try {
                   const res = await fetch('/api/payments/deposit', {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ depositId, action: 'approve', customSC: Number(scToCredit) }),
                   });
@@ -3714,6 +3750,7 @@ export default function AdminPortal({ initialTab }) {
                 try {
                   const res = await fetch('/api/payments/deposit', {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ depositId, action: 'reject', rejectReason: reason }),
                   });
@@ -3741,6 +3778,7 @@ export default function AdminPortal({ initialTab }) {
                 try {
                   const res = await fetch('/api/payments/withdraw', {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ redemptionId, action: 'approve' }),
                   });
@@ -3773,6 +3811,7 @@ export default function AdminPortal({ initialTab }) {
                 try {
                   const res = await fetch('/api/payments/withdraw', {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ redemptionId, action: 'reject', rejectReason: reason }),
                   });
@@ -3946,6 +3985,7 @@ export default function AdminPortal({ initialTab }) {
               try {
                 await fetch('/api/chat', {
                   method: 'POST',
+                  credentials: 'include',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     conversationId: activeChatConv._id,
@@ -3956,10 +3996,10 @@ export default function AdminPortal({ initialTab }) {
                     isStaffReply: true,
                   }),
                 });
-                const res = await fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`);
+                const res = await fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { credentials: 'include', cache: 'no-store' });
                 const d = await res.json();
                 if (d.success) setChatMessages(d.messages);
-                const cRes = await fetch('/api/chat?inbox=true');
+                const cRes = await fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' });
                 const cD = await cRes.json();
                 if (cD.success) setChatConversations(cD.conversations);
 
@@ -4025,9 +4065,9 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="button"
                       onClick={() => {
-                        fetch('/api/chat?inbox=true').then(r => r.json()).then(d => { if (d.success) setChatConversations(d.conversations); });
+                        fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setChatConversations(d.conversations); });
                         if (activeChatConv) {
-                          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
+                          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
                         }
                       }}
                       className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white flex items-center gap-1.5 text-xs font-bold transition"
@@ -4250,7 +4290,7 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => {
-                                fetch(`/api/chat?conversationId=${activeChatConv._id}`).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
+                                fetch(`/api/chat?conversationId=${activeChatConv._id}`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
                               }}
                               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition"
                               title="Refresh Chat"
@@ -4594,6 +4634,7 @@ export default function AdminPortal({ initialTab }) {
               try {
                 const res = await fetch('/api/notifications', {
                   method: 'POST',
+                  credentials: 'include',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     title: pushTitle,
@@ -4610,7 +4651,7 @@ export default function AdminPortal({ initialTab }) {
                   setPushTitle('');
                   setPushBody('');
                   // Refresh logs
-                  const logsRes = await fetch('/api/notifications?admin=true').then(r => r.json());
+                  const logsRes = await fetch('/api/notifications?admin=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json());
                   if (logsRes.success) setBroadcastLogs(logsRes.broadcasts || []);
                   setTimeout(() => setPushStatus(null), 6000);
                 } else {
@@ -4651,7 +4692,7 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="button"
                       onClick={() => {
-                        fetch('/api/notifications?admin=true').then(r => r.json()).then(d => { if (d.success) setBroadcastLogs(d.broadcasts || []); });
+                        fetch('/api/notifications?admin=true', { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setBroadcastLogs(d.broadcasts || []); });
                       }}
                       className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white flex items-center gap-1.5 text-xs font-bold transition"
                       title="Refresh Dispatch History"
@@ -4711,11 +4752,11 @@ export default function AdminPortal({ initialTab }) {
                           type="button"
                           onClick={async () => {
                             try {
-                              const r = await fetch('/api/notifications/test', { method: 'POST' });
+                              const r = await fetch('/api/notifications/test', { method: 'POST', credentials: 'include' });
                               const d = await r.json();
                               if (d.success) {
                                 setPushStatus('✓ Instant test alert sent to Chrome & In-App!');
-                                const logsRes = await fetch('/api/notifications?admin=true').then(res => res.json());
+                                const logsRes = await fetch('/api/notifications?admin=true', { credentials: 'include', cache: 'no-store' }).then(res => res.json());
                                 if (logsRes.success) setBroadcastLogs(logsRes.broadcasts || []);
                                 setTimeout(() => setPushStatus(null), 5000);
                               }
@@ -4978,7 +5019,7 @@ export default function AdminPortal({ initialTab }) {
               affiliates={affiliates}
               summary={affiliateSummary}
               onRefresh={() => {
-                fetch('/api/affiliates?mode=admin')
+                fetch('/api/affiliates?mode=admin', { credentials: 'include', cache: 'no-store' })
                   .then(r => r.json())
                   .then(d => {
                     if (d.success) {
@@ -5104,6 +5145,7 @@ export default function AdminPortal({ initialTab }) {
                         e.preventDefault();
                         const res = await fetch('/api/admin/staff', {
                           method: 'POST',
+                          credentials: 'include',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify(newStaff),
                         });
@@ -5255,6 +5297,7 @@ export default function AdminPortal({ initialTab }) {
                                   try {
                                     const res = await fetch('/api/admin/staff', {
                                       method: 'PUT',
+                                      credentials: 'include',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({ staffId: s.id, isBanned: !s.isBanned }),
                                     });
@@ -5293,6 +5336,7 @@ export default function AdminPortal({ initialTab }) {
                                   try {
                                     const res = await fetch('/api/admin/staff', {
                                       method: 'DELETE',
+                                      credentials: 'include',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({ staffId: s.id }),
                                     });
@@ -5385,6 +5429,7 @@ export default function AdminPortal({ initialTab }) {
                         try {
                           const res = await fetch('/api/admin/staff', {
                             method: 'PUT',
+                            credentials: 'include',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                               staffId: editingStaff.id,
@@ -6190,7 +6235,7 @@ export default function AdminPortal({ initialTab }) {
                         onChange={(e) => setUserSearchQuery(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`)
+                            fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { credentials: 'include', cache: 'no-store' })
                               .then(r => r.json())
                               .then(d => { if (d.success) setUsersList(d.users || []); });
                           }
@@ -6201,7 +6246,7 @@ export default function AdminPortal({ initialTab }) {
                     </div>
                     <button
                       onClick={() => {
-                        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`)
+                        fetch(`/api/users?search=${encodeURIComponent(userSearchQuery)}`, { credentials: 'include', cache: 'no-store' })
                           .then(r => r.json())
                           .then(d => { if (d.success) setUsersList(d.users || []); });
                       }}
@@ -6347,6 +6392,7 @@ export default function AdminPortal({ initialTab }) {
                                   if (!window.confirm(`Reset bound hardware device for "${u.username}"?`)) return;
                                   const res = await fetch('/api/users', {
                                     method: 'PUT',
+                                    credentials: 'include',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ userId: u.id, action: 'resetDevice' }),
                                   });
@@ -6371,6 +6417,7 @@ export default function AdminPortal({ initialTab }) {
                                 const reason = prompt('Reason for action:', u.isBanned ? 'Account cleared' : 'Terms violation');
                                 const res = await fetch('/api/users', {
                                   method: 'PUT',
+                                  credentials: 'include',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ userId: u.id, action: 'toggleBan', reason }),
                                 });
@@ -6527,6 +6574,7 @@ export default function AdminPortal({ initialTab }) {
                                         if (!window.confirm(`Reset bound hardware device for "${u.username}"?`)) return;
                                         const res = await fetch('/api/users', {
                                           method: 'PUT',
+                                          credentials: 'include',
                                           headers: { 'Content-Type': 'application/json' },
                                           body: JSON.stringify({ userId: u.id, action: 'resetDevice' }),
                                         });
@@ -6553,6 +6601,7 @@ export default function AdminPortal({ initialTab }) {
                                       const reason = prompt('Reason for action:', u.isBanned ? 'Account cleared' : 'Terms violation');
                                       const res = await fetch('/api/users', {
                                         method: 'PUT',
+                                        credentials: 'include',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ userId: u.id, action: 'toggleBan', reason }),
                                       });
@@ -6691,6 +6740,7 @@ export default function AdminPortal({ initialTab }) {
                         try {
                           const res = await fetch('/api/payments/methods', {
                             method: 'POST',
+                            credentials: 'include',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(methodToSubmit),
                           });
@@ -7021,6 +7071,7 @@ export default function AdminPortal({ initialTab }) {
                               // 2. Fire PUT in background
                               fetch('/api/payments/methods', {
                                 method: 'PUT',
+                                credentials: 'include',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ id: m.id, isActive: updatedActive }),
                               }).catch(err => console.error('Failed to update gateway', err));
@@ -7044,6 +7095,7 @@ export default function AdminPortal({ initialTab }) {
                               // 2. Fire DELETE in background
                               fetch(`/api/payments/methods?id=${encodeURIComponent(m.id)}`, {
                                 method: 'DELETE',
+                                credentials: 'include',
                               }).catch(err => console.error('Failed to delete gateway', err));
                             }}
                             className="px-2.5 py-1.5 rounded-xl bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 font-bold text-xs flex items-center gap-1 transition cursor-pointer"
@@ -7085,6 +7137,7 @@ export default function AdminPortal({ initialTab }) {
                     try {
                       const res = await fetch('/api/payments/cashout-methods', {
                         method: 'POST',
+                        credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newCashoutMethod),
                       });
@@ -7168,6 +7221,7 @@ export default function AdminPortal({ initialTab }) {
                             );
                             fetch('/api/payments/cashout-methods', {
                               method: 'PUT',
+                              credentials: 'include',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ id: cm.id, methodId: cm.methodId, isActive: nextActive }),
                             }).catch((err) => console.error(err));
@@ -7188,6 +7242,7 @@ export default function AdminPortal({ initialTab }) {
                             setCashoutMethods((prev) => prev.filter((x) => x.id !== cm.id));
                             fetch(`/api/payments/cashout-methods?id=${encodeURIComponent(cm.id || cm.methodId)}`, {
                               method: 'DELETE',
+                              credentials: 'include',
                             }).catch((err) => console.error(err));
                           }}
                           className="px-2.5 py-1.5 rounded-xl bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 font-bold text-xs flex items-center gap-1 transition cursor-pointer"
@@ -7235,7 +7290,7 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="button"
                       onClick={() => {
-                        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}&t=${Date.now()}`)
+                        fetch(`/api/ledger?username=${encodeURIComponent(ledgerFilterUser)}&type=${ledgerFilterType}&t=${Date.now()}`, { credentials: 'include', cache: 'no-store' })
                           .then(r => r.json())
                           .then(d => { if (d.success) setLedgerRecords(d.records || []); });
                       }}
@@ -7845,7 +7900,7 @@ export default function AdminPortal({ initialTab }) {
               affiliates={affiliates}
               summary={affiliateSummary}
               onRefresh={() => {
-                fetch('/api/affiliates?mode=admin')
+                fetch('/api/affiliates?mode=admin', { credentials: 'include', cache: 'no-store' })
                   .then(r => r.json())
                   .then(d => {
                     if (d.success) {
@@ -7957,6 +8012,7 @@ export default function AdminPortal({ initialTab }) {
                     if (isNaN(amt) || amt === 0) return alert('Please enter a valid non-zero adjustment amount');
                     const res = await fetch('/api/users', {
                       method: 'PUT',
+                      credentials: 'include',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         userId: adjustModal.user.id,
@@ -8063,6 +8119,7 @@ export default function AdminPortal({ initialTab }) {
                     e.preventDefault();
                     const res = await fetch('/api/users', {
                       method: 'PUT',
+                      credentials: 'include',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         userId: resetPassModal.user.id,
@@ -8173,6 +8230,7 @@ export default function AdminPortal({ initialTab }) {
                     const { id, name, type, tag, accountDetails, paymentUrl, qrCode, instructions, minDeposit, maxDeposit, isActive } = editGatewayModal.data;
                     const res = await fetch('/api/payments/methods', {
                       method: 'PUT',
+                      credentials: 'include',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         id,

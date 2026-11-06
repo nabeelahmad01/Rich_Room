@@ -32,6 +32,8 @@ export default function ReferralPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState('');
+  /** false until first /api/auth/me completes — avoids flashing "log in" for logged-in users */
+  const [authResolved, setAuthResolved] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -42,22 +44,42 @@ export default function ReferralPage() {
 
   const loadUserAndStats = async (isSilent = false) => {
     try {
-      const meRes = await fetch('/api/auth/me', { cache: 'no-store' });
+      const meRes = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
         diffSet(setUser, meData.user);
-        const affRes = await fetch('/api/affiliates', { cache: 'no-store' });
+        const affRes = await fetch('/api/affiliates', { credentials: 'include', cache: 'no-store' });
         const affData = await affRes.json();
         if (affData.success && affData.stats) {
           diffSet(setStats, affData.stats);
         }
+      } else if (!isSilent) {
+        diffSet(setUser, null);
+        diffSet(setStats, null);
       }
     } catch {}
-    if (!isSilent) setLoading(false);
+    finally {
+      if (!isSilent) {
+        setLoading(false);
+        setAuthResolved(true);
+      }
+    }
   };
 
   useEffect(() => {
     loadUserAndStats();
+
+    const handleUserSync = (e) => {
+      if (e.detail) {
+        diffSet(setUser, e.detail);
+        setAuthResolved(true);
+        loadUserAndStats(true);
+      } else {
+        diffSet(setUser, null);
+        diffSet(setStats, null);
+        setAuthResolved(true);
+      }
+    };
 
     // Fast zero-refresh polling (2.5s) so new referrals immediately show up
     const interval = setInterval(() => {
@@ -65,11 +87,13 @@ export default function ReferralPage() {
     }, 2500);
 
     const handleFocus = () => loadUserAndStats(true);
+    window.addEventListener('paradise-user-sync', handleUserSync);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
     };
@@ -129,7 +153,7 @@ export default function ReferralPage() {
       {/* Main Layout Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-          sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+          sidebarCollapsed ? 'xl:ml-20' : 'xl:ml-64'
         }`}
       >
         <CyberNavbar
@@ -163,7 +187,15 @@ export default function ReferralPage() {
             </div>
           </div>
 
-          {!user ? (
+          {!authResolved ? (
+            <div className="space-y-6 max-w-6xl mx-auto animate-pulse">
+              <div className="h-40 rounded-3xl bg-slate-900/60 border border-slate-800" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="h-32 rounded-2xl bg-slate-900/50 border border-slate-800" />
+                <div className="h-32 rounded-2xl bg-slate-900/50 border border-slate-800" />
+              </div>
+            </div>
+          ) : !user ? (
             /* Logged-out state */
             <div className="p-8 rounded-3xl bg-[#09071c] border border-slate-800 text-center space-y-4 max-w-md mx-auto">
               <div className="w-16 h-16 rounded-2xl bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/30 flex items-center justify-center mx-auto text-[var(--neon-cyan)]">

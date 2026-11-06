@@ -137,7 +137,7 @@ export default function CyberNavbar({
     const syncUserData = async () => {
       if (document.hidden) return; // Save VPS CPU when tab is hidden
       try {
-        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
         const data = await res.json();
         if (isCancelled) return;
 
@@ -165,7 +165,7 @@ export default function CyberNavbar({
 
           // Fetch live unread notification count
           if (data.user.email) {
-            fetch(`/api/notifications?email=${encodeURIComponent(data.user.email)}`, { cache: 'no-store' })
+            fetch(`/api/notifications?email=${encodeURIComponent(data.user.email)}`, { credentials: 'include', cache: 'no-store' })
               .then((r) => r.json())
               .then((nData) => {
                 if (!isCancelled && nData.success && Array.isArray(nData.notifications)) {
