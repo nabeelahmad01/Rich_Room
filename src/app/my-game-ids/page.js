@@ -107,7 +107,7 @@ export default function MyGameIdsPage() {
         onOpenSpinWheel={() => setSpinWheelOpen(true)}
       />
 
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'}`}>
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={user}
@@ -121,7 +121,7 @@ export default function MyGameIdsPage() {
           }}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 lg:pb-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 xl:px-8 py-8 space-y-8 pb-28 xl:pb-8">
           {/* Header Banner */}
           <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 border border-[var(--chrome-border)] bg-[var(--bg-card)] shadow-[0_0_30px_var(--neon-cyan-glow)]">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--neon-cyan)]/10 rounded-full blur-3xl pointer-events-none" />

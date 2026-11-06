@@ -34,7 +34,7 @@ export default function ContactPage() {
         onOpenDailyBonus={() => {}}
       />
 
-      <div className="flex-1 flex flex-col lg:pl-64">
+      <div className="flex-1 flex flex-col xl:pl-64">
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={null}
@@ -45,7 +45,7 @@ export default function ContactPage() {
           onLogout={() => {}}
         />
 
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-10 space-y-8">
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 xl:pb-10 space-y-8">
           <div className="text-center space-y-2">
             <span className="text-xs font-sub font-bold text-[var(--neon-cyan)]">GET IN TOUCH</span>
             <h1 className="text-3xl font-black font-heading text-white">24/7 VIP SUPPORT DESK</h1>

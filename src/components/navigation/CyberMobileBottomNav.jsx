@@ -61,7 +61,7 @@ export default function CyberMobileBottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[var(--bg-deep)]/95 backdrop-blur-xl border-t border-[var(--chrome-border)]/60 px-2 pt-1.5 flex items-center justify-around shadow-[0_-10px_25px_rgba(0,0,0,0.6)]"
+      className="fixed bottom-0 left-0 right-0 z-40 xl:hidden bg-[var(--bg-deep)]/95 backdrop-blur-xl border-t border-[var(--chrome-border)]/60 px-2 pt-1.5 flex items-center justify-around shadow-[0_-10px_25px_rgba(0,0,0,0.6)]"
       style={{ paddingBottom: 'max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px))' }}
     >
       {tabs.map((tab) => {

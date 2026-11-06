@@ -401,7 +401,7 @@ export default function HomePage() {
       {/* Main Content Layout */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+          sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'
         }`}
       >
         {/* Top Navbar */}
@@ -414,7 +414,7 @@ export default function HomePage() {
         />
 
         {/* Page Inner Container */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 pb-28 lg:pb-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 xl:px-8 py-6 space-y-8 pb-28 xl:pb-8">
           {/* Marquee Ticker at the Very Top */}
           <CyberLatestWinsTicker />
 

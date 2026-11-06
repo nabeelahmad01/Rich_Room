@@ -70,15 +70,15 @@ export default function CyberSidebar({
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm xl:hidden transition-opacity"
         />
       )}
 
       {/* Sidebar container */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out border-r border-[var(--chrome-border)] bg-[var(--bg-deep)]/95 backdrop-blur-xl ${
-          mobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
-        } ${collapsed ? 'lg:w-20' : 'lg:w-64'}`}
+          mobileOpen ? 'translate-x-0 w-72' : '-translate-x-full xl:translate-x-0'
+        } ${collapsed ? 'xl:w-20' : 'xl:w-64'}`}
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
@@ -120,7 +120,7 @@ export default function CyberSidebar({
           {/* Desktop collapse button */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900/80 border border-slate-700/60 text-slate-400 hover:text-[var(--neon-cyan)] hover:border-[var(--neon-cyan)] transition-colors"
+            className="hidden xl:flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900/80 border border-slate-700/60 text-slate-400 hover:text-[var(--neon-cyan)] hover:border-[var(--neon-cyan)] transition-colors"
             title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

@@ -256,14 +256,14 @@ export default function CyberNavbar({
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <button
           onClick={onToggleSidebar}
-          className="p-2 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-[var(--neon-cyan)] hover:border-[var(--neon-cyan)] transition-colors lg:hidden shrink-0"
+          className="p-2 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-300 hover:text-[var(--neon-cyan)] hover:border-[var(--neon-cyan)] transition-colors xl:hidden shrink-0"
         >
           <Menu size={20} />
         </button>
 
         <div
           onClick={() => router.push('/')}
-          className="flex items-center gap-2 cursor-pointer lg:hidden shrink-0"
+          className="flex items-center gap-2 cursor-pointer xl:hidden shrink-0"
         >
           <div
             className="relative w-8 h-8 rounded-lg overflow-hidden border border-[var(--neon-cyan)] shrink-0"

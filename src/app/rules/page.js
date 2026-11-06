@@ -41,7 +41,7 @@ export default function RulesPage() {
         onOpenDailyBonus={() => {}}
       />
 
-      <div className="flex-1 flex flex-col lg:pl-64">
+      <div className="flex-1 flex flex-col xl:pl-64">
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={null}
@@ -52,7 +52,7 @@ export default function RulesPage() {
           onLogout={() => {}}
         />
 
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-10 space-y-6">
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 xl:pb-10 space-y-6">
           <div className="space-y-2">
             <span className="text-xs font-heading font-bold text-[var(--neon-cyan)] flex items-center gap-1.5">
               <ShieldCheck size={16} /> OFFICIAL CASHOUT &amp; REDEMPTION POLICY

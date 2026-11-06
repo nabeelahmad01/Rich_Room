@@ -141,7 +141,7 @@ export default function SpinWheelPage() {
         onOpenChat={() => {}}
       />
 
-      <div className="flex-1 flex flex-col lg:pl-64">
+      <div className="flex-1 flex flex-col xl:pl-64">
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={user}
@@ -149,7 +149,7 @@ export default function SpinWheelPage() {
           onOpenWallet={() => router.push('/deposit')}
         />
 
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-12 space-y-8">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 xl:pb-12 space-y-8">
           {/* Header */}
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-heading font-black shadow-[0_0_15px_rgba(245,158,11,0.2)]">

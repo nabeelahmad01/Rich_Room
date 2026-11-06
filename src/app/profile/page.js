@@ -132,7 +132,7 @@ export default function ProfilePage() {
         onOpenDailyBonus={() => {}}
       />
 
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'}`}>
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={user}
@@ -147,7 +147,7 @@ export default function ProfilePage() {
           }}
         />
 
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-28 lg:pb-8">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-28 xl:pb-8">
           {/* Header Card */}
           <div className="p-6 md:p-8 rounded-3xl border border-[var(--chrome-border)] bg-gradient-to-br from-[#0c1333] via-[#090d24] to-[#050711] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center gap-5">

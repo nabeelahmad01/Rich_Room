@@ -273,10 +273,10 @@ function ProvisioningContent() {
         onOpenChat={() => {}}
       />
 
-      {/* Main Content Layout with proper lg:pl-64 offset */}
+      {/* Main Content Layout with proper xl:pl-64 offset */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+          sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'
         }`}
       >
         {/* Navbar */}
@@ -290,7 +290,7 @@ function ProvisioningContent() {
           }}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28 lg:pb-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 xl:px-8 py-6 space-y-6 pb-28 xl:pb-8">
           {/* Header Card */}
           <div className="relative overflow-hidden rounded-3xl border border-[var(--neon-purple)]/30 bg-gradient-to-r from-purple-950/40 via-slate-900 to-[#0c102b] p-6 sm:p-8 shadow-[0_0_40px_rgba(192,38,211,0.15)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

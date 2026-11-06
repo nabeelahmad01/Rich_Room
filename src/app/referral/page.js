@@ -145,7 +145,7 @@ export default function ReferralPage() {
           }}
         />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-8 max-w-6xl mx-auto w-full space-y-8">
+        <main className="flex-1 px-4 sm:px-6 xl:px-8 py-6 pb-28 xl:pb-8 max-w-6xl mx-auto w-full space-y-8">
           {/* Header Banner */}
           <div className="relative rounded-3xl overflow-hidden p-6 sm:p-10 border border-[var(--neon-cyan)]/30 bg-gradient-to-br from-[#0c0824] via-[#09061c] to-[#04020d] shadow-[0_0_40px_rgba(0,240,255,0.15)]">
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-[var(--neon-cyan)]/15 to-purple-600/10 rounded-full blur-3xl pointer-events-none" />

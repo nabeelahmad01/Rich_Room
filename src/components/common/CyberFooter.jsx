@@ -7,7 +7,7 @@ import { ShieldCheck, HeartHandshake, Zap, Trophy, Download } from 'lucide-react
 
 export default function CyberFooter() {
   return (
-    <footer className="w-full mt-16 border-t border-[var(--chrome-border)]/60 bg-[#04060e] text-slate-400 pt-12 pb-28 lg:pb-12 px-4 md:px-8">
+    <footer className="w-full mt-16 border-t border-[var(--chrome-border)]/60 bg-[#04060e] text-slate-400 pt-12 pb-28 xl:pb-12 px-4 md:px-8">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Top Brand Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">

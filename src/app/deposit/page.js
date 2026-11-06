@@ -427,7 +427,7 @@ export default function DepositPage() {
       {/* Main Content Layout */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+          sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'
         }`}
       >
         {/* Top Navbar */}
@@ -442,7 +442,7 @@ export default function DepositPage() {
         />
 
         {/* Center Content Body */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28 lg:pb-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 xl:px-8 py-6 space-y-6 pb-28 xl:pb-8">
           {/* Header Banner */}
           <div className="relative overflow-hidden rounded-3xl border border-[var(--chrome-border)] bg-[var(--bg-card)] p-6 sm:p-8 shadow-[0_0_40px_var(--neon-cyan-glow)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -639,7 +639,7 @@ export default function DepositPage() {
                 </div>
 
                 {/* Amount presets */}
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2">
                   {presetAmounts.map((p) => {
                     const isSelected = !customAmount && amount === p;
                     return (
@@ -1076,7 +1076,7 @@ export default function DepositPage() {
                 No deposit requests recorded yet. Make your first deposit above!
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="responsive-table-wrap -mx-1 px-1 sm:mx-0 sm:px-0">
                 <table className="w-full text-left text-xs">
                   <thead className="text-[10px] font-bold text-slate-400 uppercase border-b border-slate-800">
                     <tr>

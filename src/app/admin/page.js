@@ -1573,10 +1573,10 @@ export default function AdminPortal({ initialTab }) {
           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--neon-cyan-glow)',
           zIndex: 40,
         }}
-        className="px-2.5 sm:px-6 flex items-center justify-between shrink-0 relative h-16 sm:h-[82px] min-h-[64px] sm:min-h-[82px]"
+        className="px-2.5 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0 relative min-h-[64px] sm:min-h-[82px] py-2.5 sm:py-0"
       >
         {/* Left Section: Official Logo (always in top header) + Staff Console Pill */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 min-w-0 flex-1">
           <Link
             href="/admin"
             style={{
@@ -1623,7 +1623,7 @@ export default function AdminPortal({ initialTab }) {
         </div>
 
         {/* Right Section: Telemetry Capsule, Player Lobby Button, Audio Alert, Avatar Circle */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center justify-end sm:justify-end gap-1.5 sm:gap-2.5 shrink-0 w-full sm:w-auto">
 
           {/* Player Lobby Button (matches DEPOSIT button gradient in screenshot) */}
           <Link
@@ -1647,6 +1647,7 @@ export default function AdminPortal({ initialTab }) {
 
           {/* Luxury Audio Alert Hub */}
           <div
+            className="admin-header-audio-pill"
             style={{
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--chrome-border)',

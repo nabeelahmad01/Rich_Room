@@ -88,7 +88,7 @@ export default function PromotionsPage() {
         onOpenDailyBonus={() => {}}
       />
 
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'}`}>
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           user={null}
@@ -99,7 +99,7 @@ export default function PromotionsPage() {
           onLogout={() => {}}
         />
 
-        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-8 space-y-8">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-28 xl:pb-8 space-y-8">
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-heading font-bold">
               <Crown size={14} />

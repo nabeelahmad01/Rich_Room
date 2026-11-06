@@ -349,7 +349,7 @@ export default function ChatPage() {
       {/* Main Container */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 pb-20 lg:pb-6 ${
-          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+          sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'
         }`}
       >
         {/* Top Navbar */}
@@ -370,7 +370,7 @@ export default function ChatPage() {
         />
 
         {/* Live Chat Page Content */}
-        <main className="flex-1 p-3 sm:p-6 pb-28 lg:pb-6 max-w-5xl w-full mx-auto flex flex-col min-h-0">
+        <main className="flex-1 p-3 sm:p-6 pb-28 xl:pb-6 max-w-5xl w-full mx-auto flex flex-col min-h-0">
           {/* Header Card */}
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-[#170E38] via-[#0E0927] to-[#070417] border border-cyan-500/30 shadow-[0_0_25px_rgba(0,240,255,0.15)]">
             <div className="flex items-center gap-3.5">
