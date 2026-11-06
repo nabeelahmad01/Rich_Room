@@ -68,7 +68,7 @@ export default function GamesPage() {
 
   const loadUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
         diffSet(setUser, data.user);
@@ -94,7 +94,7 @@ export default function GamesPage() {
       if (search) params.append('search', search);
       if (params.toString()) url += `?${params.toString()}`;
 
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.games) {
         const cleanList = (data.games || []).map(g => ({
@@ -114,12 +114,27 @@ export default function GamesPage() {
       loadUser();
     };
 
+    const handleUserSync = (e) => {
+      if (e.detail) {
+        diffSet(setUser, e.detail);
+        loadUserGameAccounts(e.detail.email);
+      } else {
+        diffSet(setUser, null);
+        diffSet(setUserGameAccounts, []);
+        diffSet(setPendingAccountRequests, []);
+      }
+    };
+
+    window.addEventListener('paradise-user-sync', handleUserSync);
     window.addEventListener('accountRequestUpdated', handleAccountSync);
     window.addEventListener('focus', handleAccountSync);
+    document.addEventListener('visibilitychange', handleAccountSync);
 
     return () => {
+      window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('accountRequestUpdated', handleAccountSync);
       window.removeEventListener('focus', handleAccountSync);
+      document.removeEventListener('visibilitychange', handleAccountSync);
     };
   }, []);
 

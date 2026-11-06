@@ -66,7 +66,7 @@ export default function WithdrawPage() {
   const fetchUser = async (isSilent = false) => {
     if (!isSilent) setLoadingUser(true);
     try {
-      const res = await fetch('/api/auth/me', { cache: 'no-store' });
+      const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
         diffSet(setUser, data.user);
@@ -81,7 +81,7 @@ export default function WithdrawPage() {
   // 1b. Fetch active payout methods from database
   const fetchPayoutMethods = async () => {
     try {
-      const res = await fetch('/api/payments/cashout-methods', { cache: 'no-store' });
+      const res = await fetch('/api/payments/cashout-methods', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.methods) && data.methods.length > 0) {
         diffSet(setPayoutMethods, data.methods);
@@ -506,7 +506,9 @@ export default function WithdrawPage() {
                     </span>
                     Game Platform &amp; Payout Method
                   </h3>
-                  <span className="text-xs text-[var(--neon-cyan)] font-bold">Instant 24/7 Dispatch (No Minimum)</span>
+                  <span className="text-xs text-[var(--neon-cyan)] font-bold text-right max-w-[58%] sm:max-w-none leading-tight">
+                    Instant 24/7 Dispatch ($40 Minimum)
+                  </span>
                 </div>
 
                 {/* Game Select & Account Detection */}

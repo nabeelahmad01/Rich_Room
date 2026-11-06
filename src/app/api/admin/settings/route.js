@@ -33,7 +33,13 @@ export async function GET() {
       restrictedStates: [],
       maintenanceMode: false,
     };
-    const merged = { ...defaultSettings, ...(settings || {}), restrictedStates: [] };
+    const merged = {
+      ...defaultSettings,
+      ...(settings || {}),
+      restrictedStates: Array.isArray(settings?.restrictedStates)
+        ? settings.restrictedStates
+        : (defaultSettings.restrictedStates || []),
+    };
     return NextResponse.json({ success: true, settings: merged });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

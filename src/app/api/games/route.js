@@ -8,11 +8,48 @@ export const revalidate = 0;
 
 let gamesCache = null;
 let gamesCacheTime = 0;
-const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache (player catalog only; admin ?all=true bypasses)
 
 function invalidateGamesCache() {
   gamesCache = null;
   gamesCacheTime = 0;
+}
+
+async function loadAllGamesFromDb() {
+  const db = await getDb();
+  const gamesCol = db.collection('games');
+  const rawGames = await gamesCol.find({}).sort({ isFeatured: -1, playsCount: -1, createdAt: -1 }).toArray();
+
+  return rawGames.map((g) => {
+    const sid = g._id ? g._id.toString() : (g.id || g.gameId);
+    const resolvedImage = g.thumbnail || g.image || g.imageUrl || '/images/vegas-777.svg';
+    return {
+      id: sid,
+      _id: sid,
+      gameId: g.gameId || sid,
+      title: g.title,
+      category: (g.category || 'sweepstakes').toLowerCase().trim(),
+      provider: g.provider || 'Players Paradise Studio',
+      thumbnail: resolvedImage,
+      image: resolvedImage,
+      imageUrl: resolvedImage,
+      fallbackImage: resolvedImage,
+      type: g.type || 'internal',
+      url: g.url || null,
+      playUrl: g.playUrl || g.url || null,
+      badge: g.badge || (g.isHot ? 'HOT' : (g.isFeatured ? 'EXCLUSIVE' : '')),
+      isActive: g.isActive !== false,
+      isHot: g.isHot ?? false,
+      isFeatured: g.isFeatured ?? false,
+      playsCount: g.playsCount || 0,
+      description: g.description || '',
+      platform: g.platform || g.provider || 'Players Paradise',
+      isInternal: g.isInternal ?? (g.type === 'internal'),
+      rtp: g.rtp || 98.2,
+      rating: g.rating || 4.9,
+      createdAt: g.createdAt || null,
+    };
+  });
 }
 
 export async function GET(req) {
@@ -23,45 +60,18 @@ export async function GET(req) {
     const all = searchParams.get('all') === 'true';
 
     const now = Date.now();
-    if (!gamesCache || now - gamesCacheTime > CACHE_TTL_MS) {
-      const db = await getDb();
-      const gamesCol = db.collection('games');
-      const rawGames = await gamesCol.find({}).sort({ isFeatured: -1, playsCount: -1, createdAt: -1 }).toArray();
-
-      gamesCache = rawGames.map((g) => {
-        const sid = g._id ? g._id.toString() : (g.id || g.gameId);
-        const resolvedImage = g.thumbnail || g.image || g.imageUrl || '/images/vegas-777.svg';
-        return {
-          id: sid,
-          _id: sid,
-          gameId: g.gameId || sid,
-          title: g.title,
-          category: (g.category || 'sweepstakes').toLowerCase().trim(),
-          provider: g.provider || 'Players Paradise Studio',
-          thumbnail: resolvedImage,
-          image: resolvedImage,
-          imageUrl: resolvedImage,
-          fallbackImage: resolvedImage,
-          type: g.type || 'internal',
-          url: g.url || null,
-          playUrl: g.playUrl || g.url || null,
-          badge: g.badge || (g.isHot ? 'HOT' : (g.isFeatured ? 'EXCLUSIVE' : '')),
-          isActive: g.isActive !== false,
-          isHot: g.isHot ?? false,
-          isFeatured: g.isFeatured ?? false,
-          playsCount: g.playsCount || 0,
-          description: g.description || '',
-          platform: g.platform || g.provider || 'Players Paradise',
-          isInternal: g.isInternal ?? (g.type === 'internal'),
-          rtp: g.rtp || 98.2,
-          rating: g.rating || 4.9,
-          createdAt: g.createdAt || null,
-        };
-      });
-      gamesCacheTime = now;
+    let baseList;
+    if (all) {
+      baseList = await loadAllGamesFromDb();
+    } else {
+      if (!gamesCache || now - gamesCacheTime > CACHE_TTL_MS) {
+        gamesCache = await loadAllGamesFromDb();
+        gamesCacheTime = now;
+      }
+      baseList = gamesCache;
     }
 
-    let filtered = gamesCache;
+    let filtered = baseList;
 
     if (!all) {
       filtered = filtered.filter((g) => g.isActive !== false);
@@ -86,10 +96,13 @@ export async function GET(req) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      games: filtered,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        games: filtered,
+      },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

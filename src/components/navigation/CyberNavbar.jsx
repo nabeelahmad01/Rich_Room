@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Menu,
   Wallet,
@@ -31,6 +31,7 @@ export default function CyberNavbar({
   unreadNotifsCount = 0,
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [jackpot, setJackpot] = useState(184920.45);
@@ -69,6 +70,7 @@ export default function CyberNavbar({
       fetch('/api/notifications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           markAll: true,
           email: active?.email || '',
@@ -226,7 +228,7 @@ export default function CyberNavbar({
       window.removeEventListener('balanceUpdate', handleCustomEvent);
       window.removeEventListener('refreshUser', handleCustomEvent);
     };
-  }, []);
+  }, [pathname]);
 
   // Close profile dropdown on outside click
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   X,
@@ -21,6 +21,8 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
   const router = useRouter();
   const [notifs, setNotifs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const onAllReadRef = useRef(onAllRead);
+  onAllReadRef.current = onAllRead;
 
   // Fetch notifications for the current player
   const fetchNotifs = useCallback(async (isSilent = false) => {
@@ -28,17 +30,19 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
     try {
       const email = user?.email ? encodeURIComponent(user.email) : '';
       const url = email ? `/api/notifications?email=${email}` : '/api/notifications';
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.notifications)) {
         diffSet(setNotifs, data.notifications);
+      } else if (!isSilent) {
+        diffSet(setNotifs, []);
       }
     } catch {
       // silent fail
     } finally {
       if (!isSilent) setLoading(false);
     }
-  }, [user]);
+  }, [user?.email, user?.userId, user?._id]);
 
   // Mark all notifications as read in DB and sync state
   const markAllRead = useCallback(async () => {
@@ -46,6 +50,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
       await fetch('/api/notifications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           markAll: true,
           email: user?.email || '',
@@ -53,11 +58,11 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
         }),
       });
       setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
-      if (onAllRead) onAllRead();
+      if (onAllReadRef.current) onAllReadRef.current();
     } catch {
       // silent fail
     }
-  }, [user, onAllRead]);
+  }, [user?.email, user?.userId, user?._id]);
 
   // Mark individual notification as read
   const markSingleRead = async (notificationId) => {
@@ -65,6 +70,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
       await fetch('/api/notifications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           notificationId,
           email: user?.email || '',
@@ -79,22 +85,19 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
     }
   };
 
-  // When modal is opened: Fetch, auto-mark all as read, and clear badge immediately
+  // When modal is opened: fetch list; mark-all-read runs once (badge also cleared from navbar)
   useEffect(() => {
-    if (isOpen) {
-      fetchNotifs(false);
-      // Auto-clear badge upon opening modal ("aik dafa open kr lo tu badge iss py sy b khatam kr ly")
-      markAllRead();
-      if (onAllRead) onAllRead();
+    if (!isOpen) return;
 
-      // Poll updates while modal remains open
-      const interval = setInterval(() => {
-        if (!document.hidden) fetchNotifs(true);
-      }, 5000);
+    fetchNotifs(false);
+    markAllRead();
 
-      return () => clearInterval(interval);
-    }
-  }, [isOpen, fetchNotifs, markAllRead, onAllRead]);
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchNotifs(true);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, fetchNotifs, markAllRead]);
 
   if (!isOpen) return null;
 

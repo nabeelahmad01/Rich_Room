@@ -442,6 +442,8 @@ export default function AdminPortal({ initialTab }) {
           referralBonusActive: sysSettings?.referralBonusActive !== false,
           freeplayAmountSC: Number(sysSettings?.freeplayAmountSC ?? 5.0),
           freeplayActive: sysSettings?.freeplayActive !== false,
+          minRedemptionSC: Number(sysSettings?.minRedemptionSC ?? 1),
+          cashoutRules: sysSettings?.cashoutRules ?? '',
         }),
       });
       const data = await res.json();
@@ -2759,6 +2761,7 @@ export default function AdminPortal({ initialTab }) {
                           try {
                             const res = await fetch('/api/games', {
                               method: 'POST',
+                              credentials: 'include',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify(gameToSubmit),
                             });
@@ -3100,6 +3103,7 @@ export default function AdminPortal({ initialTab }) {
                                   try {
                                     await fetch('/api/games', {
                                       method: 'PUT',
+                                      credentials: 'include',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({ id: g.id, isActive: nextStatus }),
                                     });
@@ -3305,6 +3309,7 @@ export default function AdminPortal({ initialTab }) {
                                       try {
                                         await fetch('/api/games', {
                                           method: 'PUT',
+                                          credentials: 'include',
                                           headers: { 'Content-Type': 'application/json' },
                                           body: JSON.stringify({ id: g.id, isActive: nextStatus }),
                                         });
@@ -3463,6 +3468,7 @@ export default function AdminPortal({ initialTab }) {
                           try {
                             const res = await fetch('/api/games', {
                               method: 'PUT',
+                              credentials: 'include',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify(updatedGame),
                             });

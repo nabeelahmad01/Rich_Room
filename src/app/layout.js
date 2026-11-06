@@ -1,6 +1,7 @@
 import './globals.css';
 import GlobalLiveChat from '@/components/chat/GlobalLiveChat';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
+import SessionBridge from '@/components/common/SessionBridge';
 
 export const metadata = {
   title: 'Rich Room | VIP Online Gaming & Sweeps Lounge',
@@ -29,11 +30,10 @@ export const metadata = {
     ],
   },
   appleWebApp: {
-    capable: true,
+    capable: false,
     statusBarStyle: 'black-translucent',
     title: 'Rich Room',
   },
-  manifest: '/manifest.json',
 };
 
 export const viewport = {
@@ -57,12 +57,13 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png" />
         <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="no" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Rich Room" />
       </head>
       <body className="antialiased selection:bg-[var(--neon-cyan)] selection:text-black">
         <PushNotificationManager />
+        <SessionBridge />
         {children}
         <GlobalLiveChat />
       </body>

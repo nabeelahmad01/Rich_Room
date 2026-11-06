@@ -73,8 +73,8 @@ export default function DepositPage() {
     if (!isSilent) setLoadingUser(true);
     try {
       const [uRes, sRes] = await Promise.all([
-        fetch('/api/auth/me', { cache: 'no-store' }),
-        fetch('/api/admin/settings', { cache: 'no-store' }),
+        fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/settings', { credentials: 'include', cache: 'no-store' }),
       ]);
       const [uData, sData] = await Promise.all([uRes.json(), sRes.json()]);
 
@@ -88,10 +88,17 @@ export default function DepositPage() {
       }
 
       if (sData.success && sData.settings) {
-        diffSet(setSettings, {
-          welcomeBonusPercent: Number(sData.settings.welcomeBonusPercent ?? 300),
-          regularBonusPercent: Number(sData.settings.regularBonusPercent ?? 50),
-        });
+        const s = sData.settings;
+        diffSet(setSettings, (prev) => ({
+          welcomeBonusPercent:
+            s.welcomeBonusPercent != null && s.welcomeBonusPercent !== ''
+              ? Number(s.welcomeBonusPercent)
+              : prev.welcomeBonusPercent,
+          regularBonusPercent:
+            s.regularBonusPercent != null && s.regularBonusPercent !== ''
+              ? Number(s.regularBonusPercent)
+              : prev.regularBonusPercent,
+        }));
       }
     } catch (err) {
       console.error(err);
@@ -103,7 +110,7 @@ export default function DepositPage() {
   // 2. Fetch gateways
   const fetchGateways = async () => {
     try {
-      const res = await fetch('/api/payments/methods');
+      const res = await fetch('/api/payments/methods', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.methods && data.methods.length > 0) {
         diffSet(setGateways, data.methods);
@@ -145,7 +152,7 @@ export default function DepositPage() {
   const fetchHistory = async (isSilent = false) => {
     if (!isSilent) setLoadingHistory(true);
     try {
-      const res = await fetch('/api/payments/deposit', { cache: 'no-store' });
+      const res = await fetch('/api/payments/deposit', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.deposits) {
         diffSet(setDepositHistory, data.deposits);
@@ -160,7 +167,7 @@ export default function DepositPage() {
   // 4. Fetch player active game accounts
   const fetchGameAccounts = async () => {
     try {
-      const res = await fetch('/api/game-accounts', { cache: 'no-store' });
+      const res = await fetch('/api/game-accounts', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.gameAccounts)) {
         diffSet(setUserGameAccounts, data.gameAccounts);

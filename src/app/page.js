@@ -107,7 +107,7 @@ export default function HomePage() {
   // Load User Session
   const loadUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
         diffSet(setUser, data.user);
@@ -135,7 +135,7 @@ export default function HomePage() {
       if (searchTerm) params.append('search', searchTerm);
       if (params.toString()) url += `?${params.toString()}`;
 
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.games) {
         const sanitized = data.games.map(g => ({

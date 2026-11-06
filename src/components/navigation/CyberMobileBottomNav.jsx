@@ -73,20 +73,20 @@ export default function CyberMobileBottomNav({
             <button
               key={tab.id}
               onClick={tab.action}
-              className="relative -top-3 flex flex-col items-center justify-center"
+              className="relative -top-1 flex flex-col items-center justify-center min-w-0 max-w-[22%]"
             >
               <div
-                className="w-12 h-12 rounded-2xl p-[2px] animate-bounce"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-[2px] shrink-0"
                 style={{
                   background: 'var(--primary-gradient)',
-                  boxShadow: '0 0 20px var(--neon-cyan-glow)',
+                  boxShadow: '0 0 16px var(--neon-cyan-glow)',
                 }}
               >
-                <div className="w-full h-full bg-[var(--bg-surface)] rounded-[14px] flex items-center justify-center text-[var(--neon-cyan)]">
-                  <Icon size={22} />
+                <div className="w-full h-full bg-[var(--bg-surface)] rounded-[13px] flex items-center justify-center text-[var(--neon-cyan)]">
+                  <Icon size={20} className="shrink-0" />
                 </div>
               </div>
-              <span className="text-[10px] font-heading font-bold text-[var(--neon-cyan)] mt-0.5">
+              <span className="text-[9px] font-heading font-bold text-[var(--neon-cyan)] mt-0.5 truncate max-w-full px-0.5">
                 {tab.label}
               </span>
             </button>
@@ -97,7 +97,7 @@ export default function CyberMobileBottomNav({
           <button
             key={tab.id}
             onClick={tab.action}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+            className={`flex flex-col items-center justify-center py-1 px-1 sm:px-2 rounded-xl transition-all relative min-w-0 max-w-[18%] ${
               active
                 ? 'text-[var(--neon-cyan)] font-bold'
                 : 'text-slate-400 hover:text-slate-200'
@@ -112,7 +112,7 @@ export default function CyberMobileBottomNav({
                 ></span>
               )}
             </div>
-            <span className="text-[10px] mt-1 tracking-tight font-sub font-semibold">
+            <span className="text-[9px] mt-1 tracking-tight font-sub font-semibold truncate max-w-full">
               {tab.label}
             </span>
           </button>

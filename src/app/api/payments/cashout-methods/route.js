@@ -8,7 +8,7 @@ export const revalidate = 0;
 
 let cachedCashout = null;
 let cacheTime = 0;
-const CACHE_TTL_MS = 15000;
+const CACHE_TTL_MS = 0; // Always fresh so admin payout toggles apply immediately
 
 const DEFAULT_CASHOUT_METHODS = [
   { methodId: 'cashapp', name: 'Cash App', placeholder: 'e.g. $YourCashtag', isActive: true, minCashout: 1, order: 1 },
@@ -64,7 +64,10 @@ export async function GET(req) {
       cacheTime = now;
     }
 
-    return NextResponse.json({ success: true, methods: formatted });
+    return NextResponse.json(
+      { success: true, methods: formatted },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
