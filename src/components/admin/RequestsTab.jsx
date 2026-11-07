@@ -66,10 +66,10 @@ export default function RequestsTab({
   return (
     <div className="space-y-5">
       {/* Top Header Card */}
-      <div className="p-4 md:p-5 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-4 md:p-5 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading font-black text-sm md:text-base text-white tracking-wider flex items-center gap-2">
-            <KeyRound size={20} className="text-cyan-400" />
+            <KeyRound size={20} className="text-[var(--neon-cyan)]" />
             GAME ACCOUNT REQUESTS &amp; CREATED ACCOUNTS
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -79,7 +79,7 @@ export default function RequestsTab({
 
         <button
           onClick={onAddAccountClick}
-          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.35)] transition-all cursor-pointer"
+          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.35)] transition-all cursor-pointer"
         >
           <Plus size={15} />
           <span>ADD ACCOUNT MANUALLY</span>
@@ -87,7 +87,7 @@ export default function RequestsTab({
       </div>
 
       {/* Search & Status Filter Controls */}
-      <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full md:w-auto">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -95,7 +95,7 @@ export default function RequestsTab({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search requests by email, player name, or game platform..."
-            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
+            className="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
           />
         </div>
 
@@ -106,7 +106,7 @@ export default function RequestsTab({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 focus:border-cyan-400 text-cyan-300 rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
+            className="bg-slate-950 border border-slate-800 focus:border-amber-400 text-amber-300 rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
           >
             <option value="ALL">ALL (Pending on top - {requests.length})</option>
             <option value="PENDING">PENDING (Requires Action - {pendingCount})</option>
@@ -117,7 +117,7 @@ export default function RequestsTab({
       </div>
 
       {/* Requests Master Table */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-[#080a14] overflow-hidden shadow-lg">
+      <div className="rounded-2xl border border-amber-500/20 bg-[var(--bg-deep)] overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -156,14 +156,14 @@ export default function RequestsTab({
                     </td>
 
                     {/* Player Email */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-cyan-400">
+                    <td className="py-3.5 px-4 font-mono font-bold text-[var(--neon-cyan)]">
                       {req.userEmail || '—'}
                     </td>
 
                     {/* Requested Game */}
                     <td className="py-3.5 px-4">
                       <div className="flex flex-col items-start gap-1">
-                        <span className="px-2 py-0.5 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold text-[10px]">
                           {req.gameTitle}
                         </span>
                         {req.freeplayPending && (
@@ -179,7 +179,7 @@ export default function RequestsTab({
                     <td className="py-3.5 px-4 font-mono">
                       {req.gameAccountUsername ? (
                         <div className="inline-flex items-center gap-1.5 p-1 px-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px]">
-                          <span className="text-purple-300 font-bold">{req.gameAccountUsername}</span>
+                          <span className="text-amber-300 font-bold">{req.gameAccountUsername}</span>
                           <button
                             onClick={() =>
                               handleCopy(
@@ -202,7 +202,7 @@ export default function RequestsTab({
                           {req.existingAccounts.slice(0, 2).map((acc, aIdx) => (
                             <div key={aIdx} className="text-[10px] text-slate-400">
                               <span className="text-slate-500">{acc.gameTitle}:</span>{' '}
-                              <strong className="text-purple-300">{acc.username}</strong>
+                              <strong className="text-amber-300">{acc.username}</strong>
                             </div>
                           ))}
                         </div>
@@ -277,7 +277,7 @@ export default function RequestsTab({
               {filteredRequests.length === 0 && (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-500">
-                    <KeyRound size={28} className="mx-auto opacity-30 text-cyan-400 mb-2" />
+                    <KeyRound size={28} className="mx-auto opacity-30 text-[var(--neon-cyan)] mb-2" />
                     <p className="font-heading text-sm">No game account requests match criteria.</p>
                   </td>
                 </tr>

@@ -54,10 +54,10 @@ export default function SoundSettingsModal({
         style={{
           width: '100%',
           maxWidth: '560px',
-          backgroundColor: '#0E0A24',
-          border: '1px solid rgba(0, 240, 255, 0.35)',
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid rgba(255, 215, 0, 0.35)',
           borderRadius: '24px',
-          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(0, 240, 255, 0.15)',
+          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(255, 215, 0, 0.15)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -70,7 +70,7 @@ export default function SoundSettingsModal({
         <div
           style={{
             padding: '16px 20px',
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             alignItems: 'center',
@@ -106,9 +106,9 @@ export default function SoundSettingsModal({
                     fontWeight: 800,
                     padding: '2px 8px',
                     borderRadius: '9999px',
-                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                    border: '1px solid rgba(0, 240, 255, 0.4)',
-                    color: '#00F0FF',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
+                    color: 'var(--neon-cyan)',
                     textTransform: 'uppercase',
                   }}
                 >
@@ -356,7 +356,7 @@ export default function SoundSettingsModal({
         <div
           style={{
             padding: '16px 24px',
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             alignItems: 'center',
@@ -370,9 +370,9 @@ export default function SoundSettingsModal({
             style={{
               padding: '8px 16px',
               borderRadius: '12px',
-              backgroundColor: '#140E33',
-              border: '1px solid rgba(0, 240, 255, 0.35)',
-              color: '#00F0FF',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid rgba(255, 215, 0, 0.35)',
+              color: 'var(--neon-cyan)',
               fontSize: '11.5px',
               fontWeight: 800,
               display: 'flex',
@@ -381,7 +381,7 @@ export default function SoundSettingsModal({
               cursor: 'pointer',
             }}
           >
-            <Bell size={13} color="#00F0FF" />
+            <Bell size={13} color="var(--neon-cyan)" />
             <span>Test Sound &amp; Alert</span>
           </button>
 
@@ -397,7 +397,7 @@ export default function SoundSettingsModal({
               fontSize: '12px',
               fontWeight: 900,
               cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(0, 240, 255, 0.3)',
+              boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
             }}
           >
             Save &amp; Close

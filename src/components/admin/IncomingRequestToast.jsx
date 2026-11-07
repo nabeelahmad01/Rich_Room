@@ -16,18 +16,18 @@ export default function IncomingRequestToast({ alert, onDismiss, onViewRequest }
 
   const getIcon = () => {
     if (alert.type === 'deposit') return <DollarSign size={18} className="text-amber-400" />;
-    if (alert.type === 'redemption') return <Wallet size={18} className="text-purple-400" />;
+    if (alert.type === 'redemption') return <Wallet size={18} className="text-[var(--neon-purple)]" />;
     if (alert.type === 'chat') return <Headphones size={18} className="text-pink-400" />;
-    if (alert.type === 'account') return <KeyRound size={18} className="text-cyan-400" />;
-    return <Gamepad2 size={18} className="text-cyan-400" />;
+    if (alert.type === 'account') return <KeyRound size={18} className="text-[var(--neon-cyan)]" />;
+    return <Gamepad2 size={18} className="text-[var(--neon-cyan)]" />;
   };
 
   const getBorderColor = () => {
     if (alert.type === 'deposit') return 'border-amber-500/50 shadow-amber-500/20';
-    if (alert.type === 'redemption') return 'border-purple-500/50 shadow-purple-500/20';
+    if (alert.type === 'redemption') return 'border-amber-600/50 shadow-purple-500/20';
     if (alert.type === 'chat') return 'border-pink-500/50 shadow-pink-500/20';
-    if (alert.type === 'account') return 'border-cyan-500/50 shadow-cyan-500/20';
-    return 'border-cyan-500/50 shadow-cyan-500/20';
+    if (alert.type === 'account') return 'border-amber-500/50 shadow-amber-500/20';
+    return 'border-amber-500/50 shadow-amber-500/20';
   };
 
   return (
@@ -75,7 +75,7 @@ export default function IncomingRequestToast({ alert, onDismiss, onViewRequest }
             }}
             className={
               alert.type === 'chat'
-                ? 'px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-pink-500/20'
+                ? 'px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-amber-700 hover:from-pink-400 hover:to-amber-600 text-white text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-pink-500/20'
                 : 'px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-amber-500/20'
             }
           >

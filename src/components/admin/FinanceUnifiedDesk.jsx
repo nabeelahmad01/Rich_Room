@@ -124,7 +124,7 @@ export default function FinanceUnifiedDesk({
       <div
         style={{
           backgroundColor: '#0E0824',
-          border: '1px solid rgba(0, 240, 255, 0.25)',
+          border: '1px solid rgba(255, 215, 0, 0.25)',
           borderRadius: '20px',
           padding: '18px 22px',
           display: 'flex',
@@ -132,7 +132,7 @@ export default function FinanceUnifiedDesk({
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '16px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(0, 240, 255, 0.08)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255, 215, 0, 0.08)',
         }}
       >
         <div>
@@ -146,15 +146,15 @@ export default function FinanceUnifiedDesk({
                 fontWeight: 800,
                 padding: '3px 8px',
                 borderRadius: '9999px',
-                backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                border: '1px solid rgba(0, 240, 255, 0.4)',
-                color: '#00F0FF',
+                backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                border: '1px solid rgba(255, 215, 0, 0.4)',
+                color: 'var(--neon-cyan)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
               }}
             >
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00F0FF' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--neon-cyan)' }} />
               Live Sync
             </span>
           </div>
@@ -189,9 +189,9 @@ export default function FinanceUnifiedDesk({
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               border: 'none',
-              background: activeView === 'live_queue' ? 'linear-gradient(135deg, #E026D8 0%, #A855F7 45%, #00F0FF 100%)' : 'transparent',
+              background: activeView === 'live_queue' ? 'linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-purple) 45%, var(--neon-cyan) 100%)' : 'transparent',
               color: activeView === 'live_queue' ? '#FFFFFF' : '#94A3B8',
-              boxShadow: activeView === 'live_queue' ? '0 4px 15px rgba(0, 240, 255, 0.4), 0 0 20px rgba(224, 38, 216, 0.3)' : 'none',
+              boxShadow: activeView === 'live_queue' ? '0 4px 15px rgba(255, 215, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.3)' : 'none',
               transition: 'all 0.15s ease',
             }}
           >
@@ -447,7 +447,7 @@ export default function FinanceUnifiedDesk({
                   boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 }}
               >
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '920px', backgroundColor: '#090b18' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '920px', backgroundColor: 'var(--bg-deep)' }}>
                   <thead style={{ backgroundColor: '#050711', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
                     <tr>
                       <th style={{ padding: '14px 16px', fontSize: '10.5px', fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Player</th>
@@ -495,7 +495,7 @@ export default function FinanceUnifiedDesk({
                                   width: '32px',
                                   height: '32px',
                                   borderRadius: '50%',
-                                  background: 'linear-gradient(135deg, #00F0FF 0%, #E026D8 100%)',
+                                  background: 'linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
@@ -520,7 +520,7 @@ export default function FinanceUnifiedDesk({
                           <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                             {d.gameTitle ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                <span style={{ fontWeight: 800, fontSize: '12.5px', color: '#00F0FF' }}>
+                                <span style={{ fontWeight: 800, fontSize: '12.5px', color: 'var(--neon-cyan)' }}>
                                   🎮 {d.gameTitle}
                                 </span>
                                 {d.gameAccountUsername ? (
@@ -595,9 +595,9 @@ export default function FinanceUnifiedDesk({
                                     fontWeight: 900,
                                     padding: '1px 6px',
                                     borderRadius: '6px',
-                                    backgroundColor: bonusType === 'welcome' ? 'rgba(0, 240, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
-                                    color: bonusType === 'welcome' ? '#00F0FF' : '#C084FC',
-                                    border: `1px solid ${bonusType === 'welcome' ? 'rgba(0, 240, 255, 0.35)' : 'rgba(168, 85, 247, 0.35)'}`,
+                                    backgroundColor: bonusType === 'welcome' ? 'rgba(255, 215, 0, 0.15)' : 'rgba(168, 85, 247, 0.15)',
+                                    color: bonusType === 'welcome' ? 'var(--neon-cyan)' : '#C084FC',
+                                    border: `1px solid ${bonusType === 'welcome' ? 'rgba(255, 215, 0, 0.35)' : 'rgba(168, 85, 247, 0.35)'}`,
                                     textTransform: 'uppercase',
                                   }}
                                 >
@@ -735,9 +735,9 @@ export default function FinanceUnifiedDesk({
                                       gap: '6px',
                                       padding: '5px 10px',
                                       borderRadius: '8px',
-                                      backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                      border: '1px solid rgba(0, 240, 255, 0.4)',
-                                      color: '#00F0FF',
+                                      backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                      border: '1px solid rgba(255, 215, 0, 0.4)',
+                                      color: 'var(--neon-cyan)',
                                       fontSize: '11px',
                                       fontWeight: 800,
                                       cursor: 'pointer',
@@ -763,7 +763,7 @@ export default function FinanceUnifiedDesk({
                                       width: '30px',
                                       height: '30px',
                                       borderRadius: '6px',
-                                      border: '1px solid rgba(0, 240, 255, 0.4)',
+                                      border: '1px solid rgba(255, 215, 0, 0.4)',
                                       overflow: 'hidden',
                                       cursor: 'pointer',
                                       flexShrink: 0,
@@ -924,7 +924,7 @@ export default function FinanceUnifiedDesk({
                   borderRadius: '16px',
                 }}
               >
-                <CheckCircle2 size={32} color="#A855F7" style={{ margin: '0 auto 10px auto', opacity: 0.8 }} />
+                <CheckCircle2 size={32} color="var(--neon-purple)" style={{ margin: '0 auto 10px auto', opacity: 0.8 }} />
                 <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>No pending cashout requests</h4>
                 <p style={{ margin: '4px 0 0 0', fontSize: '11.5px', color: '#64748B' }}>
                   When a player requests a redemption / cashout, it will appear here instantly with an audio alert.
@@ -940,7 +940,7 @@ export default function FinanceUnifiedDesk({
                   boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 }}
               >
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '820px', backgroundColor: '#090b18' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '820px', backgroundColor: 'var(--bg-deep)' }}>
                   <thead style={{ backgroundColor: '#050711', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
                     <tr>
                       <th style={{ padding: '14px 16px', fontSize: '10.5px', fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Player</th>
@@ -973,7 +973,7 @@ export default function FinanceUnifiedDesk({
                                   width: '32px',
                                   height: '32px',
                                   borderRadius: '50%',
-                                  background: 'linear-gradient(135deg, #A855F7 0%, #3B82F6 100%)',
+                                  background: 'linear-gradient(135deg, var(--neon-purple) 0%, #3B82F6 100%)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
@@ -1171,7 +1171,7 @@ export default function FinanceUnifiedDesk({
                                 style={{
                                   padding: '7px 14px',
                                   borderRadius: '10px',
-                                  background: 'linear-gradient(135deg, #A855F7 0%, #7C3AED 100%)',
+                                  background: 'linear-gradient(135deg, var(--neon-purple) 0%, #7C3AED 100%)',
                                   border: 'none',
                                   color: '#FFFFFF',
                                   fontSize: '11.5px',
@@ -1232,7 +1232,7 @@ export default function FinanceUnifiedDesk({
             </h3>
           </div>
           <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '850px', backgroundColor: '#090b18' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '850px', backgroundColor: 'var(--bg-deep)' }}>
               <thead style={{ backgroundColor: '#050711', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <tr>
                   <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase' }}>Player</th>
@@ -1254,7 +1254,7 @@ export default function FinanceUnifiedDesk({
                     <tr key={depositId} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                       <td style={{ padding: '12px 16px', fontWeight: 800, color: '#FFFFFF', fontSize: '12px' }}>{d.username}</td>
                       <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontWeight: 800, fontSize: '12px', color: '#00F0FF', display: 'block' }}>
+                        <span style={{ fontWeight: 800, fontSize: '12px', color: 'var(--neon-cyan)', display: 'block' }}>
                           {d.gameTitle || 'Direct'}
                         </span>
                         {d.gameAccountUsername && (
@@ -1291,9 +1291,9 @@ export default function FinanceUnifiedDesk({
                                 gap: '5px',
                                 padding: '4px 8px',
                                 borderRadius: '6px',
-                                backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                border: '1px solid rgba(0, 240, 255, 0.35)',
-                                color: '#00F0FF',
+                                backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                border: '1px solid rgba(255, 215, 0, 0.35)',
+                                color: 'var(--neon-cyan)',
                                 fontSize: '11px',
                                 fontWeight: 800,
                                 cursor: 'pointer',
@@ -1350,7 +1350,7 @@ export default function FinanceUnifiedDesk({
             </h3>
           </div>
           <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '750px', backgroundColor: '#090b18' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '750px', backgroundColor: 'var(--bg-deep)' }}>
               <thead style={{ backgroundColor: '#050711', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <tr>
                   <th style={{ padding: '12px 16px', fontSize: '10.5px', fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase' }}>Player</th>
@@ -1483,10 +1483,10 @@ export default function FinanceUnifiedDesk({
               width: '100%',
               maxWidth: '620px',
               backgroundColor: '#0d1024',
-              border: '1px solid rgba(0, 240, 255, 0.4)',
+              border: '1px solid rgba(255, 215, 0, 0.4)',
               borderRadius: '24px',
               padding: '20px',
-              boxShadow: '0 30px 80px rgba(0,0,0,0.95), 0 0 40px rgba(0, 240, 255, 0.15)',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.95), 0 0 40px rgba(255, 215, 0, 0.15)',
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
@@ -1522,7 +1522,7 @@ export default function FinanceUnifiedDesk({
                   </span>
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '11.5px', color: '#94A3B8' }}>
-                  Uploaded by <strong style={{ color: '#00F0FF' }}>{previewProof.username || previewProof.player || 'Player'}</strong> via {previewProof.method || 'Transfer'}{' '}
+                  Uploaded by <strong style={{ color: 'var(--neon-cyan)' }}>{previewProof.username || previewProof.player || 'Player'}</strong> via {previewProof.method || 'Transfer'}{' '}
                   {previewProof.note ? `• Cashtag/TX: ${previewProof.note}` : ''}
                 </p>
               </div>
@@ -1601,7 +1601,7 @@ export default function FinanceUnifiedDesk({
                     href={previewProof.image || previewProof.url}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ color: '#00F0FF', fontSize: '11.5px', marginTop: '6px', textDecoration: 'underline' }}
+                    style={{ color: 'var(--neon-cyan)', fontSize: '11.5px', marginTop: '6px', textDecoration: 'underline' }}
                   >
                     Open Image in New Window ↗
                   </a>
@@ -1623,9 +1623,9 @@ export default function FinanceUnifiedDesk({
                   style={{
                     padding: '8px 14px',
                     borderRadius: '10px',
-                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                    border: '1px solid rgba(0, 240, 255, 0.4)',
-                    color: '#00F0FF',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
+                    color: 'var(--neon-cyan)',
                     fontSize: '11.5px',
                     fontWeight: 800,
                     textDecoration: 'none',

@@ -405,20 +405,20 @@ export default function CoinOperationsDesk({ sessionUser }) {
       <div
         className="p-6 sm:p-7 sm:py-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6"
         style={{
-          backgroundColor: '#0E0A24',
-          background: 'linear-gradient(135deg, #0E0A24 0%, #140E33 100%)',
-          border: '1px solid rgba(0, 240, 255, 0.28)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 240, 255, 0.12)',
+          backgroundColor: 'var(--bg-surface)',
+          background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-card) 100%)',
+          border: '1px solid rgba(255, 215, 0, 0.28)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 215, 0, 0.12)',
         }}
       >
         <div className="flex items-center gap-5 sm:gap-6">
           <div
             className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
             style={{
-              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(224, 38, 216, 0.2) 100%)',
-              border: '1.5px solid rgba(0, 240, 255, 0.5)',
-              boxShadow: '0 0 25px rgba(0, 240, 255, 0.35)',
-              color: '#00F0FF',
+              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
+              border: '1.5px solid rgba(255, 215, 0, 0.5)',
+              boxShadow: '0 0 25px rgba(255, 215, 0, 0.35)',
+              color: 'var(--neon-cyan)',
             }}
           >
             <Coins size={28} className="sm:hidden" />
@@ -443,12 +443,12 @@ export default function CoinOperationsDesk({ sessionUser }) {
               <span
                 className="text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 font-mono shadow-sm"
                 style={{
-                  backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                  color: '#00F0FF',
-                  border: '1px solid rgba(0, 240, 255, 0.35)',
+                  backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                  color: 'var(--neon-cyan)',
+                  border: '1px solid rgba(255, 215, 0, 0.35)',
                 }}
               >
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_8px_#00F0FF]" />
+                <span className="w-2 h-2 rounded-full bg-[var(--neon-cyan)] animate-pulse shadow-[0_0_8px_var(--neon-cyan)]" />
                 <span>Active Queue: {pendingLoads.length + pendingCashouts.length}</span>
               </span>
             </div>
@@ -466,9 +466,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
             disabled={loading}
             className="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-2.5 transition-all cursor-pointer hover:scale-[1.03] active:scale-[0.97]"
             style={{
-              background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-              color: '#070514',
-              boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+              background: 'var(--primary-gradient)',
+              color: 'var(--bg-deep)',
+              boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
               border: 'none',
               fontFamily: 'Lexend, sans-serif',
             }}
@@ -515,14 +515,14 @@ export default function CoinOperationsDesk({ sessionUser }) {
           style={
             activeSection === 'loads'
               ? {
-                  background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                  border: '1.5px solid #00F0FF',
-                  boxShadow: '0 0 30px rgba(0, 240, 255, 0.28), inset 0 0 20px rgba(0, 240, 255, 0.1)',
-                  color: '#00F0FF',
+                  background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                  border: '1.5px solid var(--neon-cyan)',
+                  boxShadow: '0 0 30px rgba(255, 215, 0, 0.28), inset 0 0 20px rgba(255, 215, 0, 0.1)',
+                  color: 'var(--neon-cyan)',
                   fontFamily: 'Lexend, sans-serif',
                 }
               : {
-                  backgroundColor: '#0E0A24',
+                  backgroundColor: 'var(--bg-surface)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   color: '#9A91A8',
                   fontFamily: 'Lexend, sans-serif',
@@ -535,10 +535,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
               style={
                 activeSection === 'loads'
                   ? {
-                      backgroundColor: 'rgba(0, 240, 255, 0.22)',
-                      border: '1px solid rgba(0, 240, 255, 0.5)',
-                      color: '#00F0FF',
-                      boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)',
+                      backgroundColor: 'rgba(255, 215, 0, 0.22)',
+                      border: '1px solid rgba(255, 215, 0, 0.5)',
+                      color: 'var(--neon-cyan)',
+                      boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
                     }
                   : {
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -559,9 +559,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
             style={
               pendingLoads.length > 0
                 ? {
-                    backgroundColor: '#00F0FF',
-                    color: '#070514',
-                    boxShadow: '0 0 15px #00F0FF',
+                    backgroundColor: 'var(--neon-cyan)',
+                    color: 'var(--bg-deep)',
+                    boxShadow: '0 0 15px var(--neon-cyan)',
                   }
                 : {
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -581,14 +581,14 @@ export default function CoinOperationsDesk({ sessionUser }) {
           style={
             activeSection === 'cashouts'
               ? {
-                  background: 'linear-gradient(135deg, rgba(224, 38, 216, 0.18) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                  border: '1.5px solid #E026D8',
-                  boxShadow: '0 0 30px rgba(224, 38, 216, 0.28), inset 0 0 20px rgba(224, 38, 216, 0.1)',
-                  color: '#E026D8',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                  border: '1.5px solid var(--neon-purple)',
+                  boxShadow: '0 0 30px rgba(245, 158, 11, 0.28), inset 0 0 20px rgba(245, 158, 11, 0.1)',
+                  color: 'var(--neon-purple)',
                   fontFamily: 'Lexend, sans-serif',
                 }
               : {
-                  backgroundColor: '#0E0A24',
+                  backgroundColor: 'var(--bg-surface)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   color: '#9A91A8',
                   fontFamily: 'Lexend, sans-serif',
@@ -601,10 +601,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
               style={
                 activeSection === 'cashouts'
                   ? {
-                      backgroundColor: 'rgba(224, 38, 216, 0.22)',
-                      border: '1px solid rgba(224, 38, 216, 0.5)',
-                      color: '#E026D8',
-                      boxShadow: '0 0 15px rgba(224, 38, 216, 0.3)',
+                      backgroundColor: 'rgba(245, 158, 11, 0.22)',
+                      border: '1px solid rgba(245, 158, 11, 0.5)',
+                      color: 'var(--neon-purple)',
+                      boxShadow: '0 0 15px rgba(245, 158, 11, 0.3)',
                     }
                   : {
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -625,9 +625,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
             style={
               pendingCashouts.length > 0
                 ? {
-                    backgroundColor: '#E026D8',
+                    backgroundColor: 'var(--neon-purple)',
                     color: '#FFFFFF',
-                    boxShadow: '0 0 15px #E026D8',
+                    boxShadow: '0 0 15px var(--neon-purple)',
                   }
                 : {
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -650,23 +650,23 @@ export default function CoinOperationsDesk({ sessionUser }) {
           <div
             className="rounded-2xl p-6 sm:p-8 shadow-2xl"
             style={{
-              backgroundColor: '#0E0A24',
-              border: '1px solid rgba(0, 240, 255, 0.25)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 240, 255, 0.1)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid rgba(255, 215, 0, 0.25)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.1)',
             }}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-7">
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)]" />
                 <h3 className="text-sm sm:text-base font-black text-white m-0 tracking-wide" style={{ fontFamily: 'Lexend, sans-serif' }}>
                   Pending Game Load Requests
                 </h3>
                 <span
                   className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono"
                   style={{
-                    backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                    color: '#00F0FF',
-                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                    color: 'var(--neon-cyan)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
                   }}
                 >
                   {pendingLoads.length} Pending
@@ -677,11 +677,11 @@ export default function CoinOperationsDesk({ sessionUser }) {
               <div
                 className="flex items-center gap-2 rounded-xl px-3.5 py-2 w-full sm:w-72 transition-all"
                 style={{
-                  backgroundColor: '#070514',
-                  border: '1px solid rgba(0, 240, 255, 0.25)',
+                  backgroundColor: 'var(--bg-deep)',
+                  border: '1px solid rgba(255, 215, 0, 0.25)',
                 }}
               >
-                <Search size={14} className="text-cyan-400 shrink-0" />
+                <Search size={14} className="text-[var(--neon-cyan)] shrink-0" />
                 <input
                   type="text"
                   placeholder="Search player, email or game..."
@@ -699,10 +699,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 style={{
                   padding: '72px 28px',
                   textAlign: 'center',
-                  background: 'radial-gradient(ellipse at center, rgba(0, 240, 255, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
+                  background: 'radial-gradient(ellipse at center, rgba(255, 215, 0, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
                   borderRadius: '20px',
-                  border: '1.5px dashed rgba(0, 240, 255, 0.35)',
-                  boxShadow: 'inset 0 0 40px rgba(0, 240, 255, 0.06)',
+                  border: '1.5px dashed rgba(255, 215, 0, 0.35)',
+                  boxShadow: 'inset 0 0 40px rgba(255, 215, 0, 0.06)',
                 }}
               >
                 <div
@@ -710,25 +710,25 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     width: '68px',
                     height: '68px',
                     borderRadius: '20px',
-                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(224, 38, 216, 0.18) 100%)',
-                    border: '1.5px solid rgba(0, 240, 255, 0.5)',
-                    boxShadow: '0 0 30px rgba(0, 240, 255, 0.4)',
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.18) 100%)',
+                    border: '1.5px solid rgba(255, 215, 0, 0.5)',
+                    boxShadow: '0 0 30px rgba(255, 215, 0, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 18px auto',
                   }}
                 >
-                  <CheckCircle2 size={34} color="#00F0FF" />
+                  <CheckCircle2 size={34} color="var(--neon-cyan)" />
                 </div>
                 <div
                   style={{
                     display: 'inline-block',
                     padding: '4px 14px',
                     borderRadius: '20px',
-                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                    border: '1px solid rgba(0, 240, 255, 0.35)',
-                    color: '#00F0FF',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                    color: 'var(--neon-cyan)',
                     fontSize: '11px',
                     fontWeight: 900,
                     letterSpacing: '1px',
@@ -757,8 +757,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                         key={item.id}
                         className="rounded-xl p-3.5 space-y-3 shadow-md"
                         style={{
-                          backgroundColor: '#070514',
-                          border: isFp ? '1px solid rgba(255, 215, 0, 0.45)' : '1px solid rgba(0, 240, 255, 0.3)',
+                          backgroundColor: 'var(--bg-deep)',
+                          border: isFp ? '1px solid rgba(255, 215, 0, 0.45)' : '1px solid rgba(255, 215, 0, 0.3)',
                         }}
                       >
                         <div className="flex items-center justify-between gap-2">
@@ -766,9 +766,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs uppercase shrink-0"
                               style={{
-                                backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                color: '#00F0FF',
-                                border: '1px solid rgba(0, 240, 255, 0.3)',
+                                backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                color: 'var(--neon-cyan)',
+                                border: '1px solid rgba(255, 215, 0, 0.3)',
                               }}
                             >
                               {(item.userName || item.userEmail || 'U').charAt(0).toUpperCase()}
@@ -796,9 +796,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             <span
                               className="px-2.5 py-1 rounded-lg text-xs font-black shrink-0 font-mono inline-block"
                               style={{
-                                backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                color: '#00F0FF',
-                                border: '1px solid rgba(0, 240, 255, 0.35)',
+                                backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                color: 'var(--neon-cyan)',
+                                border: '1px solid rgba(255, 215, 0, 0.35)',
                               }}
                             >
                               ${Number(item.transferAmount || 0).toFixed(2)} SC
@@ -821,7 +821,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                 color: '#FFFFFF',
                               }}
                             >
-                              <Gamepad2 size={12} className="text-[#00F0FF]" /> {item.gameTitle}
+                              <Gamepad2 size={12} className="text-[var(--neon-cyan)]" /> {item.gameTitle}
                             </span>
                             {item.gameAccountUsername && (
                               <span className="text-[10.5px] font-mono font-bold text-[#34D399] bg-emerald-950/70 border border-emerald-500/35 px-2 py-0.5 rounded-lg">
@@ -873,10 +873,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                 transferAmount: Number(item.transferAmount || 0),
                               })
                             }
-                            className="py-2.5 px-3 rounded-xl text-[#070514] font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="py-2.5 px-3 rounded-xl text-[var(--bg-deep)] font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
                             style={{
-                              background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                              boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)',
+                              background: 'var(--primary-gradient)',
+                              boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
                             }}
                           >
                             <Check size={14} strokeWidth={3} />
@@ -908,7 +908,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '760px', backgroundColor: '#070514' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '760px', backgroundColor: 'var(--bg-deep)' }}>
                     <colgroup>
                       <col style={{ width: '26%' }} />
                       <col style={{ width: '22%' }} />
@@ -933,7 +933,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             key={item.id}
                             style={{
                               borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                              backgroundColor: isFp ? 'rgba(255, 215, 0, 0.04)' : 'rgba(0, 240, 255, 0.02)',
+                              backgroundColor: isFp ? 'rgba(255, 215, 0, 0.04)' : 'rgba(255, 215, 0, 0.02)',
                             }}
                           >
                             <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
@@ -943,9 +943,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                     width: '34px',
                                     height: '34px',
                                     borderRadius: '10px',
-                                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                    border: '1px solid rgba(0, 240, 255, 0.3)',
-                                    color: '#00F0FF',
+                                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                                    color: 'var(--neon-cyan)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -997,7 +997,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                     fontWeight: 800,
                                   }}
                                 >
-                                  <Gamepad2 size={13} color="#00F0FF" />
+                                  <Gamepad2 size={13} color="var(--neon-cyan)" />
                                   <span>{item.gameTitle}</span>
                                 </span>
                                 {item.gameAccountUsername && (
@@ -1016,9 +1016,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                       display: 'inline-block',
                                       padding: '4px 12px',
                                       borderRadius: '8px',
-                                      backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                                      border: '1px solid rgba(0, 240, 255, 0.35)',
-                                      color: '#00F0FF',
+                                      backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                      border: '1px solid rgba(255, 215, 0, 0.35)',
+                                      color: 'var(--neon-cyan)',
                                       fontFamily: 'Lexend, sans-serif',
                                       fontSize: '13px',
                                       fontWeight: 900,
@@ -1100,9 +1100,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                   style={{
                                     padding: '8px 16px',
                                     borderRadius: '10px',
-                                    background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
+                                    background: 'var(--primary-gradient)',
                                     border: 'none',
-                                    color: '#070514',
+                                    color: 'var(--bg-deep)',
                                     fontSize: '12px',
                                     fontFamily: 'Lexend, sans-serif',
                                     fontWeight: 900,
@@ -1110,7 +1110,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
-                                    boxShadow: '0 4px 14px rgba(0, 240, 255, 0.35)',
+                                    boxShadow: '0 4px 14px rgba(255, 215, 0, 0.35)',
                                   }}
                                 >
                                   <Check size={14} strokeWidth={3} />
@@ -1154,7 +1154,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
           <div
             className="rounded-2xl p-6 sm:p-8 shadow-2xl"
             style={{
-              backgroundColor: '#0E0A24',
+              backgroundColor: 'var(--bg-surface)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
             }}
@@ -1184,7 +1184,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
               {/* Status Filter Buttons */}
               <div className="flex items-center gap-2.5 flex-wrap">
                 {[
-                  { key: 'all', label: 'All Records', color: '#00F0FF' },
+                  { key: 'all', label: 'All Records', color: 'var(--neon-cyan)' },
                   { key: 'approved', label: 'Approved Only', color: '#10B981' },
                   { key: 'rejected', label: 'Rejected Only', color: '#F43F5E' },
                 ].map(({ key, label, color }) => {
@@ -1224,7 +1224,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 style={{
                   padding: '60px 24px',
                   textAlign: 'center',
-                  backgroundColor: '#070514',
+                  backgroundColor: 'var(--bg-deep)',
                   borderRadius: '18px',
                   border: '1px dashed rgba(255, 255, 255, 0.14)',
                   color: '#9A91A8',
@@ -1262,7 +1262,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                         key={item.id}
                         className="rounded-xl p-3.5 text-xs space-y-2"
                         style={{
-                          backgroundColor: '#070514',
+                          backgroundColor: 'var(--bg-deep)',
                           border: isFp ? '1px solid rgba(255, 215, 0, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
                         }}
                       >
@@ -1282,10 +1282,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
                               </span>
                             )}
                           </div>
-                          <span className="font-mono font-black text-[#00F0FF] text-xs">${Number(item.transferAmount || 0).toFixed(2)} SC</span>
+                          <span className="font-mono font-black text-[var(--neon-cyan)] text-xs">${Number(item.transferAmount || 0).toFixed(2)} SC</span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-gray-400">
-                          <span className="inline-flex items-center gap-1"><Gamepad2 size={11} className="text-[#00F0FF]" /> {item.gameTitle}</span>
+                          <span className="inline-flex items-center gap-1"><Gamepad2 size={11} className="text-[var(--neon-cyan)]" /> {item.gameTitle}</span>
                           <span>{new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2">
@@ -1345,7 +1345,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '720px', backgroundColor: '#070514' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '720px', backgroundColor: 'var(--bg-deep)' }}>
                     <colgroup>
                       <col style={{ width: '28%' }} />
                       <col style={{ width: '22%' }} />
@@ -1391,11 +1391,11 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             </td>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12px', color: '#E2E8F0', fontWeight: 700 }}>
                               <span className="inline-flex items-center gap-1.5">
-                                <Gamepad2 size={13} color="#00F0FF" />
+                                <Gamepad2 size={13} color="var(--neon-cyan)" />
                                 <span>{item.gameTitle}</span>
                               </span>
                             </td>
-                            <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: '#00F0FF', fontWeight: 800, fontFamily: 'monospace' }}>
+                            <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: 'var(--neon-cyan)', fontWeight: 800, fontFamily: 'monospace' }}>
                               <div>${Number(item.transferAmount || 0).toFixed(2)} SC</div>
                               {item.freeplayScreenshot && (
                                 <button
@@ -1493,14 +1493,14 @@ export default function CoinOperationsDesk({ sessionUser }) {
           <div
             className="rounded-2xl p-6 sm:p-8 shadow-2xl"
             style={{
-              backgroundColor: '#0E0A24',
-              border: '1px solid rgba(224, 38, 216, 0.25)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(224, 38, 216, 0.1)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.1)',
             }}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-7">
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E026D8] shadow-[0_0_10px_#E026D8]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-purple)] shadow-[0_0_10px_var(--neon-purple)]" />
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm sm:text-base font-black text-white m-0 tracking-wide" style={{ fontFamily: 'Lexend, sans-serif' }}>
@@ -1509,9 +1509,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     <span
                       className="px-3 py-1 rounded-full text-xs font-bold font-mono"
                       style={{
-                        backgroundColor: 'rgba(224, 38, 216, 0.15)',
+                        backgroundColor: 'rgba(245, 158, 11, 0.15)',
                         color: '#F5D0FE',
-                        border: '1px solid rgba(224, 38, 216, 0.35)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
                       }}
                     >
                       {pendingCashouts.length} In Review
@@ -1527,8 +1527,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
               <div
                 className="flex items-center gap-2 rounded-xl px-3.5 py-2 w-full sm:w-72 transition-all"
                 style={{
-                  backgroundColor: '#070514',
-                  border: '1px solid rgba(224, 38, 216, 0.25)',
+                  backgroundColor: 'var(--bg-deep)',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
                 }}
               >
                 <Search size={14} className="text-pink-400 shrink-0" />
@@ -1549,10 +1549,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 style={{
                   padding: '72px 28px',
                   textAlign: 'center',
-                  background: 'radial-gradient(ellipse at center, rgba(224, 38, 216, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
+                  background: 'radial-gradient(ellipse at center, rgba(245, 158, 11, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
                   borderRadius: '20px',
-                  border: '1.5px dashed rgba(224, 38, 216, 0.35)',
-                  boxShadow: 'inset 0 0 40px rgba(224, 38, 216, 0.06)',
+                  border: '1.5px dashed rgba(245, 158, 11, 0.35)',
+                  boxShadow: 'inset 0 0 40px rgba(245, 158, 11, 0.06)',
                 }}
               >
                 <div
@@ -1560,24 +1560,24 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     width: '68px',
                     height: '68px',
                     borderRadius: '20px',
-                    background: 'linear-gradient(135deg, rgba(224, 38, 216, 0.25) 0%, rgba(0, 240, 255, 0.18) 100%)',
-                    border: '1.5px solid rgba(224, 38, 216, 0.5)',
-                    boxShadow: '0 0 30px rgba(224, 38, 216, 0.4)',
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(255, 215, 0, 0.18) 100%)',
+                    border: '1.5px solid rgba(245, 158, 11, 0.5)',
+                    boxShadow: '0 0 30px rgba(245, 158, 11, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 18px auto',
                   }}
                 >
-                  <ShieldCheck size={28} color="#E026D8" />
+                  <ShieldCheck size={28} color="var(--neon-purple)" />
                 </div>
                 <div
                   style={{
                     display: 'inline-block',
                     padding: '3px 12px',
                     borderRadius: '20px',
-                    backgroundColor: 'rgba(224, 38, 216, 0.15)',
-                    border: '1px solid rgba(224, 38, 216, 0.35)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
                     color: '#F5D0FE',
                     fontSize: '10.5px',
                     fontWeight: 900,
@@ -1605,8 +1605,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                       key={item.id}
                       className="p-4 rounded-xl space-y-3 shadow-lg"
                       style={{
-                        backgroundColor: '#070514',
-                        border: '1px solid rgba(224, 38, 216, 0.3)',
+                        backgroundColor: 'var(--bg-deep)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
                       }}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -1617,9 +1617,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                         <span
                           className="px-2.5 py-1 rounded-lg font-black text-xs font-mono"
                           style={{
-                            backgroundColor: 'rgba(224, 38, 216, 0.15)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
                             color: '#F5D0FE',
-                            border: '1px solid rgba(224, 38, 216, 0.4)',
+                            border: '1px solid rgba(245, 158, 11, 0.4)',
                           }}
                         >
                           ${Number(item.amount).toFixed(2)} SC
@@ -1651,7 +1651,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                       >
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-gray-400 font-medium">Game Platform:</span>
-                          <span className="text-[#00F0FF] font-bold">{item.gameTitle || 'Game Platform'}</span>
+                          <span className="text-[var(--neon-cyan)] font-bold">{item.gameTitle || 'Game Platform'}</span>
                         </div>
                         {item.gameAccountUsername && (
                           <div className="flex items-center justify-between text-[11px]">
@@ -1675,9 +1675,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                           onClick={() => setScreenshotModal({ open: true, src: item.gameScreenshot, title: `${item.username} - ${item.gameTitle} Winning Proof` })}
                           className="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
                           style={{
-                            backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                            border: '1px solid rgba(0, 240, 255, 0.4)',
-                            color: '#00F0FF',
+                            backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                            border: '1px solid rgba(255, 215, 0, 0.4)',
+                            color: 'var(--neon-cyan)',
                           }}
                         >
                           <div className="w-5 h-5 rounded overflow-hidden bg-black shrink-0">
@@ -1697,8 +1697,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                           onClick={() => handleApproveCashout(item.id)}
                           className="py-2.5 px-3 rounded-xl text-white font-black text-xs flex items-center justify-center gap-1 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
                           style={{
-                            background: 'linear-gradient(135deg, #10B981 0%, #00F0FF 100%)',
-                            color: '#070514',
+                            background: 'linear-gradient(135deg, #10B981 0%, var(--neon-cyan) 100%)',
+                            color: 'var(--bg-deep)',
                             boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
                           }}
                         >
@@ -1730,7 +1730,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '880px', backgroundColor: '#070514' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '880px', backgroundColor: 'var(--bg-deep)' }}>
                     <colgroup>
                       <col style={{ width: '18%' }} />
                       <col style={{ width: '14%' }} />
@@ -1753,7 +1753,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     </thead>
                     <tbody>
                       {pendingCashouts.map((item) => (
-                        <tr key={item.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: 'rgba(224, 38, 216, 0.02)' }}>
+                        <tr key={item.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: 'rgba(245, 158, 11, 0.02)' }}>
                           <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                             <p style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>{item.username}</p>
                             <span style={{ fontSize: '10.5px', color: '#9A91A8', fontFamily: 'monospace' }}>ID: {item.userId?.slice(-6)}</span>
@@ -1787,8 +1787,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                 display: 'inline-block',
                                 padding: '4px 12px',
                                 borderRadius: '8px',
-                                backgroundColor: 'rgba(224, 38, 216, 0.15)',
-                                border: '1px solid rgba(224, 38, 216, 0.4)',
+                                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                border: '1px solid rgba(245, 158, 11, 0.4)',
                                 color: '#F5D0FE',
                                 fontSize: '13px',
                                 fontWeight: 900,
@@ -1811,9 +1811,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                   gap: '8px',
                                   padding: '6px 12px',
                                   borderRadius: '10px',
-                                  backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                  border: '1px solid rgba(0, 240, 255, 0.4)',
-                                  color: '#00F0FF',
+                                  backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                  border: '1px solid rgba(255, 215, 0, 0.4)',
+                                  color: 'var(--neon-cyan)',
                                   cursor: 'pointer',
                                   fontSize: '11.5px',
                                   fontFamily: 'Lexend, sans-serif',
@@ -1869,9 +1869,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                 style={{
                                   padding: '8px 14px',
                                   borderRadius: '10px',
-                                  background: 'linear-gradient(135deg, #10B981 0%, #00F0FF 100%)',
+                                  background: 'linear-gradient(135deg, #10B981 0%, var(--neon-cyan) 100%)',
                                   border: 'none',
-                                  color: '#070514',
+                                  color: 'var(--bg-deep)',
                                   fontSize: '12px',
                                   fontFamily: 'Lexend, sans-serif',
                                   fontWeight: 900,
@@ -1922,7 +1922,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
           <div
             className="rounded-2xl p-6 sm:p-8 shadow-2xl"
             style={{
-              backgroundColor: '#0E0A24',
+              backgroundColor: 'var(--bg-surface)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
             }}
@@ -1952,7 +1952,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
               {/* Status Filter */}
               <div className="flex items-center gap-2.5 flex-wrap">
                 {[
-                  { key: 'all', label: 'All Records', color: '#E026D8' },
+                  { key: 'all', label: 'All Records', color: 'var(--neon-purple)' },
                   { key: 'verified', label: 'Verified Only', color: '#10B981' },
                   { key: 'rejected', label: 'Rejected Only', color: '#F43F5E' },
                 ].map(({ key, label, color }) => {
@@ -1992,7 +1992,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                 style={{
                   padding: '60px 24px',
                   textAlign: 'center',
-                  backgroundColor: '#070514',
+                  backgroundColor: 'var(--bg-deep)',
                   borderRadius: '18px',
                   border: '1px dashed rgba(255, 255, 255, 0.14)',
                   color: '#9A91A8',
@@ -2029,7 +2029,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                         key={item.id}
                         className="p-3.5 rounded-xl text-xs space-y-2"
                         style={{
-                          backgroundColor: '#070514',
+                          backgroundColor: 'var(--bg-deep)',
                           border: '1px solid rgba(255, 255, 255, 0.08)',
                         }}
                       >
@@ -2041,9 +2041,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                           <span
                             className="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono"
                             style={{
-                              backgroundColor: 'rgba(224, 38, 216, 0.15)',
+                              backgroundColor: 'rgba(245, 158, 11, 0.15)',
                               color: '#F5D0FE',
-                              border: '1px solid rgba(224, 38, 216, 0.35)',
+                              border: '1px solid rgba(245, 158, 11, 0.35)',
                             }}
                           >
                             ${Number(item.amount).toFixed(2)} SC
@@ -2104,9 +2104,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                               onClick={() => setScreenshotModal({ open: true, src: item.gameScreenshot, title: `${item.username} - Proof` })}
                               className="px-2.5 py-1 rounded-lg text-[10.5px] font-bold shrink-0 cursor-pointer"
                               style={{
-                                backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                border: '1px solid rgba(0, 240, 255, 0.35)',
-                                color: '#00F0FF',
+                                backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                border: '1px solid rgba(255, 215, 0, 0.35)',
+                                color: 'var(--neon-cyan)',
                               }}
                             >
                               Proof 👁️
@@ -2125,7 +2125,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '760px', backgroundColor: '#070514' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '760px', backgroundColor: 'var(--bg-deep)' }}>
                     <colgroup>
                       <col style={{ width: '22%' }} />
                       <col style={{ width: '16%' }} />
@@ -2156,7 +2156,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12px', color: '#E2E8F0', fontWeight: 700 }}>
                               {item.gameTitle}
                             </td>
-                            <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: '#E026D8', fontWeight: 800, fontFamily: 'monospace' }}>
+                            <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: 'var(--neon-purple)', fontWeight: 800, fontFamily: 'monospace' }}>
                               ${Number(item.amount).toFixed(2)} SC
                             </td>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
@@ -2167,9 +2167,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                                   style={{
                                     padding: '5px 10px',
                                     borderRadius: '8px',
-                                    backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                    border: '1px solid rgba(0, 240, 255, 0.35)',
-                                    color: '#00F0FF',
+                                    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                                    color: 'var(--neon-cyan)',
                                     fontSize: '11px',
                                     fontFamily: 'Lexend, sans-serif',
                                     fontWeight: 800,
@@ -2278,10 +2278,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
             className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: '#0E0A24',
-              background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-              border: '1px solid rgba(0, 240, 255, 0.45)',
-              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+              backgroundColor: 'var(--bg-surface)',
+              background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+              border: '1px solid rgba(255, 215, 0, 0.45)',
+              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
               borderRadius: '20px',
               fontFamily: 'Lexend, -apple-system, sans-serif',
             }}
@@ -2289,11 +2289,11 @@ export default function CoinOperationsDesk({ sessionUser }) {
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[#00F0FF]"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--neon-cyan)]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(224, 38, 216, 0.15) 100%)',
-                    border: '1px solid rgba(0, 240, 255, 0.4)',
-                    boxShadow: '0 0 15px rgba(0, 240, 255, 0.25)',
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
+                    boxShadow: '0 0 15px rgba(255, 215, 0, 0.25)',
                   }}
                 >
                   <CheckCircle2 size={18} strokeWidth={2.5} />
@@ -2323,8 +2323,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
             <div
               className="rounded-xl p-3.5 space-y-2 text-xs"
               style={{
-                backgroundColor: 'rgba(0, 240, 255, 0.08)',
-                border: '1px solid rgba(0, 240, 255, 0.25)',
+                backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                border: '1px solid rgba(255, 215, 0, 0.25)',
               }}
             >
               <div className="flex justify-between items-center">
@@ -2340,7 +2340,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Game Platform:</span>
-                <strong className="text-[#00F0FF]">{approveLoadModal.item?.gameTitle}</strong>
+                <strong className="text-[var(--neon-cyan)]">{approveLoadModal.item?.gameTitle}</strong>
               </div>
               <div className="flex justify-between pt-1 border-t border-white/10">
                 <span className="text-gray-300 font-bold">
@@ -2348,7 +2348,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     ? 'Freeplay Allotment Amount:'
                     : 'Transfer Deduct Amount:'}
                 </span>
-                <strong className="text-[#00F0FF] text-sm font-mono">
+                <strong className="text-[var(--neon-cyan)] text-sm font-mono">
                   ${Number(approveLoadModal.item?.transferAmount || 0).toFixed(2)} SC
                 </strong>
               </div>
@@ -2410,7 +2410,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-[#00F0FF] font-black text-sm">$</span>
+                  <span className="absolute left-3.5 top-2.5 text-[var(--neon-cyan)] font-black text-sm">$</span>
                   <input
                     type="number"
                     step="0.01"
@@ -2418,10 +2418,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
                     value={approveLoadModal.transferAmount}
                     onChange={(e) => setApproveLoadModal({ ...approveLoadModal, transferAmount: e.target.value })}
                     required
-                    className="w-full rounded-xl pl-8 pr-3.5 py-2.5 text-white font-mono font-black text-sm outline-none transition-all focus:border-[#00F0FF]"
+                    className="w-full rounded-xl pl-8 pr-3.5 py-2.5 text-white font-mono font-black text-sm outline-none transition-all focus:border-[var(--neon-cyan)]"
                     style={{
-                      backgroundColor: '#070514',
-                      border: '1.5px solid rgba(0, 240, 255, 0.45)',
+                      backgroundColor: 'var(--bg-deep)',
+                      border: '1.5px solid rgba(255, 215, 0, 0.45)',
                     }}
                   />
                 </div>
@@ -2443,8 +2443,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   required
                   className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                   style={{
-                    backgroundColor: '#070514',
-                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                    backgroundColor: 'var(--bg-deep)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
                   }}
                 />
               </div>
@@ -2460,8 +2460,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   required
                   className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                   style={{
-                    backgroundColor: '#070514',
-                    border: '1px solid rgba(0, 240, 255, 0.3)',
+                    backgroundColor: 'var(--bg-deep)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
                   }}
                 />
               </div>
@@ -2478,9 +2478,9 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   type="submit"
                   className="py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                   style={{
-                    background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                    color: '#070514',
-                    boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+                    background: 'var(--primary-gradient)',
+                    color: 'var(--bg-deep)',
+                    boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
                     border: 'none',
                   }}
                 >
@@ -2521,8 +2521,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
             className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: '#0E0A24',
-              background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
+              backgroundColor: 'var(--bg-surface)',
+              background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
               border: '1px solid rgba(244, 63, 94, 0.45)',
               boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(244, 63, 94, 0.25)',
               borderRadius: '20px',
@@ -2574,7 +2574,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   required
                   className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all resize-none"
                   style={{
-                    backgroundColor: '#070514',
+                    backgroundColor: 'var(--bg-deep)',
                     border: '1px solid rgba(244, 63, 94, 0.4)',
                   }}
                 />
@@ -2631,8 +2631,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
             className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: '#0E0A24',
-              background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
+              backgroundColor: 'var(--bg-surface)',
+              background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
               border: '1px solid rgba(244, 63, 94, 0.45)',
               boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(244, 63, 94, 0.25)',
               borderRadius: '20px',
@@ -2684,7 +2684,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
                   required
                   className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all resize-none"
                   style={{
-                    backgroundColor: '#070514',
+                    backgroundColor: 'var(--bg-deep)',
                     border: '1px solid rgba(244, 63, 94, 0.4)',
                   }}
                 />
@@ -2741,10 +2741,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
             className="vegas-modal-card relative w-full max-w-4xl p-5 sm:p-6 max-h-[92vh] overflow-hidden flex flex-col gap-3"
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: '#0E0A24',
-              background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-              border: '1.5px solid #00F0FF',
-              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.3)',
+              backgroundColor: 'var(--bg-surface)',
+              background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+              border: '1.5px solid var(--neon-cyan)',
+              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.3)',
               borderRadius: '20px',
               fontFamily: 'Lexend, -apple-system, sans-serif',
             }}
@@ -2752,10 +2752,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[#00F0FF]"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--neon-cyan)]"
                   style={{
-                    backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                    border: '1px solid rgba(0, 240, 255, 0.35)',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                    border: '1px solid rgba(255, 215, 0, 0.35)',
                   }}
                 >
                   <Eye size={16} />

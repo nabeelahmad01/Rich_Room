@@ -126,7 +126,7 @@ export default function AffiliateManagementHub({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#00F0FF', boxShadow: '0 0 12px #00F0FF' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--neon-cyan)', boxShadow: '0 0 12px var(--neon-cyan)' }} />
             <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
               {activeTab === 'affiliate_commissions'
                 ? 'Affiliate Commission Settlement Desk'
@@ -175,7 +175,7 @@ export default function AffiliateManagementHub({
               gap: '6px',
               padding: '10px 16px',
               borderRadius: '12px',
-              backgroundColor: '#0E0A24',
+              backgroundColor: 'var(--bg-surface)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               color: '#FFFFFF',
               fontSize: '12px',
@@ -224,8 +224,8 @@ export default function AffiliateManagementHub({
         {/* Card 1: Total Partners */}
         <div
           style={{
-            backgroundColor: '#0E0A24',
-            border: '1px solid rgba(0, 240, 255, 0.25)',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid rgba(255, 215, 0, 0.25)',
             borderRadius: '18px',
             padding: '14px',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
@@ -235,12 +235,12 @@ export default function AffiliateManagementHub({
             <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900, color: '#9A91A8', letterSpacing: '0.05em' }}>
               Affiliate Partners
             </span>
-            <Users size={15} color="#00F0FF" />
+            <Users size={15} color="var(--neon-cyan)" />
           </div>
           <div style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', marginTop: '4px', fontFamily: 'monospace' }}>
             {totalPartners}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px', fontSize: '10.5px', color: '#00F0FF' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px', fontSize: '10.5px', color: 'var(--neon-cyan)' }}>
             <Sparkles size={11} />
             <span className="truncate">Referral Bonus Active</span>
           </div>
@@ -249,8 +249,8 @@ export default function AffiliateManagementHub({
         {/* Card 2: Recruited Players */}
         <div
           style={{
-            backgroundColor: '#0E0A24',
-            border: '1px solid rgba(224, 38, 216, 0.25)',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
             borderRadius: '18px',
             padding: '14px',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
@@ -260,7 +260,7 @@ export default function AffiliateManagementHub({
             <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900, color: '#9A91A8', letterSpacing: '0.05em' }}>
               Recruited Players
             </span>
-            <Gift size={15} color="#E026D8" />
+            <Gift size={15} color="var(--neon-purple)" />
           </div>
           <div style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', marginTop: '4px', fontFamily: 'monospace' }}>
             {totalReferees}
@@ -273,7 +273,7 @@ export default function AffiliateManagementHub({
         {/* Card 3: Total Deposit Volume */}
         <div
           style={{
-            backgroundColor: '#0E0A24',
+            backgroundColor: 'var(--bg-surface)',
             border: '1px solid rgba(245, 158, 11, 0.25)',
             borderRadius: '18px',
             padding: '14px',
@@ -297,7 +297,7 @@ export default function AffiliateManagementHub({
         {/* Card 4: Unpaid Claimable Pool */}
         <div
           style={{
-            backgroundColor: '#0E0A24',
+            backgroundColor: 'var(--bg-surface)',
             border: totalUnpaid > 0 ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '18px',
             padding: '14px',
@@ -351,10 +351,10 @@ export default function AffiliateManagementHub({
                   fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  backgroundColor: isSel ? '#00F0FF' : '#0E0A24',
-                  color: isSel ? '#070514' : '#C8C1D4',
-                  border: isSel ? '1px solid #00F0FF' : '1px solid rgba(255, 255, 255, 0.08)',
-                  boxShadow: isSel ? '0 0 14px rgba(0, 240, 255, 0.35)' : 'none',
+                  backgroundColor: isSel ? 'var(--neon-cyan)' : 'var(--bg-surface)',
+                  color: isSel ? 'var(--bg-deep)' : '#C8C1D4',
+                  border: isSel ? '1px solid var(--neon-cyan)' : '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: isSel ? '0 0 14px rgba(255, 215, 0, 0.35)' : 'none',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -382,7 +382,7 @@ export default function AffiliateManagementHub({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: '#0E0A24',
+            backgroundColor: 'var(--bg-surface)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: '12px',
             padding: '7px 14px',
@@ -422,7 +422,7 @@ export default function AffiliateManagementHub({
       {/* 4. Affiliates Table */}
       <div
         style={{
-          backgroundColor: '#0E0A24',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: '20px',
           border: '1px solid rgba(255, 255, 255, 0.08)',
           overflow: 'hidden',
@@ -433,7 +433,7 @@ export default function AffiliateManagementHub({
           <table style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
             <thead
               style={{
-                backgroundColor: '#070514',
+                backgroundColor: 'var(--bg-deep)',
                 color: '#9A91A8',
                 textTransform: 'uppercase',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -490,8 +490,8 @@ export default function AffiliateManagementHub({
                               width: '36px',
                               height: '36px',
                               borderRadius: '10px',
-                              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(224, 38, 216, 0.2))',
-                              border: '1px solid rgba(0, 240, 255, 0.3)',
+                              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(245, 158, 11, 0.2))',
+                              border: '1px solid rgba(255, 215, 0, 0.3)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -510,7 +510,7 @@ export default function AffiliateManagementHub({
                                 <button
                                   type="button"
                                   onClick={() => onOpenPlayerProfile(partner.userId)}
-                                  style={{ background: 'none', border: 'none', color: '#00F0FF', cursor: 'pointer', padding: 0 }}
+                                  style={{ background: 'none', border: 'none', color: 'var(--neon-cyan)', cursor: 'pointer', padding: 0 }}
                                   title="Open Player Profile"
                                 >
                                   <ExternalLink size={11} />
@@ -535,9 +535,9 @@ export default function AffiliateManagementHub({
                             gap: '6px',
                             padding: '4px 10px',
                             borderRadius: '8px',
-                            backgroundColor: 'rgba(0, 240, 255, 0.1)',
-                            border: '1px solid rgba(0, 240, 255, 0.25)',
-                            color: '#00F0FF',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                            border: '1px solid rgba(255, 215, 0, 0.25)',
+                            color: 'var(--neon-cyan)',
                             fontFamily: 'monospace',
                             fontWeight: 800,
                             fontSize: '11px',
@@ -562,9 +562,9 @@ export default function AffiliateManagementHub({
                               gap: '6px',
                               padding: '5px 12px',
                               borderRadius: '10px',
-                              backgroundColor: 'rgba(224, 38, 216, 0.12)',
-                              border: '1px solid rgba(224, 38, 216, 0.3)',
-                              color: '#E026D8',
+                              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                              border: '1px solid rgba(245, 158, 11, 0.3)',
+                              color: 'var(--neon-purple)',
                               fontSize: '11px',
                               fontWeight: 800,
                               cursor: 'pointer',
@@ -707,8 +707,8 @@ export default function AffiliateManagementHub({
           <div
             className="modal-scrollable"
             style={{
-              backgroundColor: '#0E0A24',
-              border: '1px solid rgba(0, 240, 255, 0.35)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid rgba(255, 215, 0, 0.35)',
               borderRadius: '24px',
               padding: '20px 16px',
               width: '100%',
@@ -726,7 +726,7 @@ export default function AffiliateManagementHub({
                   Recruited Player Network ({selectedNetworkPartner.totalReferrals})
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '11.5px', color: '#9A91A8' }}>
-                  Direct referrals invited by <strong style={{ color: '#00F0FF' }}>{selectedNetworkPartner.username}</strong> ({selectedNetworkPartner.referralCode})
+                  Direct referrals invited by <strong style={{ color: 'var(--neon-cyan)' }}>{selectedNetworkPartner.username}</strong> ({selectedNetworkPartner.referralCode})
                 </p>
               </div>
               <button
@@ -751,7 +751,7 @@ export default function AffiliateManagementHub({
                 No active players recorded in this network.
               </div>
             ) : (
-              <div style={{ backgroundColor: '#070514', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.06)', width: '100%' }}>
+              <div style={{ backgroundColor: 'var(--bg-deep)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.06)', width: '100%' }}>
                 <div style={{ overflowX: 'auto', width: '100%' }}>
                   <table style={{ width: '100%', minWidth: '480px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
                     <thead style={{ backgroundColor: '#0A071E', color: '#9A91A8', textTransform: 'uppercase', fontSize: '10.5px', fontWeight: 800 }}>
@@ -781,7 +781,7 @@ export default function AffiliateManagementHub({
                         <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontWeight: 900, color: ref.totalDeposited > 0 ? '#FBBF24' : '#64748B' }}>
                           ${Number(ref.totalDeposited || 0).toFixed(2)} SC
                         </td>
-                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontWeight: 800, color: '#00F0FF' }}>
+                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontWeight: 800, color: 'var(--neon-cyan)' }}>
                           ${Number(ref.balanceSC || 0).toFixed(2)} SC
                         </td>
                       </tr>

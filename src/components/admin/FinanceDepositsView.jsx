@@ -86,7 +86,7 @@ export default function FinanceDepositsView({
       return { bg: 'bg-amber-500/15', border: 'border-amber-500/30', text: 'text-amber-400', tag: 'Crypto' };
     }
     if (m.includes('zelle')) {
-      return { bg: 'bg-purple-500/15', border: 'border-purple-500/30', text: 'text-purple-400', tag: 'Zelle' };
+      return { bg: 'bg-purple-500/15', border: 'border-amber-600/30', text: 'text-[var(--neon-purple)]', tag: 'Zelle' };
     }
     if (m.includes('apple') || m.includes('pay')) {
       return { bg: 'bg-blue-500/15', border: 'border-blue-500/30', text: 'text-blue-400', tag: 'Apple Pay' };
@@ -111,13 +111,13 @@ export default function FinanceDepositsView({
   return (
     <div className="space-y-4" style={{ fontFamily: 'Lexend, -apple-system, sans-serif' }}>
       {/* Search, Filter & Live Sync Bar */}
-      <div className="bg-[#0E0A24] border border-[#00F0FF]/25 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md shadow-xl">
+      <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md shadow-xl">
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#140E33] rounded-xl border border-white/10 w-full md:w-auto overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--bg-card)] rounded-xl border border-white/10 w-full md:w-auto overflow-x-auto">
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              statusFilter === 'all' ? 'bg-[#00F0FF] text-black shadow-lg shadow-[#00F0FF]/30' : 'text-gray-400 hover:text-white'
+              statusFilter === 'all' ? 'bg-[var(--neon-cyan)] text-black shadow-lg shadow-[var(--neon-cyan)]/30' : 'text-gray-400 hover:text-white'
             }`}
           >
             All ({deposits.length})
@@ -157,7 +157,7 @@ export default function FinanceDepositsView({
 
         {/* Search & Refresh Actions */}
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#140E33] border border-[#00F0FF]/30 rounded-xl w-full md:w-64 focus-within:border-[#00F0FF] transition">
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-[var(--bg-card)] border border-[var(--neon-cyan)]/30 rounded-xl w-full md:w-64 focus-within:border-[var(--neon-cyan)] transition">
             <Search size={14} className="text-gray-400 shrink-0" />
             <input
               type="text"
@@ -180,11 +180,11 @@ export default function FinanceDepositsView({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-[#00F0FF]/30 hover:border-[#00F0FF] text-xs font-bold flex items-center gap-2 transition shrink-0 cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-[var(--neon-cyan)]/30 hover:border-[var(--neon-cyan)] text-xs font-bold flex items-center gap-2 transition shrink-0 cursor-pointer"
             style={{ fontFamily: 'Lexend, sans-serif' }}
             title="Refresh requests"
           >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[#00F0FF]' : ''} />
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[var(--neon-cyan)]' : ''} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function FinanceDepositsView({
 
       {/* Main Container */}
       {filteredDeposits.length === 0 ? (
-        <div className="p-12 text-center bg-[#0E0A24] border border-[#00F0FF]/25 rounded-2xl shadow-xl">
+        <div className="p-12 text-center bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-2xl shadow-xl">
           <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3 text-gray-400">
             <Coins size={26} />
           </div>
@@ -206,9 +206,9 @@ export default function FinanceDepositsView({
       ) : (
         <>
           {/* DESKTOP TABLE VIEW (Screens >= 1024px) */}
-          <div className="hidden lg:block bg-[#0E0A24] border border-[#00F0FF]/20 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="hidden lg:block bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/20 rounded-2xl overflow-hidden shadow-2xl">
             <table className="w-full text-left text-xs border-collapse" style={{ fontFamily: 'Lexend, sans-serif' }}>
-              <thead className="bg-[#070514] text-[#9A91A8] uppercase font-black text-[11px] tracking-wider border-b border-white/10">
+              <thead className="bg-[var(--bg-deep)] text-[#9A91A8] uppercase font-black text-[11px] tracking-wider border-b border-white/10">
                 <tr>
                   <th className="p-4">Time &amp; Date</th>
                   <th className="p-4">Player</th>
@@ -268,7 +268,7 @@ export default function FinanceDepositsView({
                       {/* Player */}
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-black text-white text-xs uppercase shadow">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center font-black text-white text-xs uppercase shadow">
                             {d.username ? d.username.charAt(0) : 'U'}
                           </div>
                           <div>
@@ -299,8 +299,8 @@ export default function FinanceDepositsView({
                             <span
                               className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase border ${
                                 bonusType === 'welcome'
-                                  ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
-                                  : 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                  : 'bg-purple-500/15 text-amber-300 border-amber-600/30'
                               }`}
                             >
                               +{bonusPercent}% {bonusType}
@@ -400,7 +400,7 @@ export default function FinanceDepositsView({
                               <button
                                 type="button"
                                 onClick={() => setPreviewImage({ url: proofSrc, title: `${d.username} Payment Receipt` })}
-                                className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-[10.5px] text-cyan-400 font-bold border border-white/10 flex items-center gap-1 transition cursor-pointer"
+                                className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-[10.5px] text-[var(--neon-cyan)] font-bold border border-white/10 flex items-center gap-1 transition cursor-pointer"
                               >
                                 <Eye size={12} />
                                 <span>View</span>
@@ -492,14 +492,14 @@ export default function FinanceDepositsView({
                   key={d.id}
                   className={`p-4 rounded-2xl border flex flex-col gap-3.5 transition shadow-xl ${
                     isPending
-                      ? 'bg-[#0E0A24] border-amber-500/40 shadow-amber-500/10'
-                      : 'bg-[#0E0A24] border-[#00F0FF]/25'
+                      ? 'bg-[var(--bg-surface)] border-amber-500/40 shadow-amber-500/10'
+                      : 'bg-[var(--bg-surface)] border-[var(--neon-cyan)]/25'
                   }`}
                 >
                   {/* Card Header: User & Status */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00F0FF] to-[#E026D8] flex items-center justify-center font-black text-black text-sm shadow">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--neon-cyan)] to-[var(--neon-purple)] flex items-center justify-center font-black text-black text-sm shadow">
                         {d.username ? d.username.charAt(0) : 'U'}
                       </div>
                       <div>
@@ -530,7 +530,7 @@ export default function FinanceDepositsView({
                   </div>
 
                   {/* Financial Details Box */}
-                  <div className="p-3 bg-[#140E33] rounded-xl border border-white/5 space-y-2">
+                  <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400 font-bold">Deposit Amount:</span>
                       <span className="font-black text-amber-300 text-sm font-mono">
@@ -575,8 +575,8 @@ export default function FinanceDepositsView({
                         <span
                           className={`text-[9.5px] px-1.5 py-0.5 rounded font-black uppercase border ${
                             bonusType === 'welcome'
-                              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                              : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-600/30'
                           }`}
                         >
                           +{bonusPercent}%
@@ -715,12 +715,12 @@ export default function FinanceDepositsView({
           onClick={() => setPreviewImage(null)}
         >
           <div
-            className="relative max-w-2xl w-full bg-[#0E0A24] border border-[#00F0FF]/40 rounded-3xl p-5 shadow-2xl space-y-4"
+            className="relative max-w-2xl w-full bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/40 rounded-3xl p-5 shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF]" />
+                <span className="w-2 h-2 rounded-full bg-[var(--neon-cyan)]" />
                 {previewImage.title || 'Payment Receipt Proof'}
               </h3>
               <button
@@ -745,7 +745,7 @@ export default function FinanceDepositsView({
               <a
                 href={previewImage.url}
                 download="payment_proof.png"
-                className="px-4 py-2 rounded-xl bg-[#00F0FF] hover:bg-cyan-300 text-black text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-cyan-500/25"
+                className="px-4 py-2 rounded-xl bg-[var(--neon-cyan)] hover:bg-amber-300 text-black text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-amber-500/25"
               >
                 <span>Save Image</span>
               </a>

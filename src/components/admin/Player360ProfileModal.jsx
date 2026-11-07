@@ -266,9 +266,9 @@ export default function Player360ProfileModal({
           maxWidth: '1040px',
           maxHeight: '92vh',
           backgroundColor: '#0c081e',
-          border: '1px solid rgba(0, 240, 255, 0.35)',
+          border: '1px solid rgba(255, 215, 0, 0.35)',
           borderRadius: '24px',
-          boxShadow: '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 240, 255, 0.15)',
+          boxShadow: '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(255, 215, 0, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -281,7 +281,7 @@ export default function Player360ProfileModal({
         <div
           style={{
             padding: '20px 24px',
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
@@ -296,15 +296,15 @@ export default function Player360ProfileModal({
                 width: '52px',
                 height: '52px',
                 borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(224, 38, 216, 0.25))',
-                border: '1px solid rgba(0, 240, 255, 0.45)',
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(245, 158, 11, 0.25))',
+                border: '1px solid rgba(255, 215, 0, 0.45)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 900,
                 fontSize: '20px',
-                color: '#00F0FF',
-                boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)',
+                color: 'var(--neon-cyan)',
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.2)',
                 flexShrink: 0,
               }}
             >
@@ -325,7 +325,7 @@ export default function Player360ProfileModal({
                   </span>
                 )}
                 {data?.user?.deviceId && (
-                  <span style={{ padding: '3px 10px', borderRadius: '9999px', fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(0, 240, 255, 0.12)', color: '#00F0FF', border: '1px solid rgba(0, 240, 255, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ padding: '3px 10px', borderRadius: '9999px', fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(255, 215, 0, 0.12)', color: 'var(--neon-cyan)', border: '1px solid rgba(255, 215, 0, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     <Smartphone size={11} /> Bound Device
                   </span>
                 )}
@@ -358,9 +358,9 @@ export default function Player360ProfileModal({
               style={{
                 padding: '8px 14px',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)',
-                border: '1px solid rgba(0, 240, 255, 0.4)',
-                color: '#00F0FF',
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)',
+                border: '1px solid rgba(255, 215, 0, 0.4)',
+                color: 'var(--neon-cyan)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -368,17 +368,17 @@ export default function Player360ProfileModal({
                 fontSize: '11.5px',
                 fontWeight: 800,
                 letterSpacing: '0.2px',
-                boxShadow: '0 0 12px rgba(0, 240, 255, 0.12)',
+                boxShadow: '0 0 12px rgba(255, 215, 0, 0.12)',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 240, 255, 0.28) 0%, rgba(16, 185, 129, 0.28) 100%)';
-                e.currentTarget.style.boxShadow = '0 0 18px rgba(0, 240, 255, 0.35)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.28) 0%, rgba(16, 185, 129, 0.28) 100%)';
+                e.currentTarget.style.boxShadow = '0 0 18px rgba(255, 215, 0, 0.35)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.12)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 215, 0, 0.12)';
                 e.currentTarget.style.transform = 'none';
               }}
             >
@@ -512,7 +512,7 @@ export default function Player360ProfileModal({
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         backgroundColor: adjustMode === 'add' ? '#10B981' : 'rgba(255, 255, 255, 0.05)',
-                        color: adjustMode === 'add' ? '#070514' : '#9A91A8',
+                        color: adjustMode === 'add' ? 'var(--bg-deep)' : '#9A91A8',
                         border: 'none',
                         boxShadow: adjustMode === 'add' ? '0 0 16px rgba(16, 185, 129, 0.5)' : 'none',
                         display: 'flex',
@@ -557,9 +557,9 @@ export default function Player360ProfileModal({
                         style={{
                           padding: '4px 8px',
                           borderRadius: '8px',
-                          backgroundColor: 'rgba(0, 240, 255, 0.08)',
-                          border: '1px solid rgba(0, 240, 255, 0.2)',
-                          color: '#00F0FF',
+                          backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                          border: '1px solid rgba(255, 215, 0, 0.2)',
+                          color: 'var(--neon-cyan)',
                           fontSize: '10px',
                           fontWeight: 800,
                           cursor: 'pointer',
@@ -615,7 +615,7 @@ export default function Player360ProfileModal({
                       padding: '9px 18px',
                       borderRadius: '12px',
                       backgroundColor: adjustMode === 'add' ? '#10B981' : '#F43F5E',
-                      color: adjustMode === 'add' ? '#070514' : '#FFFFFF',
+                      color: adjustMode === 'add' ? 'var(--bg-deep)' : '#FFFFFF',
                       fontSize: '11px',
                       fontWeight: 900,
                       textTransform: 'uppercase',
@@ -653,7 +653,7 @@ export default function Player360ProfileModal({
         {/* 3. NAVIGATION SUB-TABS */}
         <div
           style={{
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             padding: '0 24px',
             display: 'flex',
@@ -685,9 +685,9 @@ export default function Player360ProfileModal({
                   letterSpacing: '0.04em',
                   cursor: 'pointer',
                   backgroundColor: 'transparent',
-                  color: isActive ? '#00F0FF' : '#9A91A8',
+                  color: isActive ? 'var(--neon-cyan)' : '#9A91A8',
                   border: 'none',
-                  borderBottom: isActive ? '2px solid #00F0FF' : '2px solid transparent',
+                  borderBottom: isActive ? '2px solid var(--neon-cyan)' : '2px solid transparent',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
@@ -704,8 +704,8 @@ export default function Player360ProfileModal({
                       borderRadius: '9999px',
                       fontSize: '10px',
                       fontWeight: 900,
-                      backgroundColor: isActive ? 'rgba(0, 240, 255, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                      color: isActive ? '#00F0FF' : '#CBD5E1',
+                      backgroundColor: isActive ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                      color: isActive ? 'var(--neon-cyan)' : '#CBD5E1',
                     }}
                   >
                     {tab.count}
@@ -724,8 +724,8 @@ export default function Player360ProfileModal({
                 style={{
                   width: '36px',
                   height: '36px',
-                  border: '3px solid rgba(0, 240, 255, 0.2)',
-                  borderTopColor: '#00F0FF',
+                  border: '3px solid rgba(255, 215, 0, 0.2)',
+                  borderTopColor: 'var(--neon-cyan)',
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite',
                   margin: '0 auto 14px',
@@ -754,15 +754,15 @@ export default function Player360ProfileModal({
                       <div style={{ fontSize: '11px', color: '#9A91A8', marginTop: '2px' }}>{data.stats?.depositsCount || 0} approved deposits</div>
                     </div>
 
-                    <div style={{ padding: '16px 18px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(0, 240, 255, 0.25)' }}>
+                    <div style={{ padding: '16px 18px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(255, 215, 0, 0.25)' }}>
                       <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900, color: '#9A91A8' }}>Total Cashed Out</div>
-                      <div style={{ fontSize: '24px', fontWeight: 900, color: '#00F0FF', fontFamily: 'monospace', marginTop: '4px' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--neon-cyan)', fontFamily: 'monospace', marginTop: '4px' }}>
                         ${Number(data.stats?.totalWithdrawalsAmount || 0).toFixed(2)}
                       </div>
                       <div style={{ fontSize: '11px', color: '#9A91A8', marginTop: '2px' }}>{data.stats?.withdrawalsCount || 0} completed redemptions</div>
                     </div>
 
-                    <div style={{ padding: '16px 18px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(224, 38, 216, 0.25)' }}>
+                    <div style={{ padding: '16px 18px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
                       <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900, color: '#9A91A8' }}>Net Platform Margin</div>
                       <div style={{ fontSize: '24px', fontWeight: 900, color: (data.stats?.netMargin || 0) >= 0 ? '#A7F3D0' : '#FDA4AF', fontFamily: 'monospace', marginTop: '4px' }}>
                         ${Number(data.stats?.netMargin || 0).toFixed(2)}
@@ -783,7 +783,7 @@ export default function Player360ProfileModal({
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(290px, 100%), 1fr))', gap: '16px' }}>
                     {/* Account Security Box */}
                     <div style={{ padding: '18px 20px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <h4 style={{ margin: '0 0 14px 0', fontSize: '12px', fontWeight: 900, color: '#00F0FF', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h4 style={{ margin: '0 0 14px 0', fontSize: '12px', fontWeight: 900, color: 'var(--neon-cyan)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <ShieldCheck size={14} /> Account Security &amp; Compliance
                       </h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
@@ -791,7 +791,7 @@ export default function Player360ProfileModal({
                           <span style={{ color: '#9A91A8' }}>Player ID:</span>
                           <span style={{ fontFamily: 'monospace', color: '#E2DCEB', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             {data.user.id}
-                            <button type="button" onClick={() => copyText(data.user.id, 'id')} style={{ background: 'none', border: 'none', color: '#00F0FF', cursor: 'pointer' }}>
+                            <button type="button" onClick={() => copyText(data.user.id, 'id')} style={{ background: 'none', border: 'none', color: 'var(--neon-cyan)', cursor: 'pointer' }}>
                               <Copy size={11} />
                             </button>
                           </span>
@@ -886,7 +886,7 @@ export default function Player360ProfileModal({
 
                     {/* Linked Game Accounts Box */}
                     <div style={{ padding: '18px 20px', borderRadius: '18px', backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <h4 style={{ margin: '0 0 14px 0', fontSize: '12px', fontWeight: 900, color: '#E026D8', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h4 style={{ margin: '0 0 14px 0', fontSize: '12px', fontWeight: 900, color: 'var(--neon-purple)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Gamepad2 size={14} /> Active Game Portals ({data.gameAccounts?.length || 0})
                       </h4>
                       {data.gameAccounts?.length === 0 ? (
@@ -922,7 +922,7 @@ export default function Player360ProfileModal({
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
                       <div style={{ overflowX: 'auto', width: '100%' }}>
                         <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                        <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <thead style={{ backgroundColor: 'var(--bg-deep)', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Amount ($ SC)</th>
                             <th style={{ padding: '12px 16px' }}>Payment Method</th>
@@ -950,9 +950,9 @@ export default function Player360ProfileModal({
                                     style={{
                                       padding: '4px 10px',
                                       borderRadius: '8px',
-                                      backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                      border: '1px solid rgba(0, 240, 255, 0.35)',
-                                      color: '#00F0FF',
+                                      backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                      border: '1px solid rgba(255, 215, 0, 0.35)',
+                                      color: 'var(--neon-cyan)',
                                       fontSize: '11px',
                                       fontWeight: 800,
                                       cursor: 'pointer',
@@ -1006,7 +1006,7 @@ export default function Player360ProfileModal({
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
                       <div style={{ overflowX: 'auto', width: '100%' }}>
                         <table style={{ width: '100%', minWidth: '720px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                        <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <thead style={{ backgroundColor: 'var(--bg-deep)', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Amount ($ SC)</th>
                             <th style={{ padding: '12px 16px' }}>Game Title</th>
@@ -1020,7 +1020,7 @@ export default function Player360ProfileModal({
                         <tbody>
                           {data.withdrawals.map(w => (
                             <tr key={w.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                              <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontWeight: 900, color: '#00F0FF', fontSize: '13px' }}>
+                              <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontWeight: 900, color: 'var(--neon-cyan)', fontSize: '13px' }}>
                                 ${Number(w.amount).toFixed(2)}
                               </td>
                               <td style={{ padding: '12px 16px', fontWeight: 800, color: '#FFFFFF' }}>{w.gameTitle}</td>
@@ -1036,9 +1036,9 @@ export default function Player360ProfileModal({
                                     style={{
                                       padding: '4px 10px',
                                       borderRadius: '8px',
-                                      backgroundColor: 'rgba(224, 38, 216, 0.12)',
-                                      border: '1px solid rgba(224, 38, 216, 0.35)',
-                                      color: '#E026D8',
+                                      backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                                      color: 'var(--neon-purple)',
                                       fontSize: '11px',
                                       fontWeight: 800,
                                       cursor: 'pointer',
@@ -1101,7 +1101,7 @@ export default function Player360ProfileModal({
                           <div style={{ padding: '12px 14px', borderRadius: '12px', backgroundColor: 'rgba(7, 5, 20, 0.7)', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span style={{ color: '#9A91A8' }}>Username:</span>
-                              <span style={{ fontFamily: 'monospace', color: '#00F0FF', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontFamily: 'monospace', color: 'var(--neon-cyan)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {g.username}
                                 <button type="button" onClick={() => copyText(g.username, `u-${g.id}`)} style={{ background: 'none', border: 'none', color: '#9A91A8', cursor: 'pointer' }}>
                                   {copiedField === `u-${g.id}` ? <Check size={12} color="#10B981" /> : <Copy size={12} />}
@@ -1110,7 +1110,7 @@ export default function Player360ProfileModal({
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span style={{ color: '#9A91A8' }}>Password:</span>
-                              <span style={{ fontFamily: 'monospace', color: '#E026D8', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontFamily: 'monospace', color: 'var(--neon-purple)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {g.password}
                                 <button type="button" onClick={() => copyText(g.password, `p-${g.id}`)} style={{ background: 'none', border: 'none', color: '#9A91A8', cursor: 'pointer' }}>
                                   {copiedField === `p-${g.id}` ? <Check size={12} color="#10B981" /> : <Copy size={12} />}
@@ -1136,7 +1136,7 @@ export default function Player360ProfileModal({
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
                       <div style={{ overflowX: 'auto', width: '100%' }}>
                         <table style={{ width: '100%', minWidth: '580px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                        <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <thead style={{ backgroundColor: 'var(--bg-deep)', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Player</th>
                             <th style={{ padding: '12px 16px' }}>Email</th>
@@ -1176,7 +1176,7 @@ export default function Player360ProfileModal({
                     <div style={{ backgroundColor: '#130E2E', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', overflow: 'hidden' }}>
                       <div style={{ overflowX: 'auto', width: '100%' }}>
                         <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                        <thead style={{ backgroundColor: '#070514', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <thead style={{ backgroundColor: 'var(--bg-deep)', color: '#9A91A8', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                           <tr>
                             <th style={{ padding: '12px 16px' }}>Action Type</th>
                             <th style={{ padding: '12px 16px' }}>Amount</th>
@@ -1212,7 +1212,7 @@ export default function Player360ProfileModal({
                               <td style={{ padding: '12px 16px', color: '#E2DCEB' }}>
                                 {l.reason || 'Manual Adjustment'}
                               </td>
-                              <td style={{ padding: '12px 16px', color: '#00F0FF', fontWeight: 800 }}>
+                              <td style={{ padding: '12px 16px', color: 'var(--neon-cyan)', fontWeight: 800 }}>
                                 {l.processedBy}
                               </td>
                               <td style={{ padding: '12px 16px', textAlign: 'right', color: '#9A91A8', fontSize: '11px' }}>
@@ -1235,7 +1235,7 @@ export default function Player360ProfileModal({
         <div
           style={{
             padding: '16px 24px',
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
@@ -1287,7 +1287,7 @@ export default function Player360ProfileModal({
               maxWidth: '650px',
               width: '100%',
               backgroundColor: '#0c081e',
-              border: '1px solid rgba(0, 240, 255, 0.4)',
+              border: '1px solid rgba(255, 215, 0, 0.4)',
               borderRadius: '20px',
               padding: '16px',
               display: 'flex',
@@ -1297,7 +1297,7 @@ export default function Player360ProfileModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '10px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 900, color: '#00F0FF', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--neon-cyan)', textTransform: 'uppercase' }}>
                 Document Proof Preview
               </span>
               <button
@@ -1339,9 +1339,9 @@ export default function Player360ProfileModal({
               maxWidth: '560px',
               width: '100%',
               backgroundColor: '#0c081e',
-              border: '1px solid rgba(0, 240, 255, 0.4)',
+              border: '1px solid rgba(255, 215, 0, 0.4)',
               borderRadius: '24px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 240, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.2)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -1353,7 +1353,7 @@ export default function Player360ProfileModal({
               style={{
                 padding: '20px 24px',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -1365,19 +1365,19 @@ export default function Player360ProfileModal({
                     width: '42px',
                     height: '42px',
                     borderRadius: '12px',
-                    background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
-                    border: '1px solid rgba(0, 240, 255, 0.4)',
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#00F0FF',
+                    color: 'var(--neon-cyan)',
                   }}
                 >
                   <MessageCircle size={22} />
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.3px' }}>
-                    Send Message to <span style={{ color: '#00F0FF' }}>@{data?.user?.username || 'Player'}</span>
+                    Send Message to <span style={{ color: 'var(--neon-cyan)' }}>@{data?.user?.username || 'Player'}</span>
                   </h3>
                   <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: '#94A3B8' }}>
                     Instant VIP Concierge reply with device push & in-app chat delivery
@@ -1438,9 +1438,9 @@ export default function Player360ProfileModal({
                         transition: 'all 0.15s ease',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(0, 240, 255, 0.12)';
-                        e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.3)';
-                        e.currentTarget.style.color = '#00F0FF';
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 215, 0, 0.12)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 215, 0, 0.3)';
+                        e.currentTarget.style.color = 'var(--neon-cyan)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
@@ -1476,7 +1476,7 @@ export default function Player360ProfileModal({
                     width: '100%',
                     padding: '12px 14px',
                     borderRadius: '12px',
-                    backgroundColor: '#070514',
+                    backgroundColor: 'var(--bg-deep)',
                     border: '1px solid rgba(255, 255, 255, 0.12)',
                     color: '#FFFFFF',
                     fontSize: '13px',
@@ -1486,7 +1486,7 @@ export default function Player360ProfileModal({
                     boxSizing: 'border-box',
                     transition: 'border-color 0.2s',
                   }}
-                  onFocus={(e) => (e.target.style.borderColor = 'rgba(0, 240, 255, 0.6)')}
+                  onFocus={(e) => (e.target.style.borderColor = 'rgba(255, 215, 0, 0.6)')}
                   onBlur={(e) => (e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)')}
                 />
               </div>
@@ -1576,9 +1576,9 @@ export default function Player360ProfileModal({
                       borderRadius: '10px',
                       background: (!messageText.trim() || sendingMessage)
                         ? 'rgba(255, 255, 255, 0.1)'
-                        : 'linear-gradient(135deg, #00F0FF 0%, #10B981 100%)',
+                        : 'linear-gradient(135deg, var(--neon-cyan) 0%, #10B981 100%)',
                       border: 'none',
-                      color: (!messageText.trim() || sendingMessage) ? '#64748B' : '#070514',
+                      color: (!messageText.trim() || sendingMessage) ? '#64748B' : 'var(--bg-deep)',
                       fontSize: '12px',
                       fontWeight: 900,
                       letterSpacing: '0.5px',
@@ -1586,7 +1586,7 @@ export default function Player360ProfileModal({
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      boxShadow: (!messageText.trim() || sendingMessage) ? 'none' : '0 0 15px rgba(0, 240, 255, 0.4)',
+                      boxShadow: (!messageText.trim() || sendingMessage) ? 'none' : '0 0 15px rgba(255, 215, 0, 0.4)',
                     }}
                   >
                     {sendingMessage ? (

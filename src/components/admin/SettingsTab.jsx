@@ -47,9 +47,9 @@ export default function SettingsTab({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="p-6 rounded-3xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl">
+      <div className="p-6 rounded-3xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[var(--neon-cyan)]">
             <Settings size={24} />
           </div>
           <div>
@@ -75,10 +75,10 @@ export default function SettingsTab({
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleSubmit} className="p-6 rounded-3xl bg-[#090d22]/90 border border-slate-800 space-y-6">
+      <form onSubmit={handleSubmit} className="p-6 rounded-3xl bg-[var(--bg-surface)]/90 border border-slate-800 space-y-6">
         {/* General Settings */}
         <div className="space-y-4">
-          <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-cyan-400 border-b border-slate-800 pb-2">
+          <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-[var(--neon-cyan)] border-b border-slate-800 pb-2">
             General Branding & Thresholds
           </h3>
 
@@ -88,7 +88,7 @@ export default function SettingsTab({
               type="text"
               value={form.siteName}
               onChange={(e) => setForm({ ...form, siteName: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
             />
           </div>
 
@@ -100,7 +100,7 @@ export default function SettingsTab({
                 step="0.5"
                 value={form.welcomeBonusSC}
                 onChange={(e) => setForm({ ...form, welcomeBonusSC: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
 
@@ -111,7 +111,7 @@ export default function SettingsTab({
                 step="0.5"
                 value={form.dailyBonusSC}
                 onChange={(e) => setForm({ ...form, dailyBonusSC: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
 
@@ -122,7 +122,7 @@ export default function SettingsTab({
                 step="1"
                 value={form.minWithdrawal}
                 onChange={(e) => setForm({ ...form, minWithdrawal: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function SettingsTab({
 
         {/* Support Handles */}
         <div className="space-y-4 pt-2">
-          <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-purple-400 border-b border-slate-800 pb-2">
+          <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-[var(--neon-purple)] border-b border-slate-800 pb-2">
             Support Channels & Official Handles
           </h3>
 
@@ -141,7 +141,7 @@ export default function SettingsTab({
                 type="email"
                 value={form.supportEmail}
                 onChange={(e) => setForm({ ...form, supportEmail: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
 
@@ -151,7 +151,7 @@ export default function SettingsTab({
                 type="text"
                 value={form.telegramSupport}
                 onChange={(e) => setForm({ ...form, telegramSupport: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function SettingsTab({
                 type="text"
                 value={form.whatsappSupport}
                 onChange={(e) => setForm({ ...form, whatsappSupport: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function SettingsTab({
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,240,255,0.35)] transition-all cursor-pointer disabled:opacity-50"
+          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,215,0,0.35)] transition-all cursor-pointer disabled:opacity-50"
         >
           {saving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
           <span>SAVE SYSTEM SETTINGS</span>

@@ -47,30 +47,30 @@ export default function PlayerAccountsTab({
     <div className="space-y-5">
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl">
+        <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl">
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Player Accounts</div>
           <div className="text-xl font-heading font-black text-white mt-1">
-            {usersList.length} <span className="text-xs text-cyan-400 font-sans">({bannedCount} Banned)</span>
+            {usersList.length} <span className="text-xs text-[var(--neon-cyan)] font-sans">({bannedCount} Banned)</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-emerald-500/20 backdrop-blur-xl">
+        <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-emerald-500/20 backdrop-blur-xl">
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Player SC Balances</div>
           <div className="text-xl font-heading font-black text-emerald-400 mt-1">
             ${totalSC.toFixed(2)} SC
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-purple-500/20 backdrop-blur-xl">
+        <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-600/20 backdrop-blur-xl">
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Player GC Balances</div>
-          <div className="text-xl font-heading font-black text-purple-400 mt-1">
+          <div className="text-xl font-heading font-black text-[var(--neon-purple)] mt-1">
             {totalGC.toLocaleString()} GC
           </div>
         </div>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {['ALL', 'ACTIVE', 'BANNED'].map((st) => (
             <button
@@ -78,7 +78,7 @@ export default function PlayerAccountsTab({
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === st
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  ? 'bg-amber-500 text-black font-black shadow-[0_0_12px_rgba(255,215,0,0.4)]'
                   : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white'
               }`}
             >
@@ -94,7 +94,7 @@ export default function PlayerAccountsTab({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by username, email, phone..."
-            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white outline-none"
+            className="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white outline-none"
           />
         </div>
       </div>
@@ -104,12 +104,12 @@ export default function PlayerAccountsTab({
         {filteredUsers.map((u) => (
           <div
             key={u.id || u._id}
-            className="p-4 rounded-2xl bg-[#090d22]/90 border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+            className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
           >
             {/* Player Info */}
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-0.5 shrink-0">
-                <div className="w-full h-full bg-[#080b1e] rounded-2xl flex items-center justify-center font-heading font-black text-cyan-400 text-sm">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-700 p-0.5 shrink-0">
+                <div className="w-full h-full bg-[var(--bg-deep)] rounded-2xl flex items-center justify-center font-heading font-black text-[var(--neon-cyan)] text-sm">
                   {u.username?.slice(0, 2).toUpperCase() || 'PL'}
                 </div>
               </div>
@@ -122,7 +122,7 @@ export default function PlayerAccountsTab({
                   <span className="text-[10px] text-slate-400 font-mono">
                     {u.email}
                   </span>
-                  <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-purple-950 border border-purple-500/40 text-purple-300 uppercase">
+                  <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-amber-950 border border-amber-600/40 text-amber-300 uppercase">
                     {u.vipTier || 'Bronze Panda'}
                   </span>
                   {u.isBanned && (
@@ -143,10 +143,10 @@ export default function PlayerAccountsTab({
             {/* Balances */}
             <div className="flex items-center gap-4 self-end md:self-center">
               <div className="text-right">
-                <div className="text-sm font-heading font-black text-cyan-400">
+                <div className="text-sm font-heading font-black text-[var(--neon-cyan)]">
                   ${Number(u.balanceSC || 0).toFixed(2)} <span className="text-xs font-sans text-slate-400">SC</span>
                 </div>
-                <div className="text-[11px] text-purple-400 font-mono">
+                <div className="text-[11px] text-[var(--neon-purple)] font-mono">
                   {Number(u.balanceGC || 0).toLocaleString()} GC
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function PlayerAccountsTab({
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onOpenAllotment(u)}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-950/60 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/40 hover:border-amber-400 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                   title="Adjust Balance"
                 >
                   <Coins size={13} />
@@ -188,8 +188,8 @@ export default function PlayerAccountsTab({
         ))}
 
         {filteredUsers.length === 0 && (
-          <div className="text-center py-12 p-6 rounded-2xl bg-[#090d22]/50 border border-slate-800 text-slate-500 space-y-2">
-            <Users size={28} className="mx-auto opacity-40 text-cyan-400" />
+          <div className="text-center py-12 p-6 rounded-2xl bg-[var(--bg-surface)]/50 border border-slate-800 text-slate-500 space-y-2">
+            <Users size={28} className="mx-auto opacity-40 text-[var(--neon-cyan)]" />
             <p className="font-heading text-sm">No player accounts found.</p>
           </div>
         )}

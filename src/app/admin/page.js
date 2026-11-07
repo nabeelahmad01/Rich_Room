@@ -1463,7 +1463,7 @@ export default function AdminPortal({ initialTab }) {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#070514', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F8FAFC', fontFamily: 'Lexend, sans-serif', fontWeight: 800 }}>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F8FAFC', fontFamily: 'Lexend, sans-serif', fontWeight: 800 }}>
         Loading Rich Room Staff Portal...
       </div>
     );
@@ -1472,8 +1472,8 @@ export default function AdminPortal({ initialTab }) {
   // Not Logged In as Staff Form
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#070514', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'Lexend, sans-serif' }}>
-        <div style={{ maxWidth: '420px', width: '100%', backgroundColor: '#0E0A24', border: '1px solid rgba(0, 240, 255, 0.35)', borderRadius: '20px', padding: '32px 28px', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 240, 255, 0.16)' }}>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'Lexend, sans-serif' }}>
+        <div style={{ maxWidth: '420px', width: '100%', backgroundColor: 'var(--bg-surface)', border: '1px solid rgba(255, 215, 0, 0.35)', borderRadius: '20px', padding: '32px 28px', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 215, 0, 0.16)' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <img
               src="/images/logo.png"
@@ -1484,7 +1484,7 @@ export default function AdminPortal({ initialTab }) {
                 maxHeight: '90px',
                 objectFit: 'contain',
                 marginBottom: '14px',
-                filter: 'drop-shadow(0 0 16px rgba(0, 240, 255, 0.5)) drop-shadow(0 0 25px rgba(224, 38, 216, 0.4))',
+                filter: 'drop-shadow(0 0 16px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.4))',
               }}
             />
             <h2 style={{ fontFamily: 'Lexend, sans-serif', fontSize: '20px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 4px 0' }}>
@@ -1512,7 +1512,7 @@ export default function AdminPortal({ initialTab }) {
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
                 required
-                style={{ width: '100%', backgroundColor: '#070514', border: '1px solid rgba(0, 240, 255, 0.2)', borderRadius: '10px', padding: '10px 14px', color: '#FFFFFF', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 215, 0, 0.2)', borderRadius: '10px', padding: '10px 14px', color: '#FFFFFF', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
@@ -1526,7 +1526,7 @@ export default function AdminPortal({ initialTab }) {
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 required
-                style={{ width: '100%', backgroundColor: '#070514', border: '1px solid rgba(0, 240, 255, 0.2)', borderRadius: '10px', padding: '10px 14px', color: '#FFFFFF', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 215, 0, 0.2)', borderRadius: '10px', padding: '10px 14px', color: '#FFFFFF', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
@@ -1539,8 +1539,8 @@ export default function AdminPortal({ initialTab }) {
             </button>
           </form>
 
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(0, 240, 255, 0.12)', textAlign: 'center' }}>
-            <Link href="/" style={{ fontSize: '12px', color: '#00F0FF', textDecoration: 'none', transition: 'color 0.2s', fontWeight: 700 }}>
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255, 215, 0, 0.12)', textAlign: 'center' }}>
+            <Link href="/" style={{ fontSize: '12px', color: 'var(--neon-cyan)', textDecoration: 'none', transition: 'color 0.2s', fontWeight: 700 }}>
               ← Return to Casino Lobby
             </Link>
           </div>
@@ -1672,7 +1672,7 @@ export default function AdminPortal({ initialTab }) {
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
               textDecoration: 'none',
-              boxShadow: '0 4px 20px rgba(0, 240, 255, 0.35), 0 0 25px rgba(224, 38, 216, 0.25)',
+              boxShadow: '0 4px 20px rgba(255, 215, 0, 0.35), 0 0 25px rgba(245, 158, 11, 0.25)',
             }}
           >
             <ExternalLink size={13} color="#FFFFFF" />
@@ -1986,7 +1986,7 @@ export default function AdminPortal({ initialTab }) {
                             <div className="vegas-sidebar-icon-box">
                               <Icon
                                 size={16}
-                                color={isSelected ? '#00F0FF' : '#9A91A8'}
+                                color={isSelected ? 'var(--neon-cyan)' : '#9A91A8'}
                               />
                             </div>
                             <span style={{ fontSize: '12.5px', fontWeight: isSelected ? 800 : 600 }}>
@@ -1998,9 +1998,9 @@ export default function AdminPortal({ initialTab }) {
                             <span
                               className="vegas-sidebar-badge"
                               style={{
-                                backgroundColor: isSelected ? 'rgba(0, 240, 255, 0.2)' : 'rgba(224, 38, 216, 0.15)',
-                                color: isSelected ? '#00F0FF' : '#E026D8',
-                                borderColor: isSelected ? 'rgba(0, 240, 255, 0.4)' : 'rgba(224, 38, 216, 0.35)',
+                                backgroundColor: isSelected ? 'rgba(255, 215, 0, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+                                color: isSelected ? 'var(--neon-cyan)' : 'var(--neon-purple)',
+                                borderColor: isSelected ? 'rgba(255, 215, 0, 0.4)' : 'rgba(245, 158, 11, 0.35)',
                               }}
                             >
                               {tab.badge}
@@ -2021,8 +2021,8 @@ export default function AdminPortal({ initialTab }) {
             style={{
               padding: '14px 16px',
               paddingBottom: 'max(24px, calc(16px + env(safe-area-inset-bottom, 0px)))',
-              borderTop: '1px solid rgba(0, 240, 255, 0.14)',
-              backgroundColor: '#070514',
+              borderTop: '1px solid rgba(255, 215, 0, 0.14)',
+              backgroundColor: 'var(--bg-deep)',
             }}
           >
             <button
@@ -2034,20 +2034,20 @@ export default function AdminPortal({ initialTab }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                backgroundColor: '#140E33',
-                border: '1px solid rgba(0, 240, 255, 0.35)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid rgba(255, 215, 0, 0.35)',
                 borderRadius: '12px',
                 padding: '11px 14px',
-                color: '#00F0FF',
+                color: 'var(--neon-cyan)',
                 fontFamily: 'Lexend, sans-serif',
                 fontSize: '11.5px',
                 fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 240, 255, 0.1)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 215, 0, 0.1)',
                 transition: 'all 0.2s ease',
               }}
             >
-              <Headphones size={15} color="#00F0FF" />
+              <Headphones size={15} color="var(--neon-cyan)" />
               <span>24/7 VIP LIVE SUPPORT</span>
             </button>
 
@@ -2073,20 +2073,20 @@ export default function AdminPortal({ initialTab }) {
               <div
                 className="p-6 sm:p-7 sm:py-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6 shadow-2xl"
                 style={{
-                  backgroundColor: '#0E0A24',
-                  background: 'linear-gradient(135deg, #0E0A24 0%, #140E33 100%)',
-                  border: '1px solid rgba(0, 240, 255, 0.28)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 240, 255, 0.12)',
+                  backgroundColor: 'var(--bg-surface)',
+                  background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-card) 100%)',
+                  border: '1px solid rgba(255, 215, 0, 0.28)',
+                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 215, 0, 0.12)',
                 }}
               >
                 <div className="flex items-center gap-5 sm:gap-6">
                   <div
                     className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(224, 38, 216, 0.2) 100%)',
-                      border: '1.5px solid rgba(0, 240, 255, 0.5)',
-                      boxShadow: '0 0 25px rgba(0, 240, 255, 0.35)',
-                      color: '#00F0FF',
+                      background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
+                      border: '1.5px solid rgba(255, 215, 0, 0.5)',
+                      boxShadow: '0 0 25px rgba(255, 215, 0, 0.35)',
+                      color: 'var(--neon-cyan)',
                     }}
                   >
                     <Flame size={32} />
@@ -2094,15 +2094,15 @@ export default function AdminPortal({ initialTab }) {
                   <div>
                     <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                       <h1 className="text-xl sm:text-2xl font-black text-white m-0 tracking-tight" style={{ letterSpacing: '-0.02em' }}>
-                        Command Center &amp; <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#A855F7] to-[#E026D8]">Live Telemetry</span>
+                        Command Center &amp; <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--neon-cyan)] via-amber-600 to-[var(--neon-purple)]">Live Telemetry</span>
                       </h1>
                       <span
                         className="text-[10.5px] px-3 py-1 rounded-full font-black tracking-wider whitespace-nowrap shadow-sm"
                         style={{
-                          backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                          color: '#00F0FF',
-                          border: '1px solid rgba(0, 240, 255, 0.35)',
-                          boxShadow: '0 0 10px rgba(0, 240, 255, 0.2)',
+                          backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                          color: 'var(--neon-cyan)',
+                          border: '1px solid rgba(255, 215, 0, 0.35)',
+                          boxShadow: '0 0 10px rgba(255, 215, 0, 0.2)',
                         }}
                       >
                         DIRECT PLATFORM ACCESS • 24/7
@@ -2136,9 +2136,9 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group shadow-2xl"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.95) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                    border: '1px solid rgba(0, 240, 255, 0.35)',
-                    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(0, 240, 255, 0.12)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.95) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(255, 215, 0, 0.12)',
                   }}
                   onClick={() => setActiveTab('users')}
                 >
@@ -2146,14 +2146,14 @@ export default function AdminPortal({ initialTab }) {
                     <span className="text-[11px] font-black text-[#9A91A8] uppercase tracking-wider">
                       TOTAL REGISTERED PLAYERS
                     </span>
-                    <div className="w-11 h-11 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                    <div className="w-11 h-11 rounded-xl bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/50 flex items-center justify-center text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(255,215,0,0.3)]">
                       <Users size={20} />
                     </div>
                   </div>
-                  <p className="text-3xl sm:text-4xl font-black mt-4 mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-[#00F0FF]">
+                  <p className="text-3xl sm:text-4xl font-black mt-4 mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-[var(--neon-cyan)]">
                     {stats?.totalPlayers || 0}
                   </p>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#00F0FF]">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--neon-cyan)]">
                     <Sparkles size={13} />
                     <span>VIP accounts directory</span>
                   </div>
@@ -2163,7 +2163,7 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group shadow-2xl"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.95) 0%, rgba(14, 10, 36, 0.98) 100%)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.95) 0%, rgba(19, 15, 6, 0.98) 100%)',
                     border: '1px solid rgba(16, 185, 129, 0.4)',
                     boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(16, 185, 129, 0.12)',
                   }}
@@ -2189,9 +2189,9 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group shadow-2xl"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.95) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                    border: '1px solid rgba(224, 38, 216, 0.4)',
-                    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(224, 38, 216, 0.12)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.95) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(245, 158, 11, 0.12)',
                   }}
                   onClick={() => { setActiveTab('finance'); setFinanceSubTab('redemptions'); }}
                 >
@@ -2199,14 +2199,14 @@ export default function AdminPortal({ initialTab }) {
                     <span className="text-[11px] font-black text-[#9A91A8] uppercase tracking-wider">
                       DISPATCHED REDEMPTIONS
                     </span>
-                    <div className="w-11 h-11 rounded-xl bg-[#E026D8]/15 border border-[#E026D8]/50 flex items-center justify-center text-[#E026D8] shadow-[0_0_15px_rgba(224,38,216,0.3)]">
+                    <div className="w-11 h-11 rounded-xl bg-[var(--neon-purple)]/15 border border-[var(--neon-purple)]/50 flex items-center justify-center text-[var(--neon-purple)] shadow-[0_0_15px_rgba(224,38,216,0.3)]">
                       <ArrowUpRight size={20} />
                     </div>
                   </div>
-                  <p className="text-3xl sm:text-4xl font-black text-[#E026D8] mt-4 mb-2 tracking-tight drop-shadow-[0_0_15px_rgba(224,38,216,0.35)]">
+                  <p className="text-3xl sm:text-4xl font-black text-[var(--neon-purple)] mt-4 mb-2 tracking-tight drop-shadow-[0_0_15px_rgba(224,38,216,0.35)]">
                     ${Number(stats?.totalRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#E026D8]">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--neon-purple)]">
                     <span>Settled player cashouts</span>
                   </div>
                 </div>
@@ -2215,7 +2215,7 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group shadow-2xl"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.95) 0%, rgba(14, 10, 36, 0.98) 100%)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.95) 0%, rgba(19, 15, 6, 0.98) 100%)',
                     border: '1px solid rgba(245, 158, 11, 0.4)',
                     boxShadow: '0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(245, 158, 11, 0.12)',
                   }}
@@ -2242,24 +2242,24 @@ export default function AdminPortal({ initialTab }) {
               <div
                 className="p-6 sm:p-8 rounded-2xl shadow-2xl"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(14, 10, 36, 0.98) 0%, rgba(7, 5, 20, 0.98) 100%)',
-                  border: '1px solid rgba(0, 240, 255, 0.28)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 240, 255, 0.1)',
+                  background: 'linear-gradient(135deg, rgba(19, 15, 6, 0.98) 0%, rgba(7, 5, 20, 0.98) 100%)',
+                  border: '1px solid rgba(255, 215, 0, 0.28)',
+                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(255, 215, 0, 0.1)',
                 }}
               >
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
                   <h3 className="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2.5 m-0">
-                    <Flame size={18} color="#00F0FF" />
+                    <Flame size={18} color="var(--neon-cyan)" />
                     <span>PENDING OPERATIONAL ACTION QUEUES</span>
                   </h3>
-                  <span className="text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/15 border border-[#00F0FF]/35 px-3.5 py-1.5 rounded-full shadow-sm">
+                  <span className="text-xs font-bold text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/35 px-3.5 py-1.5 rounded-full shadow-sm">
                     Live Dispatch Queue
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Queue 1: Deposits */}
-                  <div className="bg-[#140E33] border border-amber-500/35 hover:border-amber-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
+                  <div className="bg-[var(--bg-card)] border border-amber-500/35 hover:border-amber-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
                     <div>
                       <p className="text-[11px] text-[#9A91A8] font-black uppercase tracking-wider m-0">Pending Deposits</p>
                       <p className="text-3xl font-black text-[#F59E0B] mt-2 mb-0">{stats?.pendingDeposits || 0}</p>
@@ -2274,39 +2274,39 @@ export default function AdminPortal({ initialTab }) {
                   </div>
 
                   {/* Queue 2: Redemptions */}
-                  <div className="bg-[#140E33] border border-fuchsia-500/35 hover:border-fuchsia-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
+                  <div className="bg-[var(--bg-card)] border border-amber-600/35 hover:border-amber-500 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
                     <div>
                       <p className="text-[11px] text-[#9A91A8] font-black uppercase tracking-wider m-0">Pending Redemptions</p>
-                      <p className="text-3xl font-black text-[#E026D8] mt-2 mb-0">{stats?.pendingRedemptions || 0}</p>
+                      <p className="text-3xl font-black text-[var(--neon-purple)] mt-2 mb-0">{stats?.pendingRedemptions || 0}</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => { setActiveTab('finance'); setFinanceSubTab('redemptions'); }}
-                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-white bg-gradient-to-r from-[#E026D8] via-[#A855F7] to-[#00F0FF] hover:brightness-110 shadow-[0_0_15px_rgba(224,38,216,0.3)]"
+                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-white bg-gradient-to-r from-[var(--neon-purple)] via-amber-600 to-[var(--neon-cyan)] hover:brightness-110 shadow-[0_0_15px_rgba(224,38,216,0.3)]"
                     >
                       <span>Review Cashouts</span>
                     </button>
                   </div>
 
                   {/* Queue 3: Account Requests */}
-                  <div className="bg-[#140E33] border border-cyan-500/35 hover:border-cyan-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
+                  <div className="bg-[var(--bg-card)] border border-amber-500/35 hover:border-amber-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
                     <div>
                       <p className="text-[11px] text-[#9A91A8] font-black uppercase tracking-wider m-0">Account Requests</p>
-                      <p className="text-3xl font-black text-[#00F0FF] mt-2 mb-0">
+                      <p className="text-3xl font-black text-[var(--neon-cyan)] mt-2 mb-0">
                         {accountRequests.filter(r => (r.status || '').toUpperCase() === 'PENDING').length}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveTab('account_requests')}
-                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-black bg-gradient-to-r from-[#00F0FF] to-cyan-300 hover:brightness-110 shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-black bg-gradient-to-r from-[var(--neon-cyan)] to-amber-400 hover:brightness-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
                     >
                       <span>Fulfill IDs</span>
                     </button>
                   </div>
 
                   {/* Queue 4: Support */}
-                  <div className="bg-[#140E33] border border-rose-500/35 hover:border-rose-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
+                  <div className="bg-[var(--bg-card)] border border-rose-500/35 hover:border-rose-400 p-5 rounded-2xl flex items-center justify-between transition-all shadow-xl group">
                     <div>
                       <p className="text-[11px] text-[#9A91A8] font-black uppercase tracking-wider m-0">Unread Live Chat</p>
                       <p className="text-3xl font-black text-rose-400 mt-2 mb-0">
@@ -2316,7 +2316,7 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="button"
                       onClick={() => setActiveTab('chat')}
-                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-white bg-gradient-to-r from-rose-500 via-pink-600 to-[#E026D8] hover:brightness-110 shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+                      className="px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer active:scale-95 shadow-md flex items-center gap-1.5 text-white bg-gradient-to-r from-rose-500 via-pink-600 to-[var(--neon-purple)] hover:brightness-110 shadow-[0_0_15px_rgba(244,63,94,0.3)]"
                     >
                       <span>Open Live Desk</span>
                     </button>
@@ -2328,13 +2328,13 @@ export default function AdminPortal({ initialTab }) {
               <div
                 className="p-6 sm:p-8 rounded-2xl shadow-xl"
                 style={{
-                  background: 'linear-gradient(135deg, #0E0A24 0%, #070514 100%)',
+                  background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-deep) 100%)',
                   border: '1px solid rgba(255, 255, 255, 0.12)',
                 }}
               >
                 <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/10">
                   <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white flex items-center gap-2 m-0">
-                    <SlidersHorizontal size={16} color="#00F0FF" />
+                    <SlidersHorizontal size={16} color="var(--neon-cyan)" />
                     <span>STAFF OPERATIONAL QUICK-ACTIONS</span>
                   </h3>
                   <span className="text-xs text-[#9A91A8]">1-Tap Fast Launch</span>
@@ -2344,9 +2344,9 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab('account_requests')}
-                    className="p-4 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-[#00F0FF]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
+                    className="p-4 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-[var(--neon-cyan)]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
                   >
-                    <Key size={20} className="text-[#00F0FF]" />
+                    <Key size={20} className="text-[var(--neon-cyan)]" />
                     <span className="text-xs font-black text-white">Issue Game ID</span>
                     <span className="text-[11px] text-[#9A91A8]">Credentials queue</span>
                   </button>
@@ -2354,9 +2354,9 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab('coins_allotment')}
-                    className="p-4 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-[#00F0FF]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
+                    className="p-4 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-[var(--neon-cyan)]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
                   >
-                    <Coins size={20} className="text-[#00F0FF]" />
+                    <Coins size={20} className="text-[var(--neon-cyan)]" />
                     <span className="text-xs font-black text-white">Allot Coins</span>
                     <span className="text-[11px] text-[#9A91A8]">1 SC ($) Balance load</span>
                   </button>
@@ -2364,7 +2364,7 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => { setActiveTab('finance'); setFinanceSubTab('deposits'); }}
-                    className="p-4 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-[#10B981]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
+                    className="p-4 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-[#10B981]/40 text-left transition flex flex-col gap-2 cursor-pointer shadow-md hover:scale-[1.02]"
                   >
                     <ArrowDownLeft size={18} className="text-[#10B981]" />
                     <span className="text-xs font-black text-white">Cashier Review</span>
@@ -2374,9 +2374,9 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => { setActiveTab('finance'); setFinanceSubTab('redemptions'); }}
-                    className="p-3 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-[#E026D8]/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
+                    className="p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-[var(--neon-purple)]/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
                   >
-                    <ArrowUpRight size={18} className="text-[#E026D8]" />
+                    <ArrowUpRight size={18} className="text-[var(--neon-purple)]" />
                     <span className="text-xs font-black text-white">Cashout Payouts</span>
                     <span className="text-[10px] text-[#9A91A8]">Verified redemptions</span>
                   </button>
@@ -2384,7 +2384,7 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => setIsAddGameModalOpen(true)}
-                    className="p-3 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-amber-400/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
+                    className="p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-amber-400/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
                   >
                     <Plus size={18} className="text-amber-400" />
                     <span className="text-xs font-black text-white">Add New Game</span>
@@ -2394,7 +2394,7 @@ export default function AdminPortal({ initialTab }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab('promos')}
-                    className="p-3 rounded-xl bg-[#140E33] hover:bg-[#1D144A] border border-white/10 hover:border-violet-400/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
+                    className="p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-white/10 hover:border-violet-400/40 text-left transition flex flex-col gap-1.5 cursor-pointer"
                   >
                     <Megaphone size={18} className="text-violet-400" />
                     <span className="text-xs font-black text-white">Push Broadcast</span>
@@ -2412,20 +2412,20 @@ export default function AdminPortal({ initialTab }) {
               <div
                 className="p-6 sm:p-7 sm:py-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6"
                 style={{
-                  backgroundColor: '#0E0A24',
-                  background: 'linear-gradient(135deg, #0E0A24 0%, #140E33 100%)',
-                  border: '1px solid rgba(0, 240, 255, 0.28)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 240, 255, 0.12)',
+                  backgroundColor: 'var(--bg-surface)',
+                  background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-card) 100%)',
+                  border: '1px solid rgba(255, 215, 0, 0.28)',
+                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 215, 0, 0.12)',
                 }}
               >
                 <div className="flex items-center gap-5 sm:gap-6">
                   <div
                     className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
-                      border: '1.5px solid rgba(0, 240, 255, 0.5)',
-                      boxShadow: '0 0 25px rgba(0, 240, 255, 0.35)',
-                      color: '#00F0FF',
+                      background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
+                      border: '1.5px solid rgba(255, 215, 0, 0.5)',
+                      boxShadow: '0 0 25px rgba(255, 215, 0, 0.35)',
+                      color: 'var(--neon-cyan)',
                     }}
                   >
                     <Key size={30} />
@@ -2449,12 +2449,12 @@ export default function AdminPortal({ initialTab }) {
                       <span
                         className="text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 font-mono shadow-sm"
                         style={{
-                          backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                          color: '#00F0FF',
-                          border: '1px solid rgba(0, 240, 255, 0.35)',
+                          backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                          color: 'var(--neon-cyan)',
+                          border: '1px solid rgba(255, 215, 0, 0.35)',
                         }}
                       >
-                        <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_8px_#00F0FF]" />
+                        <span className="w-2 h-2 rounded-full bg-[var(--neon-cyan)] animate-pulse shadow-[0_0_8px_var(--neon-cyan)]" />
                         <span>Pending: {accountRequests.filter(r => (r.status || '').toUpperCase() === 'PENDING').length}</span>
                       </span>
                     </div>
@@ -2474,9 +2474,9 @@ export default function AdminPortal({ initialTab }) {
                     }}
                     className="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-2.5 transition-all cursor-pointer hover:scale-[1.03] active:scale-[0.97]"
                     style={{
-                      background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                      color: '#070514',
-                      boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+                      background: 'var(--primary-gradient)',
+                      color: 'var(--bg-deep)',
+                      boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
                       border: 'none',
                       fontFamily: 'Lexend, sans-serif',
                     }}
@@ -2525,10 +2525,10 @@ export default function AdminPortal({ initialTab }) {
                   <div
                     className="vegas-modal-card rounded-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95"
                     style={{
-                      backgroundColor: '#0E0A24',
-                      background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                      border: '1px solid rgba(0, 240, 255, 0.45)',
-                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                      backgroundColor: 'var(--bg-surface)',
+                      background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                     }}
                   >
                     <div className="flex items-center justify-between pb-3 border-b border-white/10">
@@ -2557,7 +2557,7 @@ export default function AdminPortal({ initialTab }) {
                           type="text"
                           value={approvalModal.username}
                           onChange={(e) => setApprovalModal({ ...approvalModal, username: e.target.value })}
-                          className="w-full bg-[#140E33] border border-[#00F0FF]/40 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-[#00F0FF] outline-none focus:border-[#00F0FF]"
+                          className="w-full bg-[var(--bg-card)] border border-[var(--neon-cyan)]/40 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-[var(--neon-cyan)] outline-none focus:border-[var(--neon-cyan)]"
                           placeholder="Username"
                           required
                           style={{ fontFamily: 'Lexend, monospace' }}
@@ -2572,14 +2572,14 @@ export default function AdminPortal({ initialTab }) {
                           type="text"
                           value={approvalModal.password}
                           onChange={(e) => setApprovalModal({ ...approvalModal, password: e.target.value })}
-                          className="w-full bg-[#140E33] border border-amber-500/40 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-amber-300 outline-none focus:border-amber-400"
+                          className="w-full bg-[var(--bg-card)] border border-amber-500/40 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-amber-300 outline-none focus:border-amber-400"
                           placeholder="Password"
                           required
                           style={{ fontFamily: 'Lexend, monospace' }}
                         />
                       </div>
 
-                      <div className="p-3 rounded-xl bg-[#140E33] border border-amber-500/30 text-[11px] text-amber-300">
+                      <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-amber-500/30 text-[11px] text-amber-300">
                         ⚡ Random credentials generated automatically. You can confirm them or type custom ones before issuing to the player.
                       </div>
                     </div>
@@ -2634,11 +2634,11 @@ export default function AdminPortal({ initialTab }) {
             return (
               <div className="space-y-6" style={{ fontFamily: 'Lexend, -apple-system, sans-serif' }}>
                 {/* Header & Action Controls */}
-                <div className="bg-[#0E0A24] border border-[#00F0FF]/25 p-4 sm:p-5 rounded-2xl shadow-xl space-y-4">
+                <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 p-4 sm:p-5 rounded-2xl shadow-xl space-y-4">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00F0FF]/20 to-[#0E0A24] border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF] shadow-lg shadow-[#00F0FF]/15 shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--neon-cyan)]/20 to-[var(--bg-surface)] border border-[var(--neon-cyan)]/40 flex items-center justify-center text-[var(--neon-cyan)] shadow-lg shadow-[var(--neon-cyan)]/15 shrink-0">
                           <Gamepad2 size={20} />
                         </div>
                         <div>
@@ -2646,7 +2646,7 @@ export default function AdminPortal({ initialTab }) {
                             <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide m-0">
                               Games Catalog Control
                             </h2>
-                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30 whitespace-nowrap">
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/30 whitespace-nowrap">
                               Sweepstakes Portals
                             </span>
                           </div>
@@ -2663,13 +2663,13 @@ export default function AdminPortal({ initialTab }) {
                         type="button"
                         onClick={() => setIsAddGameModalOpen(true)}
                         style={{
-                          background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                          color: '#070514',
-                          boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+                          background: 'var(--primary-gradient)',
+                          color: 'var(--bg-deep)',
+                          boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
                         }}
                         className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
                       >
-                        <Plus size={16} strokeWidth={3} color="#070514" />
+                        <Plus size={16} strokeWidth={3} color="var(--bg-deep)" />
                         <span>Add New Game</span>
                       </button>
                     </div>
@@ -2696,7 +2696,7 @@ export default function AdminPortal({ initialTab }) {
                         placeholder="Search catalog games..."
                         value={gameSearchQuery}
                         onChange={(e) => setGameSearchQuery(e.target.value)}
-                        className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 outline-none transition"
+                        className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 outline-none transition"
                       />
                       {gameSearchQuery && (
                         <button
@@ -2735,10 +2735,10 @@ export default function AdminPortal({ initialTab }) {
                       className="vegas-modal-card w-full max-w-xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        backgroundColor: '#0E0A24',
-                        background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                        border: '1px solid rgba(0, 240, 255, 0.45)',
-                        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                        backgroundColor: 'var(--bg-surface)',
+                        background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                        border: '1px solid rgba(255, 215, 0, 0.45)',
+                        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                         borderRadius: '20px',
                         fontFamily: 'Lexend, -apple-system, sans-serif',
                       }}
@@ -2747,11 +2747,11 @@ export default function AdminPortal({ initialTab }) {
                       <div className="flex items-center justify-between border-b border-white/10 pb-3">
                         <div className="flex items-center gap-2.5">
                           <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#00F0FF]"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--neon-cyan)]"
                             style={{
-                              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(224, 38, 216, 0.15) 100%)',
-                              border: '1px solid rgba(0, 240, 255, 0.4)',
-                              boxShadow: '0 0 15px rgba(0, 240, 255, 0.25)',
+                              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)',
+                              border: '1px solid rgba(255, 215, 0, 0.4)',
+                              boxShadow: '0 0 15px rgba(255, 215, 0, 0.25)',
                             }}
                           >
                             <Plus size={18} strokeWidth={2.5} />
@@ -2825,7 +2825,7 @@ export default function AdminPortal({ initialTab }) {
                               required
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             />
@@ -2840,7 +2840,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setNewGame({ ...newGame, provider: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             />
@@ -2855,7 +2855,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setNewGame({ ...newGame, badge: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all font-bold cursor-pointer"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             >
@@ -2876,7 +2876,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setNewGame({ ...newGame, url: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             />
@@ -2890,9 +2890,9 @@ export default function AdminPortal({ initialTab }) {
                             <label
                               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer text-xs font-bold transition-all"
                               style={{
-                                backgroundColor: '#140E33',
-                                border: '1px solid rgba(0, 240, 255, 0.3)',
-                                color: '#00F0FF',
+                                backgroundColor: 'var(--bg-card)',
+                                border: '1px solid rgba(255, 215, 0, 0.3)',
+                                color: 'var(--neon-cyan)',
                               }}
                             >
                               <Upload size={14} />
@@ -2911,8 +2911,8 @@ export default function AdminPortal({ initialTab }) {
                               <div
                                 className="relative w-14 h-12 rounded-xl overflow-hidden shrink-0 shadow-md"
                                 style={{
-                                  border: '1px solid rgba(0, 240, 255, 0.5)',
-                                  boxShadow: '0 0 12px rgba(0, 240, 255, 0.3)',
+                                  border: '1px solid rgba(255, 215, 0, 0.5)',
+                                  boxShadow: '0 0 12px rgba(255, 215, 0, 0.3)',
                                 }}
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -2926,7 +2926,7 @@ export default function AdminPortal({ initialTab }) {
                         <div
                           className="flex items-center justify-between p-3.5 rounded-xl"
                           style={{
-                            backgroundColor: '#070514',
+                            backgroundColor: 'var(--bg-deep)',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                           }}
                         >
@@ -2972,9 +2972,9 @@ export default function AdminPortal({ initialTab }) {
                             disabled={isSavingGame}
                             className="py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                             style={{
-                              background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                              color: '#070514',
-                              boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+                              background: 'var(--primary-gradient)',
+                              color: 'var(--bg-deep)',
+                              boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
                               border: 'none',
                             }}
                           >
@@ -3000,15 +3000,15 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="rounded-2xl overflow-hidden shadow-2xl"
                   style={{
-                    backgroundColor: '#0E0A24',
-                    border: '1px solid rgba(0, 240, 255, 0.2)',
-                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.1)',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid rgba(255, 215, 0, 0.2)',
+                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.1)',
                   }}
                 >
                   <div
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                     style={{
-                      backgroundColor: '#070514',
+                      backgroundColor: 'var(--bg-deep)',
                       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                     }}
                   >
@@ -3016,17 +3016,17 @@ export default function AdminPortal({ initialTab }) {
                       <div
                         className="w-2.5 h-2.5 rounded-full"
                         style={{
-                          background: '#00F0FF',
-                          boxShadow: '0 0 8px #00F0FF',
+                          background: 'var(--neon-cyan)',
+                          boxShadow: '0 0 8px var(--neon-cyan)',
                         }}
                       />
                       <span className="text-xs font-black text-white uppercase tracking-wider">All Catalog Games</span>
                       <span
                         className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono"
                         style={{
-                          backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                          color: '#00F0FF',
-                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                          color: 'var(--neon-cyan)',
+                          border: '1px solid rgba(255, 215, 0, 0.3)',
                         }}
                       >
                         {filteredGamesList.length} of {games.length}
@@ -3052,7 +3052,7 @@ export default function AdminPortal({ initialTab }) {
                           <div
                             key={g.id || g._id}
                             className="p-4 space-y-3"
-                            style={{ backgroundColor: 'rgba(14, 10, 36, 0.6)' }}
+                            style={{ backgroundColor: 'rgba(19, 15, 6, 0.6)' }}
                           >
                             <div className="flex items-start gap-3">
                               <div
@@ -3115,10 +3115,10 @@ export default function AdminPortal({ initialTab }) {
                                     <span
                                       className="px-2 py-0.5 rounded-full text-[9.5px] font-black"
                                       style={{
-                                        backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                        backgroundColor: 'rgba(255, 215, 0, 0.15)',
                                         color: '#67e8f9',
-                                        border: '1px solid rgba(0, 240, 255, 0.4)',
-                                        boxShadow: '0 0 8px rgba(0, 240, 255, 0.25)',
+                                        border: '1px solid rgba(255, 215, 0, 0.4)',
+                                        boxShadow: '0 0 8px rgba(255, 215, 0, 0.25)',
                                       }}
                                     >
                                       💎 EXCLUSIVE
@@ -3181,9 +3181,9 @@ export default function AdminPortal({ initialTab }) {
                                   })}
                                   className="p-2 rounded-xl transition-all cursor-pointer"
                                   style={{
-                                    backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                    color: '#00F0FF',
-                                    border: '1px solid rgba(0, 240, 255, 0.35)',
+                                    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                    color: 'var(--neon-cyan)',
+                                    border: '1px solid rgba(255, 215, 0, 0.35)',
                                   }}
                                   title="Edit Game"
                                 >
@@ -3228,7 +3228,7 @@ export default function AdminPortal({ initialTab }) {
                       </colgroup>
                       <thead
                         style={{
-                          backgroundColor: '#070514',
+                          backgroundColor: 'var(--bg-deep)',
                           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                           color: '#8E8A9F',
                         }}
@@ -3276,7 +3276,7 @@ export default function AdminPortal({ initialTab }) {
                                   </div>
                                 </td>
                                 <td className="py-3 px-4">
-                                  <div className="font-bold text-white text-sm hover:text-[#00F0FF] transition-colors">{g.title}</div>
+                                  <div className="font-bold text-white text-sm hover:text-[var(--neon-cyan)] transition-colors">{g.title}</div>
                                   <div className="text-[11px] text-gray-400 mt-0.5">{g.provider || 'Players Paradise Studio'}</div>
                                 </td>
                                 <td className="py-3 px-4">
@@ -3323,10 +3323,10 @@ export default function AdminPortal({ initialTab }) {
                                     <span
                                       className="px-2.5 py-1 rounded-full text-[10px] font-black inline-flex items-center gap-1"
                                       style={{
-                                        backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                                        backgroundColor: 'rgba(255, 215, 0, 0.15)',
                                         color: '#67e8f9',
-                                        border: '1px solid rgba(0, 240, 255, 0.4)',
-                                        boxShadow: '0 0 10px rgba(0, 240, 255, 0.2)',
+                                        border: '1px solid rgba(255, 215, 0, 0.4)',
+                                        boxShadow: '0 0 10px rgba(255, 215, 0, 0.2)',
                                       }}
                                     >
                                       💎 EXCLUSIVE
@@ -3392,10 +3392,10 @@ export default function AdminPortal({ initialTab }) {
                                       })}
                                       className="p-2 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95"
                                       style={{
-                                        backgroundColor: 'rgba(0, 240, 255, 0.12)',
-                                        color: '#00F0FF',
-                                        border: '1px solid rgba(0, 240, 255, 0.35)',
-                                        boxShadow: '0 0 10px rgba(0, 240, 255, 0.15)',
+                                        backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                                        color: 'var(--neon-cyan)',
+                                        border: '1px solid rgba(255, 215, 0, 0.35)',
+                                        boxShadow: '0 0 10px rgba(255, 215, 0, 0.15)',
                                       }}
                                       title="Edit Game"
                                     >
@@ -3455,10 +3455,10 @@ export default function AdminPortal({ initialTab }) {
                       className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        backgroundColor: '#0E0A24',
-                        background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                        border: '1px solid rgba(0, 240, 255, 0.45)',
-                        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                        backgroundColor: 'var(--bg-surface)',
+                        background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                        border: '1px solid rgba(255, 215, 0, 0.45)',
+                        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                         borderRadius: '20px',
                         fontFamily: 'Lexend, -apple-system, sans-serif',
                       }}
@@ -3466,11 +3466,11 @@ export default function AdminPortal({ initialTab }) {
                       <div className="flex items-center justify-between border-b border-white/10 pb-3">
                         <div className="flex items-center gap-2.5">
                           <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#00F0FF]"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--neon-cyan)]"
                             style={{
-                              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(224, 38, 216, 0.15) 100%)',
-                              border: '1px solid rgba(0, 240, 255, 0.4)',
-                              boxShadow: '0 0 15px rgba(0, 240, 255, 0.25)',
+                              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)',
+                              border: '1px solid rgba(255, 215, 0, 0.4)',
+                              boxShadow: '0 0 15px rgba(255, 215, 0, 0.25)',
                             }}
                           >
                             <Edit2 size={16} />
@@ -3527,7 +3527,7 @@ export default function AdminPortal({ initialTab }) {
                             required
                             className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                             style={{
-                              backgroundColor: '#070514',
+                              backgroundColor: 'var(--bg-deep)',
                               border: '1px solid rgba(255, 255, 255, 0.15)',
                             }}
                           />
@@ -3542,7 +3542,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setEditingGame({ ...editingGame, provider: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             />
@@ -3555,7 +3555,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setEditingGame({ ...editingGame, badge: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all font-bold cursor-pointer"
                               style={{
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                               }}
                             >
@@ -3575,8 +3575,8 @@ export default function AdminPortal({ initialTab }) {
                             <div
                               className="relative w-14 h-12 rounded-xl overflow-hidden shrink-0 shadow-md"
                               style={{
-                                border: '1px solid rgba(0, 240, 255, 0.5)',
-                                boxShadow: '0 0 12px rgba(0, 240, 255, 0.3)',
+                                border: '1px solid rgba(255, 215, 0, 0.5)',
+                                boxShadow: '0 0 12px rgba(255, 215, 0, 0.3)',
                               }}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3585,9 +3585,9 @@ export default function AdminPortal({ initialTab }) {
                             <label
                               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer text-xs font-bold transition-all"
                               style={{
-                                backgroundColor: '#140E33',
-                                border: '1px solid rgba(0, 240, 255, 0.3)',
-                                color: '#00F0FF',
+                                backgroundColor: 'var(--bg-card)',
+                                border: '1px solid rgba(255, 215, 0, 0.3)',
+                                color: 'var(--neon-cyan)',
                               }}
                             >
                               <Upload size={14} />
@@ -3615,7 +3615,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="https://..."
                             className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
                             style={{
-                              backgroundColor: '#070514',
+                              backgroundColor: 'var(--bg-deep)',
                               border: '1px solid rgba(255, 255, 255, 0.15)',
                             }}
                           />
@@ -3625,7 +3625,7 @@ export default function AdminPortal({ initialTab }) {
                         <div
                           className="flex items-center justify-between p-3.5 rounded-xl"
                           style={{
-                            backgroundColor: '#070514',
+                            backgroundColor: 'var(--bg-deep)',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                           }}
                         >
@@ -3670,9 +3670,9 @@ export default function AdminPortal({ initialTab }) {
                             disabled={isSavingGame}
                             className="py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                             style={{
-                              background: 'linear-gradient(135deg, #00F0FF 0%, #00d0e8 40%, #E026D8 100%)',
-                              color: '#070514',
-                              boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
+                              background: 'var(--primary-gradient)',
+                              color: 'var(--bg-deep)',
+                              boxShadow: '0 0 25px rgba(255, 215, 0, 0.45)',
                               border: 'none',
                             }}
                           >
@@ -3852,12 +3852,12 @@ export default function AdminPortal({ initialTab }) {
                     placeholder="Filter username..."
                     value={ledgerFilterUser}
                     onChange={(e) => setLedgerFilterUser(e.target.value)}
-                    className="py-1.5 px-3 text-xs w-full xs:max-w-[180px] bg-[#070514] border border-white/10 rounded-xl text-white"
+                    className="py-1.5 px-3 text-xs w-full xs:max-w-[180px] bg-[var(--bg-deep)] border border-white/10 rounded-xl text-white"
                   />
                   <select
                     value={ledgerFilterType}
                     onChange={(e) => setLedgerFilterType(e.target.value)}
-                    className="py-1.5 px-3 text-xs w-full xs:max-w-[160px] bg-[#070514] border border-white/10 rounded-xl text-white"
+                    className="py-1.5 px-3 text-xs w-full xs:max-w-[160px] bg-[var(--bg-deep)] border border-white/10 rounded-xl text-white"
                   >
                     <option value="all">All Types</option>
                     <option value="deposit">Deposits</option>
@@ -3880,10 +3880,10 @@ export default function AdminPortal({ initialTab }) {
                 </div>
               </div>
 
-              <div className="bg-[#0E0A24] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto w-full">
                   <table className="w-full min-w-[760px] text-left text-xs">
-                    <thead className="bg-[#070514] text-gray-400 uppercase border-b border-white/5">
+                    <thead className="bg-[var(--bg-deep)] text-gray-400 uppercase border-b border-white/5">
                       <tr>
                         <th className="p-3">Timestamp</th>
                         <th className="p-3">Player</th>
@@ -3900,7 +3900,7 @@ export default function AdminPortal({ initialTab }) {
                         <tr key={r.id} className="hover:bg-white/5">
                           <td className="p-3 text-gray-400">{new Date(r.createdAt).toLocaleString()}</td>
                           <td className="p-3 font-bold text-white">{r.username}</td>
-                          <td className="p-3 uppercase text-[10px] font-black text-purple-300">{r.displayType || r.type.replace(/_/g, ' ')}</td>
+                          <td className="p-3 uppercase text-[10px] font-black text-amber-300">{r.displayType || r.type.replace(/_/g, ' ')}</td>
                           <td className={`p-3 font-bold ${r.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {r.amount >= 0 ? `+$${Number(r.amount).toFixed(2)}` : `-$${Math.abs(Number(r.amount)).toFixed(2)}`} {r.currency || 'SC'}
                           </td>
@@ -4038,7 +4038,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Top Luxury Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10 shrink-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500/25 via-purple-600/30 to-amber-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500/25 via-amber-600/30 to-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(255,215,0,0.2)]">
                       <Headphones size={22} />
                     </div>
                     <div>
@@ -4087,12 +4087,12 @@ export default function AdminPortal({ initialTab }) {
                     <div className="p-3.5 border-b border-white/10 space-y-3 bg-[#0a071c]/70">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <MessageSquare size={15} className="text-cyan-400" />
+                          <MessageSquare size={15} className="text-[var(--neon-cyan)]" />
                           <span className="text-xs font-black uppercase tracking-wider text-white">
                             Active Inquiries
                           </span>
                         </div>
-                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
                           {chatConversations.length} Open
                         </span>
                       </div>
@@ -4105,7 +4105,7 @@ export default function AdminPortal({ initialTab }) {
                           value={chatSearchQuery}
                           onChange={(e) => setChatSearchQuery(e.target.value)}
                           placeholder="Search player or keyword..."
-                          className="w-full bg-[#141033] border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/80 transition"
+                          className="w-full bg-[#141033] border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/80 transition"
                         />
                         {chatSearchQuery && (
                           <button
@@ -4124,7 +4124,7 @@ export default function AdminPortal({ initialTab }) {
                           type="button"
                           onClick={() => setChatFilterTab('all')}
                           className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold text-center transition ${chatFilterTab === 'all'
-                            ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-sm'
+                            ? 'bg-amber-500/25 text-amber-300 border border-amber-400/50 shadow-sm'
                             : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
                             }`}
                         >
@@ -4168,7 +4168,7 @@ export default function AdminPortal({ initialTab }) {
                               key={c._id}
                               onClick={() => setActiveChatConv(c)}
                               className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border relative ${isSelected
-                                ? 'bg-gradient-to-r from-cyan-950/60 via-[#191444] to-[#120f35] border-cyan-400/60 shadow-[0_0_15px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/30'
+                                ? 'bg-gradient-to-r from-amber-950/60 via-[var(--bg-card)] to-[var(--bg-deep)] border-amber-400/60 shadow-[0_0_15px_rgba(255,215,0,0.15)] ring-1 ring-amber-400/30'
                                 : hasUnread
                                   ? 'bg-gradient-to-r from-rose-950/70 via-[#24123b] to-[#160f30] hover:from-rose-900/70 border-rose-500/70 shadow-[0_0_18px_rgba(244,63,94,0.28)] ring-1 ring-rose-500/40'
                                   : 'bg-white/[0.02] hover:bg-white/[0.06] border-transparent'
@@ -4179,8 +4179,8 @@ export default function AdminPortal({ initialTab }) {
                                 <div className="relative shrink-0">
                                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm uppercase shadow-sm border ${
                                     hasUnread
-                                      ? 'bg-gradient-to-tr from-rose-600/60 via-amber-500/40 to-purple-600/40 border-rose-400/70'
-                                      : 'bg-gradient-to-tr from-purple-600/40 via-cyan-500/20 to-amber-500/20 border-white/20'
+                                      ? 'bg-gradient-to-tr from-rose-600/60 via-amber-500/40 to-amber-700/40 border-rose-400/70'
+                                      : 'bg-gradient-to-tr from-amber-600/40 via-amber-500/20 to-amber-500/20 border-white/20'
                                   }`}>
                                     {c.username ? c.username.charAt(0) : 'P'}
                                   </div>
@@ -4197,7 +4197,7 @@ export default function AdminPortal({ initialTab }) {
                                   <div className="flex items-center justify-between gap-1 mb-1">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-xs font-black truncate ${
-                                        isSelected ? 'text-cyan-300' : hasUnread ? 'text-rose-200' : 'text-white'
+                                        isSelected ? 'text-amber-300' : hasUnread ? 'text-rose-200' : 'text-white'
                                       }`}>
                                         {c.username || 'Anonymous'}
                                       </span>
@@ -4215,7 +4215,7 @@ export default function AdminPortal({ initialTab }) {
                                     hasUnread ? 'text-white font-bold' : 'text-gray-400'
                                   }`}>
                                     {c.lastSenderRole === 'staff' ? (
-                                      <span className="text-cyan-400 font-semibold">You: </span>
+                                      <span className="text-[var(--neon-cyan)] font-semibold">You: </span>
                                     ) : null}
                                     {c.lastMessage || 'Active inquiry'}
                                   </p>
@@ -4246,14 +4246,14 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => setActiveChatConv(null)}
-                              className="md:hidden px-2.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 flex items-center gap-1 text-xs font-bold transition shrink-0"
+                              className="md:hidden px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 flex items-center gap-1 text-xs font-bold transition shrink-0"
                             >
                               <ArrowLeft size={14} />
                               <span>Back</span>
                             </button>
 
                             <div className="relative shrink-0">
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/30 to-purple-600/30 border border-cyan-400/40 flex items-center justify-center text-white font-black text-sm uppercase">
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/30 to-amber-700/30 border border-amber-400/40 flex items-center justify-center text-white font-black text-sm uppercase">
                                 {activeChatConv.username ? activeChatConv.username.charAt(0) : 'P'}
                               </div>
                               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0e0a24]" />
@@ -4280,7 +4280,7 @@ export default function AdminPortal({ initialTab }) {
                               <button
                                 type="button"
                                 onClick={() => setSelectedPlayerId(activeChatConv.userId)}
-                                className="px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/35 text-purple-300 hover:bg-purple-500/25 flex items-center gap-1.5 text-xs font-bold transition shadow-sm"
+                                className="px-3 py-1.5 rounded-xl bg-purple-500/15 border border-amber-600/35 text-amber-300 hover:bg-purple-500/25 flex items-center gap-1.5 text-xs font-bold transition shadow-sm"
                                 title="Open Player Profile"
                               >
                                 <User size={13} />
@@ -4313,7 +4313,7 @@ export default function AdminPortal({ initialTab }) {
                           {/* Session Notice */}
                           <div className="flex items-center justify-center my-1">
                             <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[10px] text-gray-400 font-medium flex items-center gap-1.5">
-                              <ShieldCheck size={12} className="text-cyan-400" />
+                              <ShieldCheck size={12} className="text-[var(--neon-cyan)]" />
                               Immutable Rich Room Support Session
                             </span>
                           </div>
@@ -4338,11 +4338,11 @@ export default function AdminPortal({ initialTab }) {
                                     {/* Avatar icon */}
                                     <div className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-black uppercase mt-1 border shadow-sm">
                                       {isStaff ? (
-                                        <div className="w-full h-full rounded-lg bg-gradient-to-tr from-cyan-400 to-cyan-600 text-black flex items-center justify-center font-black">
+                                        <div className="w-full h-full rounded-lg bg-gradient-to-tr from-amber-400 to-amber-600 text-black flex items-center justify-center font-black">
                                           PP
                                         </div>
                                       ) : (
-                                        <div className="w-full h-full rounded-lg bg-gradient-to-tr from-purple-600/50 to-pink-600/40 text-purple-200 border-white/20 flex items-center justify-center font-black">
+                                        <div className="w-full h-full rounded-lg bg-gradient-to-tr from-amber-600/50 to-amber-600/40 text-amber-200 border-white/20 flex items-center justify-center font-black">
                                           {m.username ? m.username.charAt(0) : 'P'}
                                         </div>
                                       )}
@@ -4351,7 +4351,7 @@ export default function AdminPortal({ initialTab }) {
                                     {/* Bubble */}
                                     <div>
                                       <div className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-lg ${isStaff
-                                        ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-950 font-semibold rounded-tr-none shadow-[0_4px_15px_rgba(0,240,255,0.2)]'
+                                        ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-semibold rounded-tr-none shadow-[0_4px_15px_rgba(255,215,0,0.2)]'
                                         : 'bg-[#181238] text-gray-100 border border-white/10 rounded-tl-none shadow-md'
                                         }`}>
                                         {m.imageUrl && (
@@ -4369,7 +4369,7 @@ export default function AdminPortal({ initialTab }) {
                                       <div className={`flex items-center gap-1.5 mt-1 text-[10px] text-gray-500 font-mono ${isStaff ? 'justify-end' : 'justify-start'}`}>
                                         <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                         {isStaff && (
-                                          <span className="text-cyan-400 font-bold flex items-center gap-0.5">
+                                          <span className="text-[var(--neon-cyan)] font-bold flex items-center gap-0.5">
                                             <CheckCheck size={12} />
                                           </span>
                                         )}
@@ -4394,7 +4394,7 @@ export default function AdminPortal({ initialTab }) {
                               type="button"
                               onClick={() => handleSendChatMessage(null, reply)}
                               disabled={isSendingChat}
-                              className="shrink-0 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 text-gray-300 hover:text-cyan-200 text-[11px] font-medium transition active:scale-95 disabled:opacity-50"
+                              className="shrink-0 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-gray-300 hover:text-amber-200 text-[11px] font-medium transition active:scale-95 disabled:opacity-50"
                             >
                               {reply}
                             </button>
@@ -4403,12 +4403,12 @@ export default function AdminPortal({ initialTab }) {
 
                         {/* Pending Image Attachment in Admin */}
                         {chatAttachedImage && (
-                          <div className="px-3 py-2 bg-[#0c0820] border-t border-cyan-500/20 flex items-center justify-between gap-2">
+                          <div className="px-3 py-2 bg-[#0c0820] border-t border-amber-500/20 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <img
                                 src={chatAttachedImage}
                                 alt="Attachment preview"
-                                className="w-10 h-10 rounded-lg object-cover border border-cyan-400 shrink-0"
+                                className="w-10 h-10 rounded-lg object-cover border border-amber-400 shrink-0"
                               />
                               <span className="text-[11px] text-slate-300 truncate font-mono">
                                 Image ready to send to {activeChatConv.username}
@@ -4482,11 +4482,11 @@ export default function AdminPortal({ initialTab }) {
                             type="button"
                             onClick={() => adminChatFileInputRef.current?.click()}
                             disabled={isUploadingChatImage || isSendingChat}
-                            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-cyan-300 border border-white/10 transition shrink-0"
+                            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-amber-300 border border-white/10 transition shrink-0"
                             title="Attach screenshot or photo"
                           >
                             {isUploadingChatImage ? (
-                              <RefreshCw size={15} className="animate-spin text-cyan-400" />
+                              <RefreshCw size={15} className="animate-spin text-[var(--neon-cyan)]" />
                             ) : (
                               <Paperclip size={15} />
                             )}
@@ -4497,7 +4497,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder={`Reply to ${activeChatConv.username}...`}
                             value={chatReplyText}
                             onChange={(e) => setChatReplyText(e.target.value)}
-                            className="flex-1 py-2.5 px-4 text-xs bg-[#141033] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/80 transition"
+                            className="flex-1 py-2.5 px-4 text-xs bg-[#141033] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/80 transition"
                           />
                           <button
                             type="submit"
@@ -4517,12 +4517,12 @@ export default function AdminPortal({ initialTab }) {
                       /* Concierge Command Welcome Hub (replaces the empty void) */
                       <div className="h-full flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
                         {/* Ambient background glows */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-                        <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
 
                         <div className="relative z-10 max-w-md flex flex-col items-center">
-                          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-cyan-500/25 via-purple-600/30 to-amber-500/20 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_35px_rgba(0,240,255,0.25)] mb-5">
-                            <Headphones size={36} className="text-cyan-300" />
+                          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500/25 via-amber-600/30 to-amber-500/20 border border-amber-400/40 flex items-center justify-center shadow-[0_0_35px_rgba(255,215,0,0.25)] mb-5">
+                            <Headphones size={36} className="text-amber-300" />
                           </div>
 
                           <h3 className="text-2xl font-black text-white tracking-wide mb-2">
@@ -4536,7 +4536,7 @@ export default function AdminPortal({ initialTab }) {
                           <div className="grid grid-cols-3 gap-3 w-full mb-6">
                             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
                               <p className="text-[10px] uppercase font-bold text-gray-400">Total Inquiries</p>
-                              <p className="text-lg font-black text-cyan-300 mt-0.5">{chatConversations.length}</p>
+                              <p className="text-lg font-black text-amber-300 mt-0.5">{chatConversations.length}</p>
                             </div>
                             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
                               <p className="text-[10px] uppercase font-bold text-gray-400">Unread</p>
@@ -4591,13 +4591,13 @@ export default function AdminPortal({ initialTab }) {
                         <img
                           src={selectedChatImagePreview}
                           alt="Enlarged Attachment"
-                          className="max-h-[80vh] max-w-full rounded-2xl object-contain border border-cyan-400 shadow-[0_0_50px_rgba(0,240,255,0.35)]"
+                          className="max-h-[80vh] max-w-full rounded-2xl object-contain border border-amber-400 shadow-[0_0_50px_rgba(255,215,0,0.35)]"
                         />
                         <div className="mt-3.5 flex items-center gap-3">
                           <a
                             href={selectedChatImagePreview}
                             download="chat-attachment.jpg"
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 text-black font-black text-xs transition flex items-center gap-1.5 shadow-lg hover:scale-105 active:scale-95"
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-teal-400 text-black font-black text-xs transition flex items-center gap-1.5 shadow-lg hover:scale-105 active:scale-95"
                           >
                             <span>Download / Save Image</span>
                           </a>
@@ -4669,7 +4669,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Top Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500/25 via-blue-600/30 to-purple-600/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500/25 via-amber-700/30 to-amber-700/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(255,215,0,0.25)]">
                       <Megaphone size={22} />
                     </div>
                     <div>
@@ -4705,8 +4705,8 @@ export default function AdminPortal({ initialTab }) {
 
                 {/* KPI Stats Bar */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#120d2b] to-[#0a0718] border border-cyan-500/25 shadow-lg">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#120d2b] to-[#0a0718] border border-amber-500/25 shadow-lg">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
                       Total Dispatches
                     </p>
                     <p className="text-2xl font-black text-white mt-1">
@@ -4717,7 +4717,7 @@ export default function AdminPortal({ initialTab }) {
                     <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
                       Delivery Channels
                     </p>
-                    <p className="text-2xl font-black text-purple-300 mt-1">5 Channels</p>
+                    <p className="text-2xl font-black text-amber-300 mt-1">5 Channels</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-[#120d2b] to-[#0a0718] border border-white/10 shadow-lg">
                     <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
@@ -4739,10 +4739,10 @@ export default function AdminPortal({ initialTab }) {
                 {/* Main Workspace (2-Column Grid) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                   {/* Left: Broadcast Composer (7 cols) */}
-                  <div className="lg:col-span-7 bg-[#0e0a24] border border-cyan-500/30 p-6 rounded-2xl space-y-4 shadow-xl">
+                  <div className="lg:col-span-7 bg-[#0e0a24] border border-amber-500/30 p-6 rounded-2xl space-y-4 shadow-xl">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Megaphone size={16} className="text-cyan-400" />
+                        <Megaphone size={16} className="text-[var(--neon-cyan)]" />
                         <h3 className="text-xs font-black text-white uppercase tracking-wider">
                           Omnichannel Dispatcher
                         </h3>
@@ -4764,10 +4764,10 @@ export default function AdminPortal({ initialTab }) {
                               alert('Test error: ' + e.message);
                             }
                           }}
-                          className="px-2.5 py-1 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 hover:bg-cyan-500/25 text-[11px] font-bold flex items-center gap-1 transition-all"
+                          className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-300 hover:bg-amber-500/25 text-[11px] font-bold flex items-center gap-1 transition-all"
                           title="Send instant test alert to test Chrome & In-App notifications"
                         >
-                          <Zap size={13} className="text-cyan-400" />
+                          <Zap size={13} className="text-[var(--neon-cyan)]" />
                           <span>Send Test Notification</span>
                         </button>
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
@@ -4784,7 +4784,7 @@ export default function AdminPortal({ initialTab }) {
                             Broadcast Target Channel
                           </label>
                           <select
-                            className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-cyan-400"
+                            className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                             id="promoChannel"
                             defaultValue="all"
                           >
@@ -4801,7 +4801,7 @@ export default function AdminPortal({ initialTab }) {
                             Target Player Segment
                           </label>
                           <select
-                            className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-cyan-400"
+                            className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                             id="promoSegment"
                             defaultValue="all"
                           >
@@ -4831,7 +4831,7 @@ export default function AdminPortal({ initialTab }) {
                               key={idx}
                               type="button"
                               onClick={() => setPushTitle(prev => (prev ? `${tagText} ${prev}` : `${tagText} `))}
-                              className="shrink-0 px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 text-gray-300 hover:text-white text-[10px] font-bold transition"
+                              className="shrink-0 px-2 py-0.5 rounded-md bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-gray-300 hover:text-white text-[10px] font-bold transition"
                             >
                               {tagText}
                             </button>
@@ -4842,7 +4842,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="e.g. ⚡ FLASH DROP: Free $10 SC Drop on Facebook Group!"
                           value={pushTitle}
                           onChange={(e) => setPushTitle(e.target.value)}
-                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition"
                         />
                       </div>
 
@@ -4855,7 +4855,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="e.g. Log in now to claim your exclusive VIP loyalty bonus or follow our Facebook VIP group for the drop announcement!..."
                           value={pushBody}
                           onChange={(e) => setPushBody(e.target.value)}
-                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition"
                         />
                       </div>
 
@@ -4868,7 +4868,7 @@ export default function AdminPortal({ initialTab }) {
                           id="promoActionUrl"
                           defaultValue="/wallet"
                           placeholder="e.g. /wallet, /promotions, or https://facebook.com/groups/..."
-                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition font-mono"
+                          className="w-full bg-[#141033] border border-white/15 rounded-xl p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition font-mono"
                         />
                       </div>
 
@@ -4899,7 +4899,7 @@ export default function AdminPortal({ initialTab }) {
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                          <Smartphone size={16} className="text-cyan-400" />
+                          <Smartphone size={16} className="text-[var(--neon-cyan)]" />
                           <h4 className="text-xs font-black text-white uppercase tracking-wider">
                             Player Mobile Lockscreen Preview
                           </h4>
@@ -4908,10 +4908,10 @@ export default function AdminPortal({ initialTab }) {
                       </div>
 
                       {/* Phone Notification Card Mockup */}
-                      <div className="p-4 rounded-2xl bg-[#1e173e]/90 border border-cyan-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] space-y-2">
+                      <div className="p-4 rounded-2xl bg-[#1e173e]/90 border border-amber-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-cyan-400 to-purple-500 flex items-center justify-center text-[10px] font-black text-black">
+                            <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-amber-400 to-purple-500 flex items-center justify-center text-[10px] font-black text-black">
                               RR
                             </div>
                             <span className="text-[11px] font-bold text-gray-300">RICH ROOM VIP</span>
@@ -4941,7 +4941,7 @@ export default function AdminPortal({ initialTab }) {
                 <div className="bg-[#0e0a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
                   <div className="p-4 bg-[#0a071c] border-b border-white/10 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock size={15} className="text-cyan-400" />
+                      <Clock size={15} className="text-[var(--neon-cyan)]" />
                       <h3 className="text-xs font-black uppercase text-white tracking-wider">
                         Recent Dispatch History (Audit Log)
                       </h3>
@@ -4958,7 +4958,7 @@ export default function AdminPortal({ initialTab }) {
                   ) : (
                     <div className="overflow-x-auto w-full">
                       <table className="w-full min-w-[650px] text-left text-xs">
-                        <thead className="bg-[#070514] text-gray-400 uppercase text-[10px] font-black tracking-wider border-b border-white/5">
+                        <thead className="bg-[var(--bg-deep)] text-gray-400 uppercase text-[10px] font-black tracking-wider border-b border-white/5">
                           <tr>
                             <th className="p-3.5">Timestamp</th>
                             <th className="p-3.5">Headline &amp; Message</th>
@@ -4984,12 +4984,12 @@ export default function AdminPortal({ initialTab }) {
                                 <p className="text-[11px] text-gray-400 truncate">{log.message}</p>
                               </td>
                               <td className="p-3.5">
-                                <span className="px-2 py-0.5 rounded-md bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase">
+                                <span className="px-2 py-0.5 rounded-md bg-purple-500/15 border border-amber-600/30 text-amber-300 text-[10px] font-black uppercase">
                                   {log.channel || 'all'}
                                 </span>
                               </td>
                               <td className="p-3.5">
-                                <span className="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold uppercase">
+                                <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold uppercase">
                                   {log.segment || 'all'}
                                 </span>
                               </td>
@@ -5038,7 +5038,7 @@ export default function AdminPortal({ initialTab }) {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)]" />
                     Role-Based Staff Access Control (RBAC)
                   </h2>
                   <p className="text-xs text-[#9A91A8] mt-1">
@@ -5049,7 +5049,7 @@ export default function AdminPortal({ initialTab }) {
                 <button
                   type="button"
                   onClick={() => setIsAddStaffModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#00F0FF] to-[#E026D8] text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,215,0,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
                 >
                   <Plus size={15} className="text-black stroke-[3]" />
                   <span>Create Staff Officer</span>
@@ -5058,16 +5058,16 @@ export default function AdminPortal({ initialTab }) {
 
               {/* Staff Metric Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-[#0E0A24] border border-[#00F0FF]/25 p-4 rounded-xl shadow-md">
+                <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 p-4 rounded-xl shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider">Total Staff Officers</span>
-                    <UserCheck size={16} className="text-[#00F0FF]" />
+                    <UserCheck size={16} className="text-[var(--neon-cyan)]" />
                   </div>
                   <span className="text-2xl font-black text-white mt-1 block font-mono">{staffList.length}</span>
-                  <span className="text-[11px] text-[#00F0FF] mt-0.5 block">Configured staff accounts</span>
+                  <span className="text-[11px] text-[var(--neon-cyan)] mt-0.5 block">Configured staff accounts</span>
                 </div>
 
-                <div className="bg-[#0E0A24] border border-emerald-500/30 p-4 rounded-xl shadow-md">
+                <div className="bg-[var(--bg-surface)] border border-emerald-500/30 p-4 rounded-xl shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider">Active On-Duty</span>
                     <CheckCircle2 size={16} className="text-emerald-400" />
@@ -5078,7 +5078,7 @@ export default function AdminPortal({ initialTab }) {
                   <span className="text-[11px] text-emerald-400/80 mt-0.5 block">Full portal credentials active</span>
                 </div>
 
-                <div className="bg-[#0E0A24] border border-rose-500/30 p-4 rounded-xl shadow-md">
+                <div className="bg-[var(--bg-surface)] border border-rose-500/30 p-4 rounded-xl shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider">Suspended Staff</span>
                     <X size={16} className="text-rose-400" />
@@ -5114,16 +5114,16 @@ export default function AdminPortal({ initialTab }) {
                     className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
                     onClick={(e) => e.stopPropagation()}
                     style={{
-                      backgroundColor: '#0E0A24',
-                      background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                      border: '1px solid rgba(0, 240, 255, 0.45)',
-                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                      backgroundColor: 'var(--bg-surface)',
+                      background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                       borderRadius: '20px',
                     }}
                   >
                     <div className="flex items-center justify-between border-b border-white/10 pb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF]">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/30 flex items-center justify-center text-[var(--neon-cyan)]">
                           <Plus size={16} />
                         </div>
                         <div>
@@ -5168,7 +5168,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="e.g. officer_alex"
                           value={newStaff.username}
                           onChange={(e) => setNewStaff({ ...newStaff, username: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                           required
                         />
                       </div>
@@ -5180,7 +5180,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="staff@playersparadisehub.com"
                           value={newStaff.email}
                           onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                           required
                         />
                       </div>
@@ -5192,7 +5192,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="••••••••••••"
                           value={newStaff.password}
                           onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                           required
                         />
                       </div>
@@ -5202,7 +5202,7 @@ export default function AdminPortal({ initialTab }) {
                         <select
                           value={newStaff.role}
                           onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
                         >
                           <option value="operation_admin">Operations Manager</option>
                           <option value="financial_manager">Financial Manager</option>
@@ -5233,10 +5233,10 @@ export default function AdminPortal({ initialTab }) {
               )}
 
               {/* Staff List Table */}
-              <div className="bg-[#0E0A24] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto w-full">
                   <table className="w-full min-w-[650px] text-left text-xs">
-                    <thead className="bg-[#070514] text-gray-400 uppercase border-b border-white/10 font-bold text-[10.5px]">
+                    <thead className="bg-[var(--bg-deep)] text-gray-400 uppercase border-b border-white/10 font-bold text-[10.5px]">
                       <tr>
                         <th className="p-3.5">Staff Officer</th>
                         <th className="p-3.5">Email</th>
@@ -5250,7 +5250,7 @@ export default function AdminPortal({ initialTab }) {
                         <tr key={s.id} className="hover:bg-white/[0.03] transition-colors">
                           <td className="p-3.5 font-bold text-white">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-[#00F0FF]/20 border border-white/10 flex items-center justify-center text-white font-black text-xs uppercase">
+                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-[var(--neon-cyan)]/20 border border-white/10 flex items-center justify-center text-white font-black text-xs uppercase">
                                 {s.username?.substring(0, 2) || 'ST'}
                               </div>
                               <span>{s.username}</span>
@@ -5258,7 +5258,7 @@ export default function AdminPortal({ initialTab }) {
                           </td>
                           <td className="p-3.5 text-gray-300 font-mono">{s.email}</td>
                           <td className="p-3.5">
-                            <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold text-[11px] capitalize">
+                            <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-amber-600/30 text-amber-300 font-bold text-[11px] capitalize">
                               {s.role.replace('_', ' ')}
                             </span>
                           </td>
@@ -5283,7 +5283,7 @@ export default function AdminPortal({ initialTab }) {
                                   isBanned: s.isBanned,
                                   newPassword: '',
                                 })}
-                                className="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-[#00F0FF] border border-cyan-500/30 cursor-pointer hover:scale-105 active:scale-95"
+                                className="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1 bg-amber-500/10 hover:bg-amber-500/20 text-[var(--neon-cyan)] border border-amber-500/30 cursor-pointer hover:scale-105 active:scale-95"
                                 title="Edit staff profile & role"
                               >
                                 <Edit2 size={13} />
@@ -5396,16 +5396,16 @@ export default function AdminPortal({ initialTab }) {
                     className="vegas-modal-card w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto modal-scrollable relative space-y-4"
                     onClick={(e) => e.stopPropagation()}
                     style={{
-                      backgroundColor: '#0E0A24',
-                      background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                      border: '1px solid rgba(0, 240, 255, 0.45)',
-                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                      backgroundColor: 'var(--bg-surface)',
+                      background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                       borderRadius: '20px',
                     }}
                   >
                     <div className="flex items-center justify-between border-b border-white/10 pb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/30 flex items-center justify-center text-[#00F0FF]">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/30 flex items-center justify-center text-[var(--neon-cyan)]">
                           <Edit2 size={16} />
                         </div>
                         <div>
@@ -5468,7 +5468,7 @@ export default function AdminPortal({ initialTab }) {
                           type="text"
                           value={editingStaff.username}
                           onChange={(e) => setEditingStaff({ ...editingStaff, username: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                           required
                         />
                       </div>
@@ -5479,7 +5479,7 @@ export default function AdminPortal({ initialTab }) {
                           type="email"
                           value={editingStaff.email}
                           onChange={(e) => setEditingStaff({ ...editingStaff, email: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                           required
                         />
                       </div>
@@ -5493,7 +5493,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="Enter new password (optional)"
                           value={editingStaff.newPassword || ''}
                           onChange={(e) => setEditingStaff({ ...editingStaff, newPassword: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
                         />
                       </div>
 
@@ -5502,7 +5502,7 @@ export default function AdminPortal({ initialTab }) {
                         <select
                           value={editingStaff.role}
                           onChange={(e) => setEditingStaff({ ...editingStaff, role: e.target.value })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
                         >
                           <option value="operation_admin">Operations Manager</option>
                           <option value="financial_manager">Financial Manager</option>
@@ -5517,7 +5517,7 @@ export default function AdminPortal({ initialTab }) {
                         <select
                           value={editingStaff.isBanned ? 'banned' : 'active'}
                           onChange={(e) => setEditingStaff({ ...editingStaff, isBanned: e.target.value === 'banned' })}
-                          className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
+                          className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer transition"
                         >
                           <option value="active">Active (Full Credentials On-Duty)</option>
                           <option value="banned">Suspended (Access Blocked)</option>
@@ -5535,7 +5535,7 @@ export default function AdminPortal({ initialTab }) {
                         <button
                           type="submit"
                           disabled={isUpdatingStaff}
-                          className="py-2.5 px-6 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer bg-gradient-to-r from-[#00F0FF] to-[#E026D8] text-black shadow-[0_0_20px_rgba(0,240,255,0.35)] hover:scale-[1.02] active:scale-[0.98] transition"
+                          className="py-2.5 px-6 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] text-black shadow-[0_0_20px_rgba(255,215,0,0.35)] hover:scale-[1.02] active:scale-[0.98] transition"
                         >
                           <span>{isUpdatingStaff ? 'Saving...' : 'Update Staff Officer'}</span>
                         </button>
@@ -5554,7 +5554,7 @@ export default function AdminPortal({ initialTab }) {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-black text-white flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_12px_#00F0FF]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_12px_var(--neon-cyan)]" />
                     System Settings &amp; USA Compliance
                   </h2>
                   <p className="text-xs text-[#9A91A8] mt-1">
@@ -5572,7 +5572,7 @@ export default function AdminPortal({ initialTab }) {
               {/* Top Operational & Security Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
                 {/* 1. Minimum Redemption Payout */}
-                <div className="bg-[#0E0A24] border border-emerald-500/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-3 flex flex-col justify-between hover:border-emerald-500/40 transition">
+                <div className="bg-[var(--bg-surface)] border border-emerald-500/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-3 flex flex-col justify-between hover:border-emerald-500/40 transition">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-emerald-400 uppercase tracking-wider block">
@@ -5588,16 +5588,16 @@ export default function AdminPortal({ initialTab }) {
                 </div>
 
                 {/* 2. Security & Fraud Protection */}
-                <div className="bg-[#0E0A24] border border-purple-500/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-3 flex flex-col justify-between hover:border-purple-500/40 transition">
+                <div className="bg-[var(--bg-surface)] border border-amber-600/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-3 flex flex-col justify-between hover:border-amber-600/40 transition">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-purple-400 uppercase tracking-wider block">
+                      <span className="text-xs font-black text-[var(--neon-purple)] uppercase tracking-wider block">
                         Fraud Defense &amp; Device Lock
                       </span>
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 font-mono font-black text-xs">
+                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-amber-600/30 text-amber-300 font-mono font-black text-xs">
                         ACTIVE SHIELD
                       </span>
                       <span className="text-xs text-slate-300 font-bold">1-Device Binding</span>
@@ -5610,10 +5610,10 @@ export default function AdminPortal({ initialTab }) {
               </div>
 
               {/* Dynamic Bonus Configuration (Welcome Pack, Regular Reload & Referral) */}
-              <div className="bg-[#0E0A24] border border-cyan-500/25 p-6 sm:p-7 rounded-2xl shadow-2xl space-y-6 w-full">
+              <div className="bg-[var(--bg-surface)] border border-amber-500/25 p-6 sm:p-7 rounded-2xl shadow-2xl space-y-6 w-full">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(255,215,0,0.2)]">
                       <Gift size={20} />
                     </div>
                     <div>
@@ -5626,7 +5626,7 @@ export default function AdminPortal({ initialTab }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] px-3 py-1 rounded-full font-mono font-bold bg-cyan-500/10 border border-cyan-500/25 text-[#00F0FF]">
+                    <span className="text-[11px] px-3 py-1 rounded-full font-mono font-bold bg-amber-500/10 border border-amber-500/25 text-[var(--neon-cyan)]">
                       REAL-TIME CALCULATIONS
                     </span>
                   </div>
@@ -5636,10 +5636,10 @@ export default function AdminPortal({ initialTab }) {
                   {/* 4 Full-Width Equal-Height Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
                     {/* 1. Welcome Bonus Card */}
-                    <div className="bg-[#070514] border border-cyan-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
+                    <div className="bg-[var(--bg-deep)] border border-amber-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-black text-cyan-400 uppercase tracking-wider">
+                          <span className="text-xs font-black text-[var(--neon-cyan)] uppercase tracking-wider">
                             1. Welcome Pack (First Deposit)
                           </span>
                           <button
@@ -5668,10 +5668,10 @@ export default function AdminPortal({ initialTab }) {
                               max="1000"
                               value={sysSettings?.welcomeBonusPercent ?? ''}
                               onChange={(e) => setSysSettings(prev => ({ ...prev, welcomeBonusPercent: e.target.value }))}
-                              className="w-full bg-[#0E0A24] border border-cyan-500/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
+                              className="w-full bg-[var(--bg-surface)] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
                               required
                             />
-                            <span className="absolute right-3 top-2.5 text-xs font-black text-cyan-400">%</span>
+                            <span className="absolute right-3 top-2.5 text-xs font-black text-[var(--neon-cyan)]">%</span>
                           </div>
                         </div>
 
@@ -5684,7 +5684,7 @@ export default function AdminPortal({ initialTab }) {
                             type="text"
                             value={sysSettings?.welcomeBonusTitle || 'WELCOME BONUS'}
                             onChange={(e) => setSysSettings(prev => ({ ...prev, welcomeBonusTitle: e.target.value }))}
-                            className="w-full bg-[#0E0A24] border border-cyan-500/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-white font-bold text-xs outline-none transition"
+                            className="w-full bg-[var(--bg-surface)] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-bold text-xs outline-none transition"
                             required
                           />
                         </div>
@@ -5698,28 +5698,28 @@ export default function AdminPortal({ initialTab }) {
                             rows={3}
                             value={sysSettings?.welcomeBonusSubtitle || 'Get a 300% bonus on your first deposit! Instant approval & fast cashouts.'}
                             onChange={(e) => setSysSettings(prev => ({ ...prev, welcomeBonusSubtitle: e.target.value }))}
-                            className="w-full bg-[#0E0A24] border border-cyan-500/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition resize-none"
+                            className="w-full bg-[var(--bg-surface)] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition resize-none"
                             required
                           />
                         </div>
                       </div>
 
                       {/* Simulation Tag */}
-                      <div className="pt-3 border-t border-cyan-500/15">
-                        <div className="rounded-xl p-3 bg-[#0E0A24] border border-cyan-500/20 text-[11px] text-cyan-300 space-y-1">
+                      <div className="pt-3 border-t border-amber-500/15">
+                        <div className="rounded-xl p-3 bg-[var(--bg-surface)] border border-amber-500/20 text-[11px] text-amber-300 space-y-1">
                           <span className="font-bold text-white block">💡 Live Simulation:</span>
                           <p className="text-[10.5px] text-slate-300 leading-relaxed m-0 font-mono">
-                            Player deposits $100 ➔ Receives 100 SC + <strong className="text-cyan-400">{(Number(sysSettings?.welcomeBonusPercent ?? 300))} SC Bonus</strong> = {100 + Number(sysSettings?.welcomeBonusPercent ?? 300)} SC Total
+                            Player deposits $100 ➔ Receives 100 SC + <strong className="text-[var(--neon-cyan)]">{(Number(sysSettings?.welcomeBonusPercent ?? 300))} SC Bonus</strong> = {100 + Number(sysSettings?.welcomeBonusPercent ?? 300)} SC Total
                           </p>
                         </div>
                       </div>
                     </div>
 
                     {/* 2. Regular Reload Bonus Card */}
-                    <div className="bg-[#070514] border border-purple-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
+                    <div className="bg-[var(--bg-deep)] border border-amber-600/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-black text-purple-400 uppercase tracking-wider">
+                          <span className="text-xs font-black text-[var(--neon-purple)] uppercase tracking-wider">
                             2. Regular Reload (Subsequent)
                           </span>
                           <button
@@ -5748,10 +5748,10 @@ export default function AdminPortal({ initialTab }) {
                               max="500"
                               value={sysSettings?.regularBonusPercent ?? ''}
                               onChange={(e) => setSysSettings(prev => ({ ...prev, regularBonusPercent: e.target.value }))}
-                              className="w-full bg-[#0E0A24] border border-purple-500/20 focus:border-purple-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
+                              className="w-full bg-[var(--bg-surface)] border border-amber-600/20 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
                               required
                             />
-                            <span className="absolute right-3 top-2.5 text-xs font-black text-purple-400">%</span>
+                            <span className="absolute right-3 top-2.5 text-xs font-black text-[var(--neon-purple)]">%</span>
                           </div>
                         </div>
 
@@ -5764,7 +5764,7 @@ export default function AdminPortal({ initialTab }) {
                             type="text"
                             value={sysSettings?.regularBonusTitle || 'REGULAR BONUS'}
                             onChange={(e) => setSysSettings(prev => ({ ...prev, regularBonusTitle: e.target.value }))}
-                            className="w-full bg-[#0E0A24] border border-purple-500/20 focus:border-purple-400 rounded-xl px-3.5 py-2.5 text-white font-bold text-xs outline-none transition"
+                            className="w-full bg-[var(--bg-surface)] border border-amber-600/20 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-white font-bold text-xs outline-none transition"
                             required
                           />
                         </div>
@@ -5778,25 +5778,25 @@ export default function AdminPortal({ initialTab }) {
                             rows={3}
                             value={sysSettings?.regularBonusSubtitle || 'Get a 50% reload bonus on every deposit you make! Boost your wallet balance anytime.'}
                             onChange={(e) => setSysSettings(prev => ({ ...prev, regularBonusSubtitle: e.target.value }))}
-                            className="w-full bg-[#0E0A24] border border-purple-500/20 focus:border-purple-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition resize-none"
+                            className="w-full bg-[var(--bg-surface)] border border-amber-600/20 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition resize-none"
                             required
                           />
                         </div>
                       </div>
 
                       {/* Simulation Tag */}
-                      <div className="pt-3 border-t border-purple-500/15">
-                        <div className="rounded-xl p-3 bg-[#0E0A24] border border-purple-500/20 text-[11px] text-purple-300 space-y-1">
+                      <div className="pt-3 border-t border-amber-600/15">
+                        <div className="rounded-xl p-3 bg-[var(--bg-surface)] border border-amber-600/20 text-[11px] text-amber-300 space-y-1">
                           <span className="font-bold text-white block">💡 Live Simulation:</span>
                           <p className="text-[10.5px] text-slate-300 leading-relaxed m-0 font-mono">
-                            Player reloads $100 ➔ Receives 100 SC + <strong className="text-purple-400">{(Number(sysSettings?.regularBonusPercent ?? 50))} SC Reload</strong> = {100 + Number(sysSettings?.regularBonusPercent ?? 50)} SC Total
+                            Player reloads $100 ➔ Receives 100 SC + <strong className="text-[var(--neon-purple)]">{(Number(sysSettings?.regularBonusPercent ?? 50))} SC Reload</strong> = {100 + Number(sysSettings?.regularBonusPercent ?? 50)} SC Total
                           </p>
                         </div>
                       </div>
                     </div>
 
                     {/* 3. Referral Bonus Card */}
-                    <div className="bg-[#070514] border border-amber-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
+                    <div className="bg-[var(--bg-deep)] border border-amber-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-black text-amber-400 uppercase tracking-wider">
@@ -5828,7 +5828,7 @@ export default function AdminPortal({ initialTab }) {
                               max="100"
                               value={sysSettings?.referralBonusPercent ?? ''}
                               onChange={(e) => setSysSettings(prev => ({ ...prev, referralBonusPercent: e.target.value }))}
-                              className="w-full bg-[#0E0A24] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
+                              className="w-full bg-[var(--bg-surface)] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
                               required
                             />
                             <span className="absolute right-3 top-2.5 text-xs font-black text-amber-400">%</span>
@@ -5852,7 +5852,7 @@ export default function AdminPortal({ initialTab }) {
 
                       {/* Simulation Tag */}
                       <div className="pt-3 border-t border-amber-500/15">
-                        <div className="rounded-xl p-3 bg-[#0E0A24] border border-amber-500/20 text-[11px] text-amber-300 space-y-1">
+                        <div className="rounded-xl p-3 bg-[var(--bg-surface)] border border-amber-500/20 text-[11px] text-amber-300 space-y-1">
                           <span className="font-bold text-white block">💡 Live Simulation:</span>
                           <p className="text-[10.5px] text-slate-300 leading-relaxed m-0 font-mono">
                             Friend deposits $100 ➔ Inviter gets <strong className="text-amber-400">{Number(sysSettings?.referralBonusPercent ?? 20)} SC ($ {Number(sysSettings?.referralBonusPercent ?? 20)})</strong> instant wallet bonus
@@ -5862,7 +5862,7 @@ export default function AdminPortal({ initialTab }) {
                     </div>
 
                     {/* 4. Lobby Freeplay Bonus Card */}
-                    <div className="bg-[#070514] border border-emerald-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
+                    <div className="bg-[var(--bg-deep)] border border-emerald-500/35 p-5 sm:p-6 rounded-2xl space-y-4 flex flex-col justify-between shadow-lg">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-black text-emerald-400 uppercase tracking-wider">
@@ -5895,7 +5895,7 @@ export default function AdminPortal({ initialTab }) {
                               max="100"
                               value={sysSettings?.freeplayAmountSC ?? ''}
                               onChange={(e) => setSysSettings(prev => ({ ...prev, freeplayAmountSC: e.target.value }))}
-                              className="w-full bg-[#0E0A24] border border-emerald-500/20 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
+                              className="w-full bg-[var(--bg-surface)] border border-emerald-500/20 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-white font-black text-sm pr-9 outline-none transition"
                               required
                             />
                             <span className="absolute right-3 top-2.5 text-xs font-black text-emerald-400">SC</span>
@@ -5919,7 +5919,7 @@ export default function AdminPortal({ initialTab }) {
 
                       {/* Simulation Tag */}
                       <div className="pt-3 border-t border-emerald-500/15">
-                        <div className="rounded-xl p-3 bg-[#0E0A24] border border-emerald-500/20 text-[11px] text-emerald-300 space-y-1">
+                        <div className="rounded-xl p-3 bg-[var(--bg-surface)] border border-emerald-500/20 text-[11px] text-emerald-300 space-y-1">
                           <span className="font-bold text-white block">💡 Live Simulation:</span>
                           <p className="text-[10.5px] text-slate-300 leading-relaxed m-0 font-mono">
                             Player clicks &apos;GET FREEPLAY&apos; ➔ Receives <strong className="text-emerald-400">${Number(sysSettings?.freeplayAmountSC ?? 5.0).toFixed(2)} SC</strong>
@@ -5930,15 +5930,15 @@ export default function AdminPortal({ initialTab }) {
                   </div>
 
                   {/* 5. Official Cashout & Redemption Rules Editor */}
-                  <div className="bg-[#070514] border border-cyan-500/35 p-5 sm:p-6 rounded-2xl space-y-4 shadow-lg w-full">
+                  <div className="bg-[var(--bg-deep)] border border-amber-500/35 p-5 sm:p-6 rounded-2xl space-y-4 shadow-lg w-full">
                     <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck size={18} className="text-cyan-400" />
+                        <ShieldCheck size={18} className="text-[var(--neon-cyan)]" />
                         <h4 className="text-sm font-black text-white uppercase tracking-wider m-0">
                           Official Cashout &amp; Redemption Rules (Displayed on /rules &amp; Menu)
                         </h4>
                       </div>
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold bg-amber-500/15 text-[var(--neon-cyan)] border border-amber-500/30">
                         LIVE SYNC
                       </span>
                     </div>
@@ -5952,7 +5952,7 @@ export default function AdminPortal({ initialTab }) {
                         value={sysSettings?.cashoutRules ?? ''}
                         onChange={(e) => setSysSettings(prev => ({ ...prev, cashoutRules: e.target.value }))}
                         placeholder="Write your cashout and redemption rules here. Players can view them by clicking 'Cashout Rules' in the 3-lines menu."
-                        className="w-full bg-[#0E0A24] border border-cyan-500/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition"
+                        className="w-full bg-[var(--bg-surface)] border border-amber-500/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white text-xs leading-relaxed outline-none transition"
                       />
                       <p className="text-[10.5px] text-gray-400 mt-1 leading-relaxed">
                         These rules appear directly on the website when players click &quot;Cashout Rules&quot; above Refer &amp; Earn in the sidebar.
@@ -5968,7 +5968,7 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="submit"
                       disabled={savingBonusSettings}
-                      className="py-3 px-8 rounded-xl cyber-btn-cyan text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.4)] cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition"
+                      className="py-3 px-8 rounded-xl cyber-btn-cyan text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,215,0,0.4)] cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition"
                     >
                       {savingBonusSettings ? (
                         <>
@@ -5987,16 +5987,16 @@ export default function AdminPortal({ initialTab }) {
               </div>
 
               {/* Live Site Promotions & Campaigns Manager */}
-              <div className="bg-[#0E0A24] border border-cyan-500/25 p-6 sm:p-7 rounded-2xl shadow-2xl space-y-6 w-full">
+              <div className="bg-[var(--bg-surface)] border border-amber-500/25 p-6 sm:p-7 rounded-2xl shadow-2xl space-y-6 w-full">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-600/30 flex items-center justify-center text-[var(--neon-purple)] shadow-[0_0_15px_rgba(168,85,247,0.2)]">
                       <Sparkles size={20} />
                     </div>
                     <div>
                       <h3 className="text-lg font-black text-white m-0 tracking-wide flex items-center gap-2">
                         <span>Live Site Promotions &amp; Campaigns</span>
-                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30">
+                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/15 text-[var(--neon-cyan)] font-bold border border-amber-500/30">
                           {adminPromos.length} RUNNING
                         </span>
                       </h3>
@@ -6010,7 +6010,7 @@ export default function AdminPortal({ initialTab }) {
                     <button
                       type="button"
                       onClick={() => setPromoModalOpen(true)}
-                      className="cyber-btn-cyan py-2.5 px-4 text-xs font-black flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,240,255,0.3)] cursor-pointer"
+                      className="cyber-btn-cyan py-2.5 px-4 text-xs font-black flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,215,0,0.3)] cursor-pointer"
                     >
                       <Plus size={15} />
                       <span>CREATE NEW PROMOTION</span>
@@ -6020,11 +6020,11 @@ export default function AdminPortal({ initialTab }) {
 
                 {loadingAdminPromos ? (
                   <div className="text-center py-8 text-gray-400 text-xs flex items-center justify-center gap-2">
-                    <RefreshCw size={14} className="animate-spin text-cyan-400" />
+                    <RefreshCw size={14} className="animate-spin text-[var(--neon-cyan)]" />
                     <span>Loading active site promotions...</span>
                   </div>
                 ) : adminPromos.length === 0 ? (
-                  <div className="text-center py-10 bg-[#070514] rounded-xl border border-white/5 space-y-2">
+                  <div className="text-center py-10 bg-[var(--bg-deep)] rounded-xl border border-white/5 space-y-2">
                     <Tag size={28} className="mx-auto text-gray-600" />
                     <p className="text-sm font-bold text-gray-300">No active promotions in database.</p>
                     <p className="text-xs text-gray-500">Click &quot;CREATE NEW PROMOTION&quot; above to launch a promotion on the site.</p>
@@ -6036,11 +6036,11 @@ export default function AdminPortal({ initialTab }) {
                       return (
                         <div
                           key={promoId}
-                          className="bg-[#070514] border border-cyan-500/25 hover:border-cyan-500/50 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-lg transition"
+                          className="bg-[var(--bg-deep)] border border-amber-500/25 hover:border-amber-500/50 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-lg transition"
                         >
                           <div className="space-y-3">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono uppercase tracking-wider">
+                              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono uppercase tracking-wider">
                                 {p.badge || 'PROMO'}
                               </span>
                               <span
@@ -6103,7 +6103,7 @@ export default function AdminPortal({ initialTab }) {
               {/* Create Promotion Modal */}
               {promoModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                  <div className="bg-[#0E0A24] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative">
+                  <div className="bg-[var(--bg-surface)] border border-amber-500/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative">
                     <button
                       type="button"
                       onClick={() => setPromoModalOpen(false)}
@@ -6113,7 +6113,7 @@ export default function AdminPortal({ initialTab }) {
                     </button>
 
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[var(--neon-cyan)]">
                         <Sparkles size={20} />
                       </div>
                       <div>
@@ -6130,7 +6130,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="e.g. Weekend 200% Cyber Surge"
                           value={newPromoForm.title}
                           onChange={(e) => setNewPromoForm(prev => ({ ...prev, title: e.target.value }))}
-                          className="w-full bg-[#070514] border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-cyan-400"
+                          className="w-full bg-[var(--bg-deep)] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-amber-400"
                           required
                         />
                       </div>
@@ -6143,7 +6143,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. 200% MATCH"
                             value={newPromoForm.badge}
                             onChange={(e) => setNewPromoForm(prev => ({ ...prev, badge: e.target.value }))}
-                            className="w-full bg-[#070514] border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-cyan-400"
+                            className="w-full bg-[var(--bg-deep)] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-amber-400"
                           />
                         </div>
 
@@ -6155,7 +6155,7 @@ export default function AdminPortal({ initialTab }) {
                             max="1000"
                             value={newPromoForm.matchPercent}
                             onChange={(e) => setNewPromoForm(prev => ({ ...prev, matchPercent: e.target.value }))}
-                            className="w-full bg-[#070514] border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-cyan-400"
+                            className="w-full bg-[var(--bg-deep)] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-amber-400"
                           />
                         </div>
                       </div>
@@ -6167,7 +6167,7 @@ export default function AdminPortal({ initialTab }) {
                           placeholder="Deposit $25 or more this weekend to get an instant 200% bonus..."
                           value={newPromoForm.description}
                           onChange={(e) => setNewPromoForm(prev => ({ ...prev, description: e.target.value }))}
-                          className="w-full bg-[#070514] border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-cyan-400 resize-none"
+                          className="w-full bg-[var(--bg-deep)] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-amber-400 resize-none"
                           required
                         />
                       </div>
@@ -6182,7 +6182,7 @@ export default function AdminPortal({ initialTab }) {
                         </button>
                         <button
                           type="submit"
-                          className="cyber-btn-cyan px-5 py-2.5 text-xs font-black shadow-[0_0_15px_rgba(0,240,255,0.4)] cursor-pointer"
+                          className="cyber-btn-cyan px-5 py-2.5 text-xs font-black shadow-[0_0_15px_rgba(255,215,0,0.4)] cursor-pointer"
                         >
                           Launch Promotion
                         </button>
@@ -6217,7 +6217,7 @@ export default function AdminPortal({ initialTab }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-black text-white flex items-center gap-2" style={{ fontFamily: 'Lexend, sans-serif' }}>
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)]" />
                       Player Accounts Directory
                     </h2>
                     <p className="text-xs text-[#9A91A8] mt-1" style={{ fontFamily: 'Lexend, sans-serif' }}>
@@ -6226,7 +6226,7 @@ export default function AdminPortal({ initialTab }) {
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#140E33] border border-white/10 rounded-xl focus-within:border-cyan-400 w-full sm:w-64 transition">
+                    <div className="flex items-center gap-2.5 px-3 py-2 bg-[var(--bg-card)] border border-white/10 rounded-xl focus-within:border-amber-400 w-full sm:w-64 transition">
                       <Search size={14} className="text-gray-400 shrink-0" />
                       <input
                         type="text"
@@ -6272,8 +6272,8 @@ export default function AdminPortal({ initialTab }) {
                         key={f.id}
                         onClick={() => setPlayerFilter(f.id)}
                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${playerFilter === f.id
-                          ? 'bg-[#00F0FF] text-black shadow-[0_0_15px_rgba(0,240,255,0.4)] font-black'
-                          : 'bg-[#140E33] text-gray-400 hover:text-white border border-white/10'
+                          ? 'bg-[var(--neon-cyan)] text-black shadow-[0_0_15px_rgba(255,215,0,0.4)] font-black'
+                          : 'bg-[var(--bg-card)] text-gray-400 hover:text-white border border-white/10'
                           }`}
                         style={{ fontFamily: 'Lexend, sans-serif' }}
                       >
@@ -6287,12 +6287,12 @@ export default function AdminPortal({ initialTab }) {
                   </div>
 
                   <span className="text-[11px] text-[#9A91A8]" style={{ fontFamily: 'Lexend, sans-serif' }}>
-                    💡 Click <strong className="text-[#00F0FF]">&quot;360° Profile&quot;</strong> on any user to adjust balance, view deposits, cashouts &amp; referrals
+                    💡 Click <strong className="text-[var(--neon-cyan)]">&quot;360° Profile&quot;</strong> on any user to adjust balance, view deposits, cashouts &amp; referrals
                   </span>
                 </div>
 
                 {/* Users Table */}
-                <div className="bg-[#0E0A24] border border-[#00F0FF]/25 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-2xl overflow-hidden shadow-2xl">
                   {/* Mobile Cards View (Visible on small screens) */}
                   <div className="block sm:hidden divide-y divide-white/5">
                     {filteredUsers.length === 0 ? (
@@ -6303,12 +6303,12 @@ export default function AdminPortal({ initialTab }) {
                       filteredUsers.map(u => (
                         <div
                           key={u.id}
-                          className="p-3.5 space-y-3 bg-[#140E33]/70"
+                          className="p-3.5 space-y-3 bg-[var(--bg-card)]/70"
                         >
                           {/* Top row: Avatar + Name + Referral + Status */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00F0FF]/15 via-purple-500/10 to-[#E026D8]/20 border border-white/10 flex items-center justify-center font-black text-xs text-white shrink-0">
+                              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--neon-cyan)]/15 via-purple-500/10 to-[var(--neon-purple)]/20 border border-white/10 flex items-center justify-center font-black text-xs text-white shrink-0">
                                 {u.username?.substring(0, 2).toUpperCase() || 'P'}
                               </div>
                               <div className="min-w-0">
@@ -6333,7 +6333,7 @@ export default function AdminPortal({ initialTab }) {
                           </div>
 
                           {/* Stats Grid */}
-                          <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#070514] border border-white/10 text-xs">
+                          <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[var(--bg-deep)] border border-white/10 text-xs">
                             <div>
                               <span className="text-[10px] text-gray-400 block font-medium">Cash Balance</span>
                               <span className="font-extrabold text-emerald-400 text-sm">
@@ -6359,7 +6359,7 @@ export default function AdminPortal({ initialTab }) {
                             </div>
                             <div>
                               <span className="text-[10px] text-gray-400 block font-medium">Cashed Out</span>
-                              <span className="font-bold text-cyan-300 text-xs">
+                              <span className="font-bold text-amber-300 text-xs">
                                 ${Number(u.totalWithdrawals || 0).toFixed(2)}
                               </span>
                             </div>
@@ -6370,7 +6370,7 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => setSelectedPlayerId(u.id)}
-                              className="flex-1 py-1.5 px-2.5 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
+                              className="flex-1 py-1.5 px-2.5 rounded-xl bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/40 text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
                             >
                               <Eye size={12} />
                               <span>Player Profile</span>
@@ -6379,7 +6379,7 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => setResetPassModal({ open: true, user: u, newPass: '' })}
-                              className="py-1.5 px-2.5 rounded-xl bg-purple-500/10 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-1"
+                              className="py-1.5 px-2.5 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-600/30 text-xs font-bold flex items-center gap-1"
                             >
                               <Key size={12} />
                               <span>Reset</span>
@@ -6444,7 +6444,7 @@ export default function AdminPortal({ initialTab }) {
                   {/* Desktop Table View (Hidden on mobile) */}
                   <div className="hidden sm:block overflow-x-auto w-full">
                     <table className="w-full min-w-[760px] text-left text-xs" style={{ fontFamily: 'Lexend, sans-serif' }}>
-                      <thead className="bg-[#070514] text-[#9A91A8] uppercase border-b border-white/10 font-bold" style={{ fontFamily: 'Lexend, sans-serif' }}>
+                      <thead className="bg-[var(--bg-deep)] text-[#9A91A8] uppercase border-b border-white/10 font-bold" style={{ fontFamily: 'Lexend, sans-serif' }}>
                         <tr>
                           <th className="p-3.5">Player / Identity</th>
                           <th className="p-3.5">Cash Balance</th>
@@ -6473,7 +6473,7 @@ export default function AdminPortal({ initialTab }) {
                               {/* Player Identity */}
                               <td className="p-3.5">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00F0FF]/15 via-purple-500/10 to-[#E026D8]/20 border border-white/10 flex items-center justify-center font-black text-xs text-white shrink-0 group-hover:border-[#00F0FF]/50 transition">
+                                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--neon-cyan)]/15 via-purple-500/10 to-[var(--neon-purple)]/20 border border-white/10 flex items-center justify-center font-black text-xs text-white shrink-0 group-hover:border-[var(--neon-cyan)]/50 transition">
                                     {u.username?.substring(0, 2).toUpperCase() || 'P'}
                                   </div>
                                   <div>
@@ -6507,7 +6507,7 @@ export default function AdminPortal({ initialTab }) {
                               </td>
 
                               {/* Cashed Out */}
-                              <td className="p-3.5 font-bold text-cyan-300 text-xs" style={{ fontFamily: 'Lexend, sans-serif' }}>
+                              <td className="p-3.5 font-bold text-amber-300 text-xs" style={{ fontFamily: 'Lexend, sans-serif' }}>
                                 ${Number(u.totalWithdrawals || 0).toFixed(2)}
                               </td>
 
@@ -6548,7 +6548,7 @@ export default function AdminPortal({ initialTab }) {
                                   <button
                                     type="button"
                                     onClick={() => setSelectedPlayerId(u.id)}
-                                    className="text-xs bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/40 hover:bg-[#00F0FF]/25 px-2.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-sm transition"
+                                    className="text-xs bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/40 hover:bg-[var(--neon-cyan)]/25 px-2.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-sm transition"
                                     title="View Complete Player Profile, History & Balance Adjuster"
                                   >
                                     <Eye size={12} />
@@ -6559,7 +6559,7 @@ export default function AdminPortal({ initialTab }) {
                                   <button
                                     type="button"
                                     onClick={() => setResetPassModal({ open: true, user: u, newPass: '' })}
-                                    className="text-[11px] px-2.5 py-1.5 rounded-xl bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 font-bold flex items-center gap-1 transition"
+                                    className="text-[11px] px-2.5 py-1.5 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-600/30 hover:bg-amber-500/20 font-bold flex items-center gap-1 transition"
                                     title="Reset Player Password"
                                   >
                                     <Key size={12} />
@@ -6637,10 +6637,10 @@ export default function AdminPortal({ initialTab }) {
           {activeTab === 'gateways' && (
             <div className="space-y-6" style={{ fontFamily: 'Lexend, -apple-system, BlinkMacSystemFont, sans-serif' }}>
               {/* Header with Add Button */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0E0A24]/80 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-surface)]/80 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/10">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_10px_var(--neon-cyan)]" />
                     Payment Gateways &amp; Cashtags
                   </h2>
                   <p className="text-xs text-[#9A91A8] mt-1">
@@ -6651,7 +6651,7 @@ export default function AdminPortal({ initialTab }) {
                 <button
                   type="button"
                   onClick={() => setIsAddGatewayModalOpen(true)}
-                  className="btn-sovereign-coral px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#00F0FF]/15 whitespace-nowrap self-start sm:self-auto cursor-pointer"
+                  className="btn-sovereign-coral px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[var(--neon-cyan)]/15 whitespace-nowrap self-start sm:self-auto cursor-pointer"
                 >
                   <Plus size={15} />
                   <span>Add Payment Method</span>
@@ -6683,17 +6683,17 @@ export default function AdminPortal({ initialTab }) {
                     className="vegas-modal-card relative w-full max-w-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto my-auto animate-in fade-in zoom-in-95 duration-200"
                     onClick={(e) => e.stopPropagation()}
                     style={{
-                      backgroundColor: '#0E0A24',
-                      background: 'linear-gradient(145deg, #0E0A24 0%, #150E36 100%)',
-                      border: '1px solid rgba(0, 240, 255, 0.45)',
-                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                      backgroundColor: 'var(--bg-surface)',
+                      background: 'linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card-hover) 100%)',
+                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                       borderRadius: '20px',
                     }}
                   >
                     <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
                       <div>
                         <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#00F0FF]" />
+                          <span className="w-2 h-2 rounded-full bg-[var(--neon-cyan)]" />
                           Add New Payment Method
                         </h3>
                         <p className="text-xs text-[#9A91A8] mt-0.5">
@@ -6765,7 +6765,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. Cash App VIP / Zelle Official"
                             value={newMethod.name}
                             onChange={(e) => setNewMethod({ ...newMethod, name: e.target.value })}
-                            className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                            className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                             required
                           />
                         </div>
@@ -6777,7 +6777,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. $ParadisePay or pay@playersparadisehub.com"
                             value={newMethod.accountDetails}
                             onChange={(e) => setNewMethod({ ...newMethod, accountDetails: e.target.value })}
-                            className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-[#00F0FF] transition"
+                            className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-[var(--neon-cyan)] transition"
                             required
                           />
                         </div>
@@ -6793,7 +6793,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. https://cash.app/$ParadisePay"
                             value={newMethod.paymentUrl}
                             onChange={(e) => setNewMethod({ ...newMethod, paymentUrl: e.target.value })}
-                            className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                            className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                           />
                         </div>
 
@@ -6804,7 +6804,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. Instant / Zero Fee / Popular"
                             value={newMethod.tag}
                             onChange={(e) => setNewMethod({ ...newMethod, tag: e.target.value })}
-                            className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                            className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                           />
                         </div>
 
@@ -6816,7 +6816,7 @@ export default function AdminPortal({ initialTab }) {
                               min="1"
                               value={newMethod.minDeposit}
                               onChange={(e) => setNewMethod({ ...newMethod, minDeposit: Number(e.target.value) })}
-                              className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                              className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                             />
                           </div>
                           <div>
@@ -6826,7 +6826,7 @@ export default function AdminPortal({ initialTab }) {
                               min="10"
                               value={newMethod.maxDeposit}
                               onChange={(e) => setNewMethod({ ...newMethod, maxDeposit: Number(e.target.value) })}
-                              className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                              className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                             />
                           </div>
                         </div>
@@ -6839,7 +6839,7 @@ export default function AdminPortal({ initialTab }) {
                             Scannable QR Code
                           </label>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <label style={{ cursor: 'pointer', padding: '9px 14px', borderRadius: '12px', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.35)', color: '#00F0FF', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                            <label style={{ cursor: 'pointer', padding: '9px 14px', borderRadius: '12px', backgroundColor: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.35)', color: 'var(--neon-cyan)', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                               <Upload size={14} />
                               <span>Choose QR</span>
                               <input
@@ -6865,7 +6865,7 @@ export default function AdminPortal({ initialTab }) {
                               onChange={(e) => setNewMethod({ ...newMethod, qrCode: e.target.value })}
                               style={{
                                 flex: 1,
-                                backgroundColor: '#070514',
+                                backgroundColor: 'var(--bg-deep)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
                                 borderRadius: '12px',
                                 padding: '9px 12px',
@@ -6899,7 +6899,7 @@ export default function AdminPortal({ initialTab }) {
                           </div>
 
                           {newMethod.qrCode && (
-                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '12px', backgroundColor: '#070514', border: '1px solid rgba(0, 240, 255, 0.25)', width: 'max-content' }}>
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '12px', backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 215, 0, 0.25)', width: 'max-content' }}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={newMethod.qrCode} alt="QR Preview" style={{ width: '48px', height: '48px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#FFFFFF', padding: '2px' }} />
                               <span style={{ fontSize: '11px', color: '#10B981', fontWeight: 800 }}>✓ QR Code Attached</span>
@@ -6914,7 +6914,7 @@ export default function AdminPortal({ initialTab }) {
                             placeholder="e.g. Send payment with your username as note. Upload screenshot."
                             value={newMethod.instructions}
                             onChange={(e) => setNewMethod({ ...newMethod, instructions: e.target.value })}
-                            className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition resize-none"
+                            className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition resize-none"
                           />
                         </div>
                       </div>
@@ -6952,7 +6952,7 @@ export default function AdminPortal({ initialTab }) {
                 </div>
 
                 {paymentMethods.length === 0 ? (
-                  <div className="bg-[#140E33] border border-white/10 p-8 rounded-2xl text-center text-gray-400">
+                  <div className="bg-[var(--bg-card)] border border-white/10 p-8 rounded-2xl text-center text-gray-400">
                     No payment gateways configured. Add a payment method above to accept player deposits.
                   </div>
                 ) : (
@@ -6961,7 +6961,7 @@ export default function AdminPortal({ initialTab }) {
                       <div
                         key={m.id}
                         className={`p-5 rounded-2xl border transition shadow-xl flex flex-col justify-between gap-4 ${m.isActive
-                          ? 'bg-[#120D2C] border-white/15 hover:border-[#00F0FF]/40'
+                          ? 'bg-[#120D2C] border-white/15 hover:border-[var(--neon-cyan)]/40'
                           : 'bg-[#0E0A1E]/80 border-white/5 opacity-70'
                           }`}
                       >
@@ -6969,12 +6969,12 @@ export default function AdminPortal({ initialTab }) {
                           {/* Header */}
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/30 flex items-center justify-center font-black text-xs text-[#00F0FF]">
+                              <div className="w-8 h-8 rounded-xl bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/30 flex items-center justify-center font-black text-xs text-[var(--neon-cyan)]">
                                 {m.name?.substring(0, 2).toUpperCase()}
                               </div>
                               <div>
                                 <h4 className="font-black text-white text-base leading-tight">{m.name}</h4>
-                                <span className="text-[10px] text-[#00F0FF] uppercase font-bold tracking-wider">{m.tag || 'Instant'}</span>
+                                <span className="text-[10px] text-[var(--neon-cyan)] uppercase font-bold tracking-wider">{m.tag || 'Instant'}</span>
                               </div>
                             </div>
 
@@ -6986,7 +6986,7 @@ export default function AdminPortal({ initialTab }) {
                                 {m.isActive ? 'ACTIVE' : 'DISABLED'}
                               </span>
                               {m.tag && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-600/30">
                                   {m.tag}
                                 </span>
                               )}
@@ -6994,10 +6994,10 @@ export default function AdminPortal({ initialTab }) {
                           </div>
 
                           {/* Identifier & Direct Link */}
-                          <div className="bg-[#070514] border border-white/10 rounded-xl p-3 space-y-2">
+                          <div className="bg-[var(--bg-deep)] border border-white/10 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-[10px] font-bold text-gray-400 uppercase">Official Identifier:</span>
-                              <span className="font-mono font-black text-[#00F0FF] text-xs selection:bg-cyan-500 selection:text-black">
+                              <span className="font-mono font-black text-[var(--neon-cyan)] text-xs selection:bg-amber-500 selection:text-black">
                                 {m.accountDetails || m.cashtag || 'Not specified'}
                               </span>
                             </div>
@@ -7055,7 +7055,7 @@ export default function AdminPortal({ initialTab }) {
                           <button
                             type="button"
                             onClick={() => setEditGatewayModal({ open: true, data: { ...m } })}
-                            className="px-3 py-1.5 rounded-xl bg-[#00F0FF]/15 text-[#00F0FF] hover:bg-[#00F0FF]/25 border border-[#00F0FF]/30 font-bold text-xs flex items-center gap-1.5 transition"
+                            className="px-3 py-1.5 rounded-xl bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/25 border border-[var(--neon-cyan)]/30 font-bold text-xs flex items-center gap-1.5 transition"
                           >
                             <Edit2 size={12} />
                             <span>Edit Method</span>
@@ -7112,10 +7112,10 @@ export default function AdminPortal({ initialTab }) {
               </div>
 
               {/* Cashout / Payout Methods Management (Admin Controlled) */}
-              <div className="bg-[#0E0A24] border border-[#00F0FF]/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-6">
+              <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 p-5 sm:p-6 rounded-2xl shadow-xl space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-amber-600/30 flex items-center justify-center text-[var(--neon-purple)]">
                       <Receipt size={18} />
                     </div>
                     <div>
@@ -7152,7 +7152,7 @@ export default function AdminPortal({ initialTab }) {
                       console.error(err);
                     }
                   }}
-                  className="p-4 rounded-xl bg-[#070514] border border-white/10 space-y-3"
+                  className="p-4 rounded-xl bg-[var(--bg-deep)] border border-white/10 space-y-3"
                 >
                   <span className="text-xs font-bold text-white block uppercase tracking-wider">
                     Add Custom Cashout Method
@@ -7163,7 +7163,7 @@ export default function AdminPortal({ initialTab }) {
                       placeholder="Method Name (e.g. Apple Pay / Chime / Bank)"
                       value={newCashoutMethod.name}
                       onChange={(e) => setNewCashoutMethod({ ...newCashoutMethod, name: e.target.value })}
-                      className="w-full bg-[#0E0A24] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF]"
+                      className="w-full bg-[var(--bg-surface)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)]"
                       required
                     />
                     <input
@@ -7171,7 +7171,7 @@ export default function AdminPortal({ initialTab }) {
                       placeholder="Handle Placeholder (e.g. phone number or email)"
                       value={newCashoutMethod.placeholder}
                       onChange={(e) => setNewCashoutMethod({ ...newCashoutMethod, placeholder: e.target.value })}
-                      className="w-full bg-[#0E0A24] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF]"
+                      className="w-full bg-[var(--bg-surface)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)]"
                     />
                     <button
                       type="submit"
@@ -7190,8 +7190,8 @@ export default function AdminPortal({ initialTab }) {
                       key={cm.id || cm.methodId}
                       className={`p-4 rounded-xl border flex flex-col justify-between gap-3 transition ${
                         cm.isActive
-                          ? 'bg-[#070514] border-[#00F0FF]/35 shadow-[0_0_15px_rgba(0,240,255,0.1)]'
-                          : 'bg-[#070514]/60 border-white/10 opacity-60'
+                          ? 'bg-[var(--bg-deep)] border-[var(--neon-cyan)]/35 shadow-[0_0_15px_rgba(255,215,0,0.1)]'
+                          : 'bg-[var(--bg-deep)]/60 border-white/10 opacity-60'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -7262,11 +7262,11 @@ export default function AdminPortal({ initialTab }) {
           {activeTab === 'tx_search' && (
             <div className="space-y-4 sm:space-y-6" style={{ fontFamily: 'Lexend, -apple-system, sans-serif' }}>
               {/* Header & Quick Action Bar */}
-              <div className="bg-[#0E0A24] border border-[#00F0FF]/25 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-xl space-y-3.5 sm:space-y-4">
+              <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-xl space-y-3.5 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#00F0FF]/20 to-[#0E0A24] border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF] shadow-lg shadow-[#00F0FF]/15 shrink-0">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[var(--neon-cyan)]/20 to-[var(--bg-surface)] border border-[var(--neon-cyan)]/40 flex items-center justify-center text-[var(--neon-cyan)] shadow-lg shadow-[var(--neon-cyan)]/15 shrink-0">
                         <FileSpreadsheet size={18} />
                       </div>
                       <div>
@@ -7274,7 +7274,7 @@ export default function AdminPortal({ initialTab }) {
                           <h2 className="text-lg sm:text-xl font-black text-white tracking-wide m-0" style={{ fontFamily: 'Lexend, sans-serif' }}>
                             Transactions Log
                           </h2>
-                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30 whitespace-nowrap inline-flex items-center">
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/30 whitespace-nowrap inline-flex items-center">
                             Real-Time History
                           </span>
                         </div>
@@ -7330,13 +7330,13 @@ export default function AdminPortal({ initialTab }) {
                     {
                       id: 'adjustment',
                       label: 'Balance Adjustments (+ / -)',
-                      color: '#00F0FF',
+                      color: 'var(--neon-cyan)',
                       count: ledgerRecords.filter(r => (r.type || '').includes('credit') || (r.type || '').includes('debit') || (r.type || '').includes('adjust')).length,
                     },
                     {
                       id: 'bonus',
                       label: 'Bonuses',
-                      color: '#A855F7',
+                      color: 'var(--neon-purple)',
                       count: ledgerRecords.filter(r => (r.type || '').includes('bonus') || (r.type || '').includes('freeplay')).length,
                     },
                   ].map((tab) => {
@@ -7347,12 +7347,12 @@ export default function AdminPortal({ initialTab }) {
                         type="button"
                         onClick={() => setLedgerFilterType(tab.id)}
                         style={{
-                          backgroundColor: isSelected ? 'rgba(0, 240, 255, 0.16)' : '#070514',
-                          borderColor: isSelected ? '#00F0FF' : 'rgba(255, 255, 255, 0.1)',
+                          backgroundColor: isSelected ? 'rgba(255, 215, 0, 0.16)' : 'var(--bg-deep)',
+                          borderColor: isSelected ? 'var(--neon-cyan)' : 'rgba(255, 255, 255, 0.1)',
                           color: isSelected ? '#FFFFFF' : '#9A91A8',
                           fontFamily: 'Lexend, sans-serif',
                         }}
-                        className="px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 shrink-0 transition hover:border-[#00F0FF]/50"
+                        className="px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 shrink-0 transition hover:border-[var(--neon-cyan)]/50"
                       >
                         {tab.color && (
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />
@@ -7376,7 +7376,7 @@ export default function AdminPortal({ initialTab }) {
                       placeholder="Search player username, cashtag, or note..."
                       value={ledgerFilterUser}
                       onChange={(e) => setLedgerFilterUser(e.target.value)}
-                      className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl pl-9 pr-9 py-2.5 text-xs text-white placeholder-gray-500 outline-none transition"
+                      className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl pl-9 pr-9 py-2.5 text-xs text-white placeholder-gray-500 outline-none transition"
                       style={{ fontFamily: 'Lexend, sans-serif' }}
                     />
                     {ledgerFilterUser && (
@@ -7395,7 +7395,7 @@ export default function AdminPortal({ initialTab }) {
                     <select
                       value={ledgerFilterType}
                       onChange={(e) => setLedgerFilterType(e.target.value)}
-                      className="w-full bg-[#070514] border border-white/15 focus:border-[#00F0FF] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
+                      className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
                       style={{ fontFamily: 'Lexend, sans-serif' }}
                     >
                       <option value="all">Filter: All Transactions</option>
@@ -7414,16 +7414,16 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-4 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.92) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                    border: '1px solid rgba(0, 240, 255, 0.3)',
-                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(0, 240, 255, 0.08)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.92) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 215, 0, 0.08)',
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-black text-[#9A91A8] uppercase tracking-wider" style={{ fontFamily: 'Lexend, sans-serif' }}>
                       Total Transactions
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF]">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/40 flex items-center justify-center text-[var(--neon-cyan)]">
                       <FileSpreadsheet size={15} />
                     </div>
                   </div>
@@ -7436,7 +7436,7 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-4 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.92) 0%, rgba(14, 10, 36, 0.98) 100%)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.92) 0%, rgba(19, 15, 6, 0.98) 100%)',
                     border: '1px solid rgba(16, 185, 129, 0.35)',
                     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(16, 185, 129, 0.08)',
                   }}
@@ -7464,27 +7464,27 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-4 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.92) 0%, rgba(14, 10, 36, 0.98) 100%)',
-                    border: '1px solid rgba(224, 38, 216, 0.35)',
-                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(224, 38, 216, 0.08)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.92) 0%, rgba(19, 15, 6, 0.98) 100%)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(245, 158, 11, 0.08)',
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-black text-[#9A91A8] uppercase tracking-wider" style={{ fontFamily: 'Lexend, sans-serif' }}>
                       Total Withdrawals
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-[#E026D8]/15 border border-[#E026D8]/40 flex items-center justify-center text-[#E026D8]">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--neon-purple)]/15 border border-[var(--neon-purple)]/40 flex items-center justify-center text-[var(--neon-purple)]">
                       <ArrowUpRight size={15} />
                     </div>
                   </div>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-2xl sm:text-3xl font-black text-[#E026D8] tracking-tight drop-shadow-[0_0_12px_rgba(224,38,216,0.35)]" style={{ fontFamily: 'Lexend, sans-serif' }}>
+                    <span className="text-2xl sm:text-3xl font-black text-[var(--neon-purple)] tracking-tight drop-shadow-[0_0_12px_rgba(224,38,216,0.35)]" style={{ fontFamily: 'Lexend, sans-serif' }}>
                       ${Math.abs(ledgerRecords
                         .filter(r => (r.type || '').includes('withdraw') || (r.type || '').includes('redemption') || (r.displayType || '').toLowerCase().includes('withdraw'))
                         .reduce((acc, r) => acc + (Number(r.amount) || 0), 0))
                         .toFixed(2)}
                     </span>
-                    <span className="text-xs font-bold text-[#E026D8]" style={{ fontFamily: 'Lexend, sans-serif' }}>SC</span>
+                    <span className="text-xs font-bold text-[var(--neon-purple)]" style={{ fontFamily: 'Lexend, sans-serif' }}>SC</span>
                   </div>
                 </div>
 
@@ -7492,7 +7492,7 @@ export default function AdminPortal({ initialTab }) {
                 <div
                   className="p-4 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.92) 0%, rgba(14, 10, 36, 0.98) 100%)',
+                    background: 'linear-gradient(135deg, rgba(38, 30, 12, 0.92) 0%, rgba(19, 15, 6, 0.98) 100%)',
                     border: '1px solid rgba(245, 158, 11, 0.35)',
                     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(245, 158, 11, 0.08)',
                   }}
@@ -7512,8 +7512,8 @@ export default function AdminPortal({ initialTab }) {
               </div>
 
               {/* Main Transactions Container */}
-              <div className="bg-[#0E0A24] border border-[#00F0FF]/25 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-3 sm:p-4 bg-[#070514] border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+              <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
+                <div className="p-3 sm:p-4 bg-[var(--bg-deep)] border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Lexend, sans-serif' }}>
                       Transaction Entries
@@ -7562,13 +7562,13 @@ export default function AdminPortal({ initialTab }) {
                         <div
                           key={rec.id || i}
                           onClick={() => setSelectedTxDetail(rec)}
-                          className="p-3.5 space-y-2.5 bg-[#070514]/60 active:bg-white/[0.04] transition cursor-pointer"
+                          className="p-3.5 space-y-2.5 bg-[var(--bg-deep)]/60 active:bg-white/[0.04] transition cursor-pointer"
                           style={{ fontFamily: 'Lexend, sans-serif' }}
                         >
                           {/* Top row: Player Avatar, Name, and Amount */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/35 flex items-center justify-center text-[#00F0FF] font-black text-xs uppercase shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/35 flex items-center justify-center text-[var(--neon-cyan)] font-black text-xs uppercase shrink-0">
                                 {rec.username?.substring(0, 2) || 'U'}
                               </div>
                               <div className="min-w-0">
@@ -7601,10 +7601,10 @@ export default function AdminPortal({ initialTab }) {
                                 : isWithdrawal
                                   ? 'bg-amber-500/15 text-amber-400 border-amber-500/35'
                                   : isCredit
-                                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/35'
+                                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/35'
                                     : isDebit
                                       ? 'bg-rose-500/15 text-rose-400 border-rose-500/35'
-                                      : 'bg-purple-500/15 text-purple-300 border-purple-500/35'
+                                      : 'bg-purple-500/15 text-amber-300 border-amber-600/35'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${isDeposit ? 'bg-emerald-400' : isWithdrawal ? 'bg-amber-400' : isCredit ? 'bg-cyan-300' : isDebit ? 'bg-rose-400' : 'bg-purple-300'
                                   }`} />
@@ -7641,7 +7641,7 @@ export default function AdminPortal({ initialTab }) {
                                   notes: rec.notes || rec.reason,
                                   status: rec.status,
                                 })}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] text-[10.5px] font-bold cursor-pointer hover:bg-[#00F0FF]/20 transition"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] text-[10.5px] font-bold cursor-pointer hover:bg-[var(--neon-cyan)]/20 transition"
                               >
                                 <Eye size={11} />
                                 <span>View Proof 👁️</span>
@@ -7653,7 +7653,7 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => setSelectedTxDetail(rec)}
-                              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#00F0FF]/15 border border-white/10 text-gray-300 hover:text-[#00F0FF] font-bold text-[11px] transition inline-flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[var(--neon-cyan)]/15 border border-white/10 text-gray-300 hover:text-[var(--neon-cyan)] font-bold text-[11px] transition inline-flex items-center gap-1 cursor-pointer"
                             >
                               <span>View Receipt</span>
                               <ExternalLink size={10} />
@@ -7741,11 +7741,11 @@ export default function AdminPortal({ initialTab }) {
                                   className="flex items-center gap-2 group/btn text-left"
                                   title="Open Player Profile"
                                 >
-                                  <div className="w-7 h-7 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/35 flex items-center justify-center text-[#00F0FF] font-black text-xs uppercase">
+                                  <div className="w-7 h-7 rounded-lg bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/35 flex items-center justify-center text-[var(--neon-cyan)] font-black text-xs uppercase">
                                     {rec.username?.substring(0, 2) || 'U'}
                                   </div>
                                   <div>
-                                    <div className="font-extrabold text-white group-hover/btn:text-[#00F0FF] transition flex items-center gap-1">
+                                    <div className="font-extrabold text-white group-hover/btn:text-[var(--neon-cyan)] transition flex items-center gap-1">
                                       <span>{rec.username}</span>
                                       <ExternalLink size={10} className="opacity-0 group-hover/btn:opacity-100 transition" />
                                     </div>
@@ -7765,10 +7765,10 @@ export default function AdminPortal({ initialTab }) {
                                   : isWithdrawal
                                     ? 'bg-amber-500/15 text-amber-400 border-amber-500/35'
                                     : isCredit
-                                      ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/35'
+                                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/35'
                                       : isDebit
                                         ? 'bg-rose-500/15 text-rose-400 border-rose-500/35'
-                                        : 'bg-purple-500/15 text-purple-300 border-purple-500/35'
+                                        : 'bg-purple-500/15 text-amber-300 border-amber-600/35'
                                   }`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${isDeposit
                                     ? 'bg-emerald-400'
@@ -7803,7 +7803,7 @@ export default function AdminPortal({ initialTab }) {
                                   {rec.methodName || (isDeposit ? 'Direct Cashier' : isWithdrawal ? 'Cashier Dispatch' : 'System')}
                                 </div>
                                 {rec.txHash && (
-                                  <div className="text-[10px] text-[#00F0FF] font-mono truncate max-w-[120px]" title={rec.txHash}>
+                                  <div className="text-[10px] text-[var(--neon-cyan)] font-mono truncate max-w-[120px]" title={rec.txHash}>
                                     TX: {rec.txHash}
                                   </div>
                                 )}
@@ -7827,7 +7827,7 @@ export default function AdminPortal({ initialTab }) {
                                     className="group/proof inline-flex flex-col items-center gap-1 p-1 rounded-xl hover:bg-white/10 transition"
                                     title="Click to zoom screenshot proof"
                                   >
-                                    <div className="w-11 h-11 rounded-xl overflow-hidden border-2 border-[#00F0FF]/50 group-hover/proof:border-[#00F0FF] shadow-md group-hover/proof:scale-105 transition relative bg-[#070514]">
+                                    <div className="w-11 h-11 rounded-xl overflow-hidden border-2 border-[var(--neon-cyan)]/50 group-hover/proof:border-[var(--neon-cyan)] shadow-md group-hover/proof:scale-105 transition relative bg-[var(--bg-deep)]">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
                                         src={rec.proofImage}
@@ -7835,10 +7835,10 @@ export default function AdminPortal({ initialTab }) {
                                         className="w-full h-full object-cover"
                                       />
                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/proof:opacity-100 flex items-center justify-center transition">
-                                        <Eye size={13} className="text-[#00F0FF]" />
+                                        <Eye size={13} className="text-[var(--neon-cyan)]" />
                                       </div>
                                     </div>
-                                    <span className="text-[10px] font-black text-[#00F0FF] group-hover/proof:underline">
+                                    <span className="text-[10px] font-black text-[var(--neon-cyan)] group-hover/proof:underline">
                                       View Proof
                                     </span>
                                   </button>
@@ -7876,7 +7876,7 @@ export default function AdminPortal({ initialTab }) {
                                 <button
                                   type="button"
                                   onClick={() => setSelectedTxDetail(rec)}
-                                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#00F0FF]/15 border border-white/10 hover:border-[#00F0FF]/40 text-gray-300 hover:text-[#00F0FF] font-bold text-[11px] transition inline-flex items-center gap-1"
+                                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[var(--neon-cyan)]/15 border border-white/10 hover:border-[var(--neon-cyan)]/40 text-gray-300 hover:text-[var(--neon-cyan)] font-bold text-[11px] transition inline-flex items-center gap-1"
                                 >
                                   <Eye size={12} />
                                   <span>Details</span>
@@ -7936,11 +7936,11 @@ export default function AdminPortal({ initialTab }) {
                 style={{
                   width: '100%',
                   maxWidth: '460px',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.4)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid rgba(255, 215, 0, 0.4)',
                   borderRadius: '24px',
                   padding: '24px',
-                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.2)',
+                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.2)',
                   color: '#FFFFFF',
                   fontFamily: 'Lexend, sans-serif',
                   boxSizing: 'border-box',
@@ -7960,7 +7960,7 @@ export default function AdminPortal({ initialTab }) {
                   </button>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#070514] border border-white/10 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[var(--bg-deep)] border border-white/10 flex items-center justify-between">
                   <div>
                     <div className="text-[10px] uppercase font-black text-gray-400">Player</div>
                     <div className="text-sm font-bold text-white">{adjustModal.user?.username}</div>
@@ -8042,7 +8042,7 @@ export default function AdminPortal({ initialTab }) {
                       placeholder="e.g. 50.00 or -20.00"
                       value={adjustModal.amount}
                       onChange={(e) => setAdjustModal({ ...adjustModal, amount: e.target.value })}
-                      className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-[#00F0FF] transition"
+                      className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-[var(--neon-cyan)] transition"
                       required
                     />
                   </div>
@@ -8053,7 +8053,7 @@ export default function AdminPortal({ initialTab }) {
                       placeholder="e.g. VIP Bonus allotment / Resolution"
                       value={adjustModal.reason}
                       onChange={(e) => setAdjustModal({ ...adjustModal, reason: e.target.value })}
-                      className="w-full bg-[#070514] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[#00F0FF] transition"
+                      className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
                     />
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
@@ -8094,7 +8094,7 @@ export default function AdminPortal({ initialTab }) {
                 style={{
                   width: '100%',
                   maxWidth: '440px',
-                  backgroundColor: '#0E0A24',
+                  backgroundColor: 'var(--bg-surface)',
                   border: '1px solid rgba(168, 85, 247, 0.45)',
                   borderRadius: '24px',
                   padding: '24px',
@@ -8178,11 +8178,11 @@ export default function AdminPortal({ initialTab }) {
                 style={{
                   width: '100%',
                   maxWidth: '560px',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.45)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid rgba(255, 215, 0, 0.45)',
                   borderRadius: '24px',
                   padding: '24px',
-                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.2)',
+                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.2)',
                   position: 'relative',
                   color: '#FFFFFF',
                   maxHeight: '92vh',
@@ -8196,7 +8196,7 @@ export default function AdminPortal({ initialTab }) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '14px', marginBottom: '18px' }}>
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                      <Edit2 size={18} color="#00F0FF" />
+                      <Edit2 size={18} color="var(--neon-cyan)" />
                       <span>Edit Payment Method</span>
                     </h3>
                     <p style={{ fontSize: '11px', color: '#9A91A8', margin: '4px 0 0 0' }}>
@@ -8271,8 +8271,8 @@ export default function AdminPortal({ initialTab }) {
                         }))}
                         style={{
                           width: '100%',
-                          backgroundColor: '#070514',
-                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          backgroundColor: 'var(--bg-deep)',
+                          border: '1px solid rgba(255, 215, 0, 0.3)',
                           borderRadius: '12px',
                           padding: '10px 12px',
                           fontSize: '12.5px',
@@ -8299,8 +8299,8 @@ export default function AdminPortal({ initialTab }) {
                         }))}
                         style={{
                           width: '100%',
-                          backgroundColor: '#070514',
-                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          backgroundColor: 'var(--bg-deep)',
+                          border: '1px solid rgba(255, 215, 0, 0.3)',
                           borderRadius: '12px',
                           padding: '10px 12px',
                           fontSize: '12px',
@@ -8326,12 +8326,12 @@ export default function AdminPortal({ initialTab }) {
                       }))}
                       style={{
                         width: '100%',
-                        backgroundColor: '#070514',
-                        border: '1px solid rgba(0, 240, 255, 0.3)',
+                        backgroundColor: 'var(--bg-deep)',
+                        border: '1px solid rgba(255, 215, 0, 0.3)',
                         borderRadius: '12px',
                         padding: '10px 12px',
                         fontSize: '13px',
-                        color: '#00F0FF',
+                        color: 'var(--neon-cyan)',
                         fontFamily: 'monospace',
                         fontWeight: 700,
                         outline: 'none',
@@ -8355,8 +8355,8 @@ export default function AdminPortal({ initialTab }) {
                       }))}
                       style={{
                         width: '100%',
-                        backgroundColor: '#070514',
-                        border: '1px solid rgba(0, 240, 255, 0.3)',
+                        backgroundColor: 'var(--bg-deep)',
+                        border: '1px solid rgba(255, 215, 0, 0.3)',
                         borderRadius: '12px',
                         padding: '10px 12px',
                         fontSize: '12.5px',
@@ -8379,9 +8379,9 @@ export default function AdminPortal({ initialTab }) {
                           cursor: 'pointer',
                           padding: '9px 14px',
                           borderRadius: '12px',
-                          backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                          border: '1px solid rgba(0, 240, 255, 0.35)',
-                          color: '#00F0FF',
+                          backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                          border: '1px solid rgba(255, 215, 0, 0.35)',
+                          color: 'var(--neon-cyan)',
                           fontSize: '12px',
                           fontWeight: 800,
                           display: 'flex',
@@ -8422,8 +8422,8 @@ export default function AdminPortal({ initialTab }) {
                         }))}
                         style={{
                           flex: 1,
-                          backgroundColor: '#070514',
-                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          backgroundColor: 'var(--bg-deep)',
+                          border: '1px solid rgba(255, 215, 0, 0.3)',
                           borderRadius: '12px',
                           padding: '10px 12px',
                           fontSize: '12px',
@@ -8460,7 +8460,7 @@ export default function AdminPortal({ initialTab }) {
                     </div>
 
                     {editGatewayModal.data.qrCode && (
-                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '12px', backgroundColor: '#070514', border: '1px solid rgba(0, 240, 255, 0.25)', width: 'max-content' }}>
+                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '12px', backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 215, 0, 0.25)', width: 'max-content' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={editGatewayModal.data.qrCode} alt="QR Preview" style={{ width: '48px', height: '48px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#FFFFFF', padding: '2px' }} />
                         <span style={{ fontSize: '11px', color: '#10B981', fontWeight: 800 }}>✓ Active QR Code will display to players</span>
@@ -8481,8 +8481,8 @@ export default function AdminPortal({ initialTab }) {
                       }))}
                       style={{
                         width: '100%',
-                        backgroundColor: '#070514',
-                        border: '1px solid rgba(0, 240, 255, 0.3)',
+                        backgroundColor: 'var(--bg-deep)',
+                        border: '1px solid rgba(255, 215, 0, 0.3)',
                         borderRadius: '12px',
                         padding: '10px 12px',
                         fontSize: '12px',
@@ -8504,7 +8504,7 @@ export default function AdminPortal({ initialTab }) {
                           ...prev,
                           data: { ...prev.data, isActive: e.target.checked }
                         }))}
-                        style={{ width: '16px', height: '16px', accentColor: '#00F0FF', cursor: 'pointer' }}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--neon-cyan)', cursor: 'pointer' }}
                       />
                       <span>Active Payment Method (Visible to Players on Deposit)</span>
                     </label>
@@ -8533,15 +8533,15 @@ export default function AdminPortal({ initialTab }) {
                       style={{
                         padding: '10px 22px',
                         borderRadius: '12px',
-                        background: 'linear-gradient(135deg, #00F0FF 0%, #00B4D8 100%)',
+                        background: 'linear-gradient(135deg, var(--neon-cyan) 0%, #00B4D8 100%)',
                         border: 'none',
-                        color: '#070514',
+                        color: 'var(--bg-deep)',
                         fontSize: '12px',
                         fontWeight: 900,
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
                         cursor: 'pointer',
-                        boxShadow: '0 4px 18px rgba(0, 240, 255, 0.4)',
+                        boxShadow: '0 4px 18px rgba(255, 215, 0, 0.4)',
                         transition: 'all 0.2s',
                       }}
                     >
@@ -8574,11 +8574,11 @@ export default function AdminPortal({ initialTab }) {
                 style={{
                   width: '100%',
                   maxWidth: '400px',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.45)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid rgba(255, 215, 0, 0.45)',
                   borderRadius: '24px',
                   padding: '24px',
-                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.25)',
+                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 215, 0, 0.25)',
                   textAlign: 'center',
                   color: '#FFFFFF',
                   fontFamily: 'Lexend, sans-serif',
@@ -8610,7 +8610,7 @@ export default function AdminPortal({ initialTab }) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={previewQrModal.qrCode} alt="Full QR Code" style={{ width: '220px', height: '220px', objectFit: 'contain', display: 'block' }} />
                 </div>
-                <p style={{ fontSize: '13px', fontFamily: 'monospace', color: '#00F0FF', fontWeight: 800, marginTop: '14px', wordBreak: 'break-all' }}>
+                <p style={{ fontSize: '13px', fontFamily: 'monospace', color: 'var(--neon-cyan)', fontWeight: 800, marginTop: '14px', wordBreak: 'break-all' }}>
                   {previewQrModal.accountDetails || previewQrModal.cashtag}
                 </p>
               </div>
@@ -8638,11 +8638,11 @@ export default function AdminPortal({ initialTab }) {
                   width: '100%',
                   maxWidth: '620px',
                   maxHeight: '92vh',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.45)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid rgba(255, 215, 0, 0.45)',
                   borderRadius: '24px',
                   padding: '22px',
-                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 50px rgba(0, 240, 255, 0.25)',
+                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 50px rgba(255, 215, 0, 0.25)',
                   color: '#FFFFFF',
                   fontFamily: 'Lexend, sans-serif',
                   boxSizing: 'border-box',
@@ -8656,7 +8656,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00F0FF' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--neon-cyan)' }}>
                       <ImageIcon size={16} />
                     </div>
                     <div>
@@ -8664,7 +8664,7 @@ export default function AdminPortal({ initialTab }) {
                         {previewProofImage.title || 'Transaction Proof Receipt'}
                       </h4>
                       <span style={{ fontSize: '11px', color: '#9A91A8' }}>
-                        Player: <strong style={{ color: '#00F0FF' }}>{previewProofImage.user}</strong> • Amount: <strong style={{ color: '#10B981' }}>${Math.abs(Number(previewProofImage.amount || 0)).toFixed(2)} SC</strong>
+                        Player: <strong style={{ color: 'var(--neon-cyan)' }}>{previewProofImage.user}</strong> • Amount: <strong style={{ color: '#10B981' }}>${Math.abs(Number(previewProofImage.amount || 0)).toFixed(2)} SC</strong>
                       </span>
                     </div>
                   </div>
@@ -8677,9 +8677,9 @@ export default function AdminPortal({ initialTab }) {
                         style={{
                           padding: '6px 12px',
                           borderRadius: '10px',
-                          backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                          color: '#00F0FF',
-                          border: '1px solid rgba(0, 240, 255, 0.35)',
+                          backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                          color: 'var(--neon-cyan)',
+                          border: '1px solid rgba(255, 215, 0, 0.35)',
                           fontSize: '11px',
                           fontWeight: 800,
                           textDecoration: 'none',
@@ -8716,7 +8716,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Screenshot Image Container */}
                 <div
                   style={{
-                    backgroundColor: '#070514',
+                    backgroundColor: 'var(--bg-deep)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '16px',
                     padding: '12px',
@@ -8765,7 +8765,7 @@ export default function AdminPortal({ initialTab }) {
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block' }}>Reference / Notes</span>
-                    <strong style={{ color: '#00F0FF', wordBreak: 'break-all' }}>{previewProofImage.notes || 'Verified on platform'}</strong>
+                    <strong style={{ color: 'var(--neon-cyan)', wordBreak: 'break-all' }}>{previewProofImage.notes || 'Verified on platform'}</strong>
                   </div>
                 </div>
               </div>
@@ -8793,11 +8793,11 @@ export default function AdminPortal({ initialTab }) {
                   width: '100%',
                   maxWidth: '560px',
                   maxHeight: '92vh',
-                  backgroundColor: '#0E0A24',
-                  border: '1px solid rgba(0, 240, 255, 0.45)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid rgba(255, 215, 0, 0.45)',
                   borderRadius: '24px',
                   padding: '24px',
-                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 50px rgba(0, 240, 255, 0.25)',
+                  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.98), 0 0 50px rgba(255, 215, 0, 0.25)',
                   color: '#FFFFFF',
                   fontFamily: 'Lexend, -apple-system, sans-serif',
                   boxSizing: 'border-box',
@@ -8811,7 +8811,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00F0FF' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', backgroundColor: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--neon-cyan)' }}>
                       <FileSpreadsheet size={18} />
                     </div>
                     <div>
@@ -8863,7 +8863,7 @@ export default function AdminPortal({ initialTab }) {
                   const isRejected = rawStatus.includes('reject');
 
                   return (
-                    <div style={{ backgroundColor: '#070514', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
                         <span style={{
                           fontSize: '11px',
@@ -8871,9 +8871,9 @@ export default function AdminPortal({ initialTab }) {
                           textTransform: 'uppercase',
                           padding: '3px 12px',
                           borderRadius: '999px',
-                          backgroundColor: isDeposit ? 'rgba(16, 185, 129, 0.15)' : isWithdrawal ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 240, 255, 0.15)',
-                          color: isDeposit ? '#34D399' : isWithdrawal ? '#FBBF24' : '#00F0FF',
-                          border: `1px solid ${isDeposit ? 'rgba(16, 185, 129, 0.35)' : isWithdrawal ? 'rgba(245, 158, 11, 0.35)' : 'rgba(0, 240, 255, 0.35)'}`,
+                          backgroundColor: isDeposit ? 'rgba(16, 185, 129, 0.15)' : isWithdrawal ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 215, 0, 0.15)',
+                          color: isDeposit ? '#34D399' : isWithdrawal ? '#FBBF24' : 'var(--neon-cyan)',
+                          border: `1px solid ${isDeposit ? 'rgba(16, 185, 129, 0.35)' : isWithdrawal ? 'rgba(245, 158, 11, 0.35)' : 'rgba(255, 215, 0, 0.35)'}`,
                         }}>
                           {typeLabel}
                         </span>
@@ -8906,7 +8906,7 @@ export default function AdminPortal({ initialTab }) {
                 {/* Player Info Box */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '12px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00F0FF', fontWeight: 900 }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--neon-cyan)', fontWeight: 900 }}>
                       {selectedTxDetail.username?.substring(0, 2).toUpperCase() || 'P'}
                     </div>
                     <div>
@@ -8929,9 +8929,9 @@ export default function AdminPortal({ initialTab }) {
                       style={{
                         padding: '6px 14px',
                         borderRadius: '10px',
-                        backgroundColor: 'rgba(0, 240, 255, 0.15)',
-                        color: '#00F0FF',
-                        border: '1px solid rgba(0, 240, 255, 0.35)',
+                        backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                        color: 'var(--neon-cyan)',
+                        border: '1px solid rgba(255, 215, 0, 0.35)',
                         fontSize: '11px',
                         fontWeight: 800,
                         cursor: 'pointer',
@@ -8948,31 +8948,31 @@ export default function AdminPortal({ initialTab }) {
 
                 {/* Metadata Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', fontSize: '12px' }}>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Payment Method</span>
                     <strong style={{ color: '#FFFFFF' }}>{selectedTxDetail.methodName || 'Direct Cashier'}</strong>
                   </div>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Date &amp; Time</span>
                     <strong style={{ color: '#FFFFFF' }}>{selectedTxDetail.createdAt ? new Date(selectedTxDetail.createdAt).toLocaleString() : 'Recent'}</strong>
                   </div>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Balance Before</span>
                     <strong style={{ color: '#C8C1D4', fontFamily: 'monospace' }}>
                       {selectedTxDetail.balanceBefore !== null && selectedTxDetail.balanceBefore !== undefined ? `$${Number(selectedTxDetail.balanceBefore).toFixed(2)} SC` : '—'}
                     </strong>
                   </div>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Balance After</span>
-                    <strong style={{ color: '#00F0FF', fontFamily: 'monospace' }}>
+                    <strong style={{ color: 'var(--neon-cyan)', fontFamily: 'monospace' }}>
                       {selectedTxDetail.balanceAfter !== null && selectedTxDetail.balanceAfter !== undefined ? `$${Number(selectedTxDetail.balanceAfter).toFixed(2)} SC` : '—'}
                     </strong>
                   </div>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', gridColumn: 'span 2' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', gridColumn: 'span 2' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Auditor / Staff</span>
                     <strong style={{ color: '#FFFFFF' }}>{selectedTxDetail.performedBy || 'System Process'}</strong>
                   </div>
-                  <div style={{ backgroundColor: '#070514', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', gridColumn: 'span 2' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', gridColumn: 'span 2' }}>
                     <span style={{ fontSize: '10px', color: '#9A91A8', textTransform: 'uppercase', display: 'block', fontWeight: 800 }}>Notes &amp; Reference</span>
                     <strong style={{ color: '#C8C1D4', wordBreak: 'break-all' }}>{selectedTxDetail.notes || 'No extra notes recorded'}</strong>
                   </div>
@@ -8980,9 +8980,9 @@ export default function AdminPortal({ initialTab }) {
 
                 {/* Screenshot Proof Attached Section */}
                 {selectedTxDetail.proofImage && (
-                  <div style={{ backgroundColor: '#070514', border: '1px solid rgba(0, 240, 255, 0.3)', borderRadius: '16px', padding: '14px', textAlign: 'center' }}>
+                  <div style={{ backgroundColor: 'var(--bg-deep)', border: '1px solid rgba(255, 215, 0, 0.3)', borderRadius: '16px', padding: '14px', textAlign: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 900, color: '#00F0FF', textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--neon-cyan)', textTransform: 'uppercase' }}>
                         Attached Payment Slip / Proof
                       </span>
                       <a
@@ -8991,7 +8991,7 @@ export default function AdminPortal({ initialTab }) {
                         style={{
                           fontSize: '11px',
                           fontWeight: 800,
-                          color: '#00F0FF',
+                          color: 'var(--neon-cyan)',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
@@ -9013,7 +9013,7 @@ export default function AdminPortal({ initialTab }) {
                         notes: selectedTxDetail.notes,
                         status: selectedTxDetail.status,
                       })}
-                      style={{ cursor: 'pointer', borderRadius: '12px', overflow: 'hidden', maxHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0E0A24' }}
+                      style={{ cursor: 'pointer', borderRadius: '12px', overflow: 'hidden', maxHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-surface)' }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img

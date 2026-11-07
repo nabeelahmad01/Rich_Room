@@ -398,7 +398,7 @@ h1, h2, h3, h4, .font-heading {
   padding: 8px 12px 4px 12px;
   font-size: 10px;
   font-weight: 900;
-  color: #64748B;
+  color: rgba(245, 158, 11, 0.75);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-family: var(--font-heading, 'Outfit', sans-serif);
@@ -473,6 +473,25 @@ h1, h2, h3, h4, .font-heading {
 }
 
 .btn-coral:hover {
+  box-shadow: 0 0 25px var(--neon-cyan-glow), 0 0 35px var(--neon-purple-glow);
+  transform: translateY(-1px);
+}
+
+.btn-sovereign-coral {
+  background: var(--primary-gradient);
+  color: #030712;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-weight: 900;
+  border-radius: var(--radius-md);
+}
+
+.btn-sovereign-coral:hover {
   box-shadow: 0 0 25px var(--neon-cyan-glow), 0 0 35px var(--neon-purple-glow);
   transform: translateY(-1px);
 }
@@ -620,8 +639,60 @@ html, body {
   color: var(--neon-cyan) !important;
 }
 
-.admin-portal-root [style*="color: '#E026D8'"] {
+.admin-portal-root [style*="color: '#E026D8'"],
+.admin-portal-root [style*="color: #E026D8"] {
   color: var(--neon-purple) !important;
+}
+
+.admin-portal-root [style*="color: '#00F0FF'"],
+.admin-portal-root [style*="color: #00F0FF"],
+.admin-portal-root [style*="color: 'var(--neon-cyan)'"] {
+  color: var(--neon-cyan) !important;
+}
+
+.admin-portal-root [style*="backgroundColor: 'var(--bg-surface)'"],
+.admin-portal-root [style*="background-color: var(--bg-surface)"] {
+  background-color: var(--bg-surface) !important;
+}
+
+/* Legacy Tailwind cyan utilities inside admin → Rich Room gold */
+.admin-portal-root .text-cyan-400,
+.admin-portal-root .text-cyan-300,
+.admin-portal-root .text-cyan-500 {
+  color: var(--neon-cyan) !important;
+}
+
+.admin-portal-root .bg-cyan-500,
+.admin-portal-root .bg-cyan-600 {
+  background-color: var(--neon-cyan) !important;
+  color: #030712 !important;
+}
+
+.admin-portal-root .border-cyan-500,
+.admin-portal-root .border-cyan-400 {
+  border-color: var(--chrome-border) !important;
+}
+
+.admin-portal-root .from-cyan-500,
+.admin-portal-root .from-cyan-400 {
+  --tw-gradient-from: var(--neon-cyan) var(--tw-gradient-from-position) !important;
+}
+
+.admin-portal-root .to-blue-600,
+.admin-portal-root .to-blue-500 {
+  --tw-gradient-to: var(--neon-cyan-dark) var(--tw-gradient-to-position) !important;
+}
+
+.admin-portal-root .shadow-\[0_0_20px_rgba\(0\,240\,255\,
+.admin-portal-root [class*="shadow-[0_0"][class*="240,255"] {
+  --tw-shadow-color: var(--neon-cyan-glow) !important;
+}
+
+.admin-portal-root input:focus,
+.admin-portal-root select:focus,
+.admin-portal-root textarea:focus {
+  border-color: var(--neon-cyan) !important;
+  outline-color: var(--neon-cyan-glow) !important;
 }
 
 

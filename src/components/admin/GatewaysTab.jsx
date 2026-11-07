@@ -102,10 +102,10 @@ export default function GatewaysTab({
   return (
     <div className="space-y-5">
       {/* Top Header Card */}
-      <div className="p-4 md:p-5 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-4 md:p-5 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading font-black text-sm md:text-base text-white tracking-wider flex items-center gap-2">
-            <CreditCard size={20} className="text-cyan-400" />
+            <CreditCard size={20} className="text-[var(--neon-cyan)]" />
             PAYMENT GATEWAYS MANAGER
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -115,7 +115,7 @@ export default function GatewaysTab({
 
         <button
           onClick={handleOpenAdd}
-          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.35)] transition-all cursor-pointer"
+          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.35)] transition-all cursor-pointer"
         >
           <Plus size={15} />
           <span>ADD NEW GATEWAY</span>
@@ -123,7 +123,7 @@ export default function GatewaysTab({
       </div>
 
       {/* Search Input */}
-      <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl">
+      <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl">
         <div className="relative">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -131,13 +131,13 @@ export default function GatewaysTab({
             value={gatewaySearch}
             onChange={(e) => setGatewaySearch(e.target.value)}
             placeholder="Search payment gateways by name, handle tag, or description..."
-            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
+            className="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
           />
         </div>
       </div>
 
       {/* Gateways Master Table */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-[#080a14] overflow-hidden shadow-lg">
+      <div className="rounded-2xl border border-amber-500/20 bg-[var(--bg-deep)] overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -167,7 +167,7 @@ export default function GatewaysTab({
                   </td>
 
                   {/* Handle Tag */}
-                  <td className="py-3.5 px-4 font-mono font-bold text-cyan-400">
+                  <td className="py-3.5 px-4 font-mono font-bold text-[var(--neon-cyan)]">
                     {gt.tag || gt.identifierTag || '—'}
                   </td>
 
@@ -178,7 +178,7 @@ export default function GatewaysTab({
 
                   {/* Visual Theme Badge */}
                   <td className="py-3.5 px-3 text-center">
-                    <span className="inline-block px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-950 border border-slate-800 text-purple-300">
+                    <span className="inline-block px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-950 border border-slate-800 text-amber-300">
                       {gt.theme || 'cashapp'}
                     </span>
                   </td>
@@ -203,7 +203,7 @@ export default function GatewaysTab({
                         href={gt.redirectUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1 max-w-[140px] truncate"
+                        className="text-[var(--neon-cyan)] hover:text-amber-300 inline-flex items-center gap-1 max-w-[140px] truncate"
                         title={gt.redirectUrl}
                       >
                         <span>{gt.redirectUrl}</span>
@@ -255,7 +255,7 @@ export default function GatewaysTab({
               {filteredGateways.length === 0 && (
                 <tr>
                   <td colSpan="9" className="py-12 text-center text-slate-500">
-                    <CreditCard size={28} className="mx-auto opacity-30 text-cyan-400 mb-2" />
+                    <CreditCard size={28} className="mx-auto opacity-30 text-[var(--neon-cyan)] mb-2" />
                     <p className="font-heading text-sm">No payment gateways match criteria.</p>
                   </td>
                 </tr>
@@ -268,10 +268,10 @@ export default function GatewaysTab({
       {/* Add / Edit Gateway Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="relative w-full max-w-xl bg-[#0a0d1f] border border-cyan-500/40 rounded-3xl p-6 shadow-[0_0_60px_rgba(0,240,255,0.25)] space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-xl bg-[#0a0d1f] border border-amber-500/40 rounded-3xl p-6 shadow-[0_0_60px_rgba(255,215,0,0.25)] space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-[var(--neon-cyan)] flex items-center justify-center font-bold">
                   <CreditCard size={18} />
                 </div>
                 <div>
@@ -299,7 +299,7 @@ export default function GatewaysTab({
                     value={gatewayForm.name}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, name: e.target.value })}
                     placeholder="e.g. Cash App Fast, Chime Instant"
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
                 <div>
@@ -309,7 +309,7 @@ export default function GatewaysTab({
                     value={gatewayForm.subtitle}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, subtitle: e.target.value })}
                     placeholder="e.g. Instant 0% Fee Deposit"
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
               </div>
@@ -323,7 +323,7 @@ export default function GatewaysTab({
                     value={gatewayForm.tag}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, tag: e.target.value })}
                     placeholder="$Cashtag or payment address"
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-cyan-300 font-mono outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-amber-300 font-mono outline-none"
                   />
                 </div>
                 <div>
@@ -333,7 +333,7 @@ export default function GatewaysTab({
                     value={gatewayForm.phone}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, phone: e.target.value })}
                     placeholder="e.g. (555) 019-2834"
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function GatewaysTab({
                   <select
                     value={gatewayForm.theme}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, theme: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   >
                     <option value="cashapp">Cash App (Green)</option>
                     <option value="chime">Chime (Emerald)</option>
@@ -360,7 +360,7 @@ export default function GatewaysTab({
                   <select
                     value={gatewayForm.isWithdrawActive ? 'true' : 'false'}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, isWithdrawActive: e.target.value === 'true' })}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   >
                     <option value="true">YES - Allow On Withdrawals (CASHOUT ON)</option>
                     <option value="false">NO - Deposit Only</option>
@@ -375,7 +375,7 @@ export default function GatewaysTab({
                   value={gatewayForm.redirectUrl}
                   onChange={(e) => setGatewayForm({ ...gatewayForm, redirectUrl: e.target.value })}
                   placeholder="https://cash.app/$..."
-                  className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
+                  className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
                 />
               </div>
 
@@ -386,7 +386,7 @@ export default function GatewaysTab({
                   value={gatewayForm.qrImage}
                   onChange={(e) => setGatewayForm({ ...gatewayForm, qrImage: e.target.value })}
                   placeholder="https://... or /images/qr.png"
-                  className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
+                  className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
                 />
               </div>
 
@@ -397,7 +397,7 @@ export default function GatewaysTab({
                   value={gatewayForm.instructions}
                   onChange={(e) => setGatewayForm({ ...gatewayForm, instructions: e.target.value })}
                   placeholder="Include your username only in note"
-                  className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                  className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                 />
               </div>
 
@@ -408,7 +408,7 @@ export default function GatewaysTab({
                     type="number"
                     value={gatewayForm.minDeposit}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, minDeposit: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
                 <div>
@@ -417,7 +417,7 @@ export default function GatewaysTab({
                     type="number"
                     value={gatewayForm.maxDeposit}
                     onChange={(e) => setGatewayForm({ ...gatewayForm, maxDeposit: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
               </div>
@@ -432,7 +432,7 @@ export default function GatewaysTab({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.4)] cursor-pointer"
                 >
                   <Save size={14} />
                   <span>SAVE GATEWAY DETAILS</span>

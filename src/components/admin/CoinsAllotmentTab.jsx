@@ -98,16 +98,16 @@ export default function CoinsAllotmentTab({
   return (
     <div className="space-y-5">
       {/* Top Header Card */}
-      <div className="p-4 md:p-5 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-4 md:p-5 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+          <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[var(--neon-cyan)] font-bold shadow-[0_0_15px_rgba(255,215,0,0.3)]">
             <Coins size={22} />
           </div>
           <div>
             <h2 className="font-heading font-black text-sm md:text-base text-white tracking-wider flex items-center gap-2">
               GAME COIN ALLOTMENT TASKS
               {statusCounts.pending > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-500 text-slate-950 font-black shadow-[0_0_10px_rgba(0,240,255,0.6)] animate-pulse">
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-black font-black shadow-[0_0_10px_rgba(255,215,0,0.6)] animate-pulse">
                   {statusCounts.pending} NEW
                 </span>
               )}
@@ -125,7 +125,7 @@ export default function CoinsAllotmentTab({
 
         <button
           onClick={onManualAllotmentClick}
-          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(192,38,211,0.4)] transition-all cursor-pointer"
+          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-white font-heading font-black text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all cursor-pointer"
         >
           <Sliders size={14} />
           <span>DIRECT BALANCE ADJUSTER</span>
@@ -133,12 +133,12 @@ export default function CoinsAllotmentTab({
       </div>
 
       {/* Filter Tabs & Search Controls */}
-      <div className="p-4 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl space-y-3">
+      <div className="p-4 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl space-y-3">
         {/* Status Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {[
             { key: 'ALL', label: 'ALL TASKS', count: statusCounts.all, color: 'text-white' },
-            { key: 'PENDING', label: 'PENDING / CLAIM', count: statusCounts.pending, color: 'text-cyan-400', highlight: statusCounts.pending > 0 },
+            { key: 'PENDING', label: 'PENDING / CLAIM', count: statusCounts.pending, color: 'text-[var(--neon-cyan)]', highlight: statusCounts.pending > 0 },
             { key: 'HOLD', label: 'ON HOLD', count: statusCounts.hold, color: 'text-amber-400', highlight: statusCounts.hold > 0 },
             { key: 'COMPLETED', label: 'COMPLETED', count: statusCounts.completed, color: 'text-emerald-400' },
             { key: 'CANCELLED', label: 'CANCELLED', count: statusCounts.cancelled, color: 'text-rose-400' },
@@ -150,7 +150,7 @@ export default function CoinsAllotmentTab({
                 onClick={() => setStatusTab(tab.key)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   isActive
-                    ? 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                    ? 'bg-amber-500 text-black font-black shadow-[0_0_12px_rgba(255,215,0,0.4)]'
                     : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white'
                 }`}
               >
@@ -158,9 +158,9 @@ export default function CoinsAllotmentTab({
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
                     isActive
-                      ? 'bg-slate-950 text-cyan-300'
+                      ? 'bg-slate-950 text-amber-300'
                       : tab.highlight
-                      ? 'bg-cyan-950 text-cyan-400 border border-cyan-500/50'
+                      ? 'text-amber-950 text-[var(--neon-cyan)] border border-amber-500/50'
                       : 'bg-slate-800 text-slate-400'
                   }`}
                 >
@@ -179,13 +179,13 @@ export default function CoinsAllotmentTab({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by player email, game username, game title, or hold notes..."
-            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
+            className="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
           />
         </div>
       </div>
 
       {/* Coin Allotment Tasks Master Table */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-[#080a14] overflow-hidden shadow-lg">
+      <div className="rounded-2xl border border-amber-500/20 bg-[var(--bg-deep)] overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -214,7 +214,7 @@ export default function CoinsAllotmentTab({
                       isHold
                         ? 'bg-amber-950/20 border-l-2 border-amber-500'
                         : isPending
-                        ? 'bg-cyan-950/15 border-l-2 border-cyan-400'
+                        ? 'bg-amber-950/15 border-l-2 border-amber-400'
                         : ''
                     }`}
                   >
@@ -227,7 +227,7 @@ export default function CoinsAllotmentTab({
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-white">{t.userEmail}</div>
                       {t.gameUsername && (
-                        <div className="inline-flex items-center gap-1 text-[10px] text-cyan-400 font-mono mt-0.5 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/30">
+                        <div className="inline-flex items-center gap-1 text-[10px] text-[var(--neon-cyan)] font-mono mt-0.5 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/30">
                           <Gamepad2 size={11} />
                           <span>@{t.gameUsername}</span>
                         </div>
@@ -236,7 +236,7 @@ export default function CoinsAllotmentTab({
 
                     {/* Target Game */}
                     <td className="py-3.5 px-4">
-                      <span className="font-heading font-bold text-purple-300">
+                      <span className="font-heading font-bold text-amber-300">
                         {t.gameTitle}
                       </span>
                     </td>
@@ -252,7 +252,7 @@ export default function CoinsAllotmentTab({
                     </td>
 
                     {/* Allotment Target */}
-                    <td className="py-3.5 px-4 text-right font-heading font-black text-cyan-400 text-sm">
+                    <td className="py-3.5 px-4 text-right font-heading font-black text-[var(--neon-cyan)] text-sm">
                       ${Number(t.allotmentTarget || t.depositCash || 0).toFixed(2)} SC
                     </td>
 
@@ -267,7 +267,7 @@ export default function CoinsAllotmentTab({
                         <span
                           className={`inline-block px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
                             isPending
-                              ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 animate-pulse'
+                              ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 animate-pulse'
                               : isHold
                               ? 'bg-amber-950/80 text-amber-300 border-amber-500/50'
                               : isCompleted
@@ -291,7 +291,7 @@ export default function CoinsAllotmentTab({
                         {t.proofImage && (
                           <button
                             onClick={() => onInspectProof?.(t)}
-                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300"
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300"
                             title="View Proof"
                           >
                             <Eye size={13} />
@@ -321,7 +321,7 @@ export default function CoinsAllotmentTab({
                         {isHold && (
                           <button
                             onClick={() => resumeFromHold(t)}
-                            className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
                             title="Resume Task"
                           >
                             <Play size={12} />
@@ -343,7 +343,7 @@ export default function CoinsAllotmentTab({
               {filteredTasks.length === 0 && (
                 <tr>
                   <td colSpan="9" className="py-12 text-center text-slate-500">
-                    <Coins size={28} className="mx-auto opacity-30 text-cyan-400 mb-2" />
+                    <Coins size={28} className="mx-auto opacity-30 text-[var(--neon-cyan)] mb-2" />
                     <p className="font-heading text-sm">No coin allotment tasks match criteria.</p>
                   </td>
                 </tr>

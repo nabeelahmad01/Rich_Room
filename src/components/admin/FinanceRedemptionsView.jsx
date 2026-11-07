@@ -90,12 +90,12 @@ export default function FinanceRedemptionsView({
   return (
     <div className="space-y-4" style={{ fontFamily: 'Lexend, -apple-system, sans-serif' }}>
       {/* Search & Filter Bar */}
-      <div className="bg-[#0E0A24] border border-[#00F0FF]/25 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md shadow-xl">
-        <div className="flex items-center gap-1.5 p-1 bg-[#140E33] rounded-xl border border-white/10 w-full md:w-auto overflow-x-auto">
+      <div className="bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md shadow-xl">
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--bg-card)] rounded-xl border border-white/10 w-full md:w-auto overflow-x-auto">
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              statusFilter === 'all' ? 'bg-[#00F0FF] text-black shadow-lg shadow-[#00F0FF]/30' : 'text-gray-400 hover:text-white'
+              statusFilter === 'all' ? 'bg-[var(--neon-cyan)] text-black shadow-lg shadow-[var(--neon-cyan)]/30' : 'text-gray-400 hover:text-white'
             }`}
           >
             All ({redemptions.length})
@@ -104,8 +104,8 @@ export default function FinanceRedemptionsView({
             onClick={() => setStatusFilter('pending')}
             className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               statusFilter === 'pending'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'text-purple-400 hover:bg-purple-500/10'
+                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30'
+                : 'text-[var(--neon-purple)] hover:bg-amber-500/10'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
@@ -134,7 +134,7 @@ export default function FinanceRedemptionsView({
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#140E33] border border-[#00F0FF]/30 rounded-xl w-full md:w-64 focus-within:border-[#00F0FF] transition">
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-[var(--bg-card)] border border-[var(--neon-cyan)]/30 rounded-xl w-full md:w-64 focus-within:border-[var(--neon-cyan)] transition">
             <Search size={14} className="text-gray-400 shrink-0" />
             <input
               type="text"
@@ -157,17 +157,17 @@ export default function FinanceRedemptionsView({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-[#00F0FF]/30 hover:border-[#00F0FF] text-xs font-bold flex items-center gap-2 transition shrink-0 cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-[var(--neon-cyan)]/30 hover:border-[var(--neon-cyan)] text-xs font-bold flex items-center gap-2 transition shrink-0 cursor-pointer"
             style={{ fontFamily: 'Lexend, sans-serif' }}
           >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[#00F0FF]' : ''} />
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[var(--neon-cyan)]' : ''} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="p-12 text-center bg-[#0E0A24] border border-[#00F0FF]/25 rounded-2xl shadow-xl">
+        <div className="p-12 text-center bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/25 rounded-2xl shadow-xl">
           <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3 text-gray-400">
             <Wallet size={26} />
           </div>
@@ -177,9 +177,9 @@ export default function FinanceRedemptionsView({
       ) : (
         <>
           {/* DESKTOP TABLE */}
-          <div className="hidden lg:block bg-[#0E0A24] border border-[#00F0FF]/20 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="hidden lg:block bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/20 rounded-2xl overflow-hidden shadow-2xl">
             <table className="w-full text-left text-xs border-collapse" style={{ fontFamily: 'Lexend, sans-serif' }}>
-              <thead className="bg-[#070514] text-[#9A91A8] uppercase font-black text-[11px] tracking-wider border-b border-white/10">
+              <thead className="bg-[var(--bg-deep)] text-[#9A91A8] uppercase font-black text-[11px] tracking-wider border-b border-white/10">
                 <tr>
                   <th className="p-4">Time &amp; Date</th>
                   <th className="p-4">Player</th>
@@ -222,7 +222,7 @@ export default function FinanceRedemptionsView({
 
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center font-black text-white text-xs uppercase shadow">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-800 flex items-center justify-center font-black text-white text-xs uppercase shadow">
                             {r.username ? r.username.charAt(0) : 'U'}
                           </div>
                           <div>
@@ -235,9 +235,9 @@ export default function FinanceRedemptionsView({
                       </td>
 
                       <td className="p-4 whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 font-black text-sm">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/15 border border-amber-600/30 text-amber-300 font-black text-sm">
                           <span>${Number(r.amount).toFixed(2)}</span>
-                          <span className="text-[10.5px] uppercase font-bold text-purple-400">SC</span>
+                          <span className="text-[10.5px] uppercase font-bold text-[var(--neon-purple)]">SC</span>
                         </div>
                       </td>
 
@@ -279,7 +279,7 @@ export default function FinanceRedemptionsView({
                                 filename: `gamewin_${r.username || 'proof'}.png`,
                               })
                             }
-                            className="group relative w-12 h-12 rounded-xl overflow-hidden border border-purple-500/40 hover:border-purple-300 transition bg-black/50 block shadow-md"
+                            className="group relative w-12 h-12 rounded-xl overflow-hidden border border-amber-600/40 hover:border-purple-300 transition bg-black/50 block shadow-md"
                             title="Click to view full game screenshot"
                           >
                             <img
@@ -309,7 +309,7 @@ export default function FinanceRedemptionsView({
                                   filename: `payout_qr_${r.username || 'proof'}.png`,
                                 })
                               }
-                              className="group relative w-12 h-12 rounded-xl overflow-hidden border border-[#00F0FF]/40 hover:border-[#00F0FF] transition bg-black/50 block shadow-md"
+                              className="group relative w-12 h-12 rounded-xl overflow-hidden border border-[var(--neon-cyan)]/40 hover:border-[var(--neon-cyan)] transition bg-black/50 block shadow-md"
                               title="Click to view full payout QR"
                             >
                               <img
@@ -317,7 +317,7 @@ export default function FinanceRedemptionsView({
                                 alt="Payout QR"
                                 className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                               />
-                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-[#00F0FF]">
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-[var(--neon-cyan)]">
                                 <Eye size={14} />
                               </div>
                             </button>
@@ -337,7 +337,7 @@ export default function FinanceRedemptionsView({
 
                       <td className="p-4 whitespace-nowrap">
                         {isPending ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-600/40 animate-pulse">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                             PENDING
                           </span>
@@ -367,7 +367,7 @@ export default function FinanceRedemptionsView({
                             <button
                               onClick={() => handleExecuteApprove(r)}
                               disabled={processingId === r.id}
-                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 transition shadow-lg shadow-purple-600/30 active:scale-95 disabled:opacity-50"
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black text-xs flex items-center gap-1.5 transition shadow-lg shadow-amber-600/30 active:scale-95 disabled:opacity-50"
                             >
                               {processingId === r.id ? (
                                 <RefreshCw size={13} className="animate-spin" />
@@ -406,13 +406,13 @@ export default function FinanceRedemptionsView({
                   key={r.id}
                   className={`p-4 rounded-2xl border flex flex-col gap-3.5 transition shadow-xl ${
                     isPending
-                      ? 'bg-[#0E0A24] border-purple-500/40 shadow-purple-500/10'
-                      : 'bg-[#0E0A24] border-[#00F0FF]/25'
+                      ? 'bg-[var(--bg-surface)] border-amber-600/40 shadow-purple-500/10'
+                      : 'bg-[var(--bg-surface)] border-[var(--neon-cyan)]/25'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00F0FF] to-[#E026D8] flex items-center justify-center font-black text-black text-sm shadow">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--neon-cyan)] to-[var(--neon-purple)] flex items-center justify-center font-black text-black text-sm shadow">
                         {r.username ? r.username.charAt(0) : 'U'}
                       </div>
                       <div>
@@ -425,7 +425,7 @@ export default function FinanceRedemptionsView({
                     </div>
 
                     {isPending ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-600/40 animate-pulse">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                         PENDING
                       </span>
@@ -442,10 +442,10 @@ export default function FinanceRedemptionsView({
                     )}
                   </div>
 
-                  <div className="p-3 bg-[#140E33] rounded-xl border border-white/5 space-y-2">
+                  <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400 font-bold">Redeem Amount:</span>
-                      <span className="font-black text-purple-300 text-sm font-mono">
+                      <span className="font-black text-amber-300 text-sm font-mono">
                         ${Number(r.amount).toFixed(2)} SC
                       </span>
                     </div>
@@ -492,7 +492,7 @@ export default function FinanceRedemptionsView({
                                 filename: `gamewin_${r.username || 'proof'}.png`,
                               })
                             }
-                            className="w-full h-16 rounded-lg overflow-hidden border border-purple-500/40 relative block bg-black/40"
+                            className="w-full h-16 rounded-lg overflow-hidden border border-amber-600/40 relative block bg-black/40"
                           >
                             <img src={r.gameScreenshot} alt="Game Win" className="w-full h-full object-cover" />
                           </button>
@@ -516,14 +516,14 @@ export default function FinanceRedemptionsView({
                                   filename: `payout_qr_${r.username || 'proof'}.png`,
                                 })
                               }
-                              className="w-full h-16 rounded-lg overflow-hidden border border-[#00F0FF]/40 relative block bg-black/40"
+                              className="w-full h-16 rounded-lg overflow-hidden border border-[var(--neon-cyan)]/40 relative block bg-black/40"
                             >
                               <img src={r.qrCodeImage} alt="Payout QR" className="w-full h-full object-cover" />
                             </button>
                             <a
                               href={r.qrCodeImage}
                               download={`payout_qr_${r.username || 'tag'}.png`}
-                              className="absolute bottom-1 right-1 p-1 bg-black/80 rounded-md text-white hover:text-[#00F0FF]"
+                              className="absolute bottom-1 right-1 p-1 bg-black/80 rounded-md text-white hover:text-[var(--neon-cyan)]"
                               title="Download QR"
                             >
                               <Download size={11} />
@@ -549,7 +549,7 @@ export default function FinanceRedemptionsView({
                       <button
                         onClick={() => handleExecuteApprove(r)}
                         disabled={processingId === r.id}
-                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-600/25 active:scale-95 disabled:opacity-50"
+                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/25 active:scale-95 disabled:opacity-50"
                       >
                         {processingId === r.id ? (
                           <RefreshCw size={13} className="animate-spin" />
@@ -594,7 +594,7 @@ export default function FinanceRedemptionsView({
 
             <p className="text-xs text-gray-400">
               Rejecting cashout of{' '}
-              <strong className="text-purple-300">${rejectModal.item?.amount} SC</strong> for{' '}
+              <strong className="text-amber-300">${rejectModal.item?.amount} SC</strong> for{' '}
               <strong className="text-white">{rejectModal.item?.username}</strong>. Please provide a note explaining the reason:
             </p>
 
@@ -631,12 +631,12 @@ export default function FinanceRedemptionsView({
           onClick={() => setPreviewModal(null)}
         >
           <div
-            className="relative max-w-2xl w-full bg-[#0E0A24] border border-[#00F0FF]/40 rounded-3xl p-5 shadow-2xl space-y-4"
+            className="relative max-w-2xl w-full bg-[var(--bg-surface)] border border-[var(--neon-cyan)]/40 rounded-3xl p-5 shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF]" />
+                <span className="w-2 h-2 rounded-full bg-[var(--neon-cyan)]" />
                 {previewModal.title || 'Proof Preview'}
               </h3>
               <button
@@ -661,7 +661,7 @@ export default function FinanceRedemptionsView({
               <a
                 href={previewModal.url}
                 download={previewModal.filename || 'preview.png'}
-                className="px-4 py-2 rounded-xl bg-[#00F0FF] hover:bg-cyan-300 text-black text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-cyan-500/25"
+                className="px-4 py-2 rounded-xl bg-[var(--neon-cyan)] hover:bg-amber-300 text-black text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-amber-500/25"
               >
                 <Download size={14} />
                 <span>Save Image</span>

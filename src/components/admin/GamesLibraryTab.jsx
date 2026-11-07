@@ -118,10 +118,10 @@ export default function GamesLibraryTab({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="p-4 md:p-5 rounded-2xl bg-[#090d22]/90 border border-cyan-500/20 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 md:p-5 rounded-2xl bg-[var(--bg-surface)]/90 border border-amber-500/20 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="font-heading font-black text-sm md:text-base text-white tracking-wider flex items-center gap-2">
-            <Gamepad2 size={20} className="text-cyan-400" />
+            <Gamepad2 size={20} className="text-[var(--neon-cyan)]" />
             GAMES CATALOG &amp; SWEEPSTAKES PORTAL CONTROL
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -159,7 +159,7 @@ export default function GamesLibraryTab({
                 value={newGame.title}
                 onChange={(e) => setNewGame({ ...newGame, title: e.target.value })}
                 required
-                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
               />
             </div>
 
@@ -172,7 +172,7 @@ export default function GamesLibraryTab({
                 placeholder="e.g. Ultra Panda, Fire Kirin, Orion Stars"
                 value={newGame.provider}
                 onChange={(e) => setNewGame({ ...newGame, provider: e.target.value })}
-                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
               />
             </div>
 
@@ -183,7 +183,7 @@ export default function GamesLibraryTab({
               <select
                 value={newGame.badge}
                 onChange={(e) => setNewGame({ ...newGame, badge: e.target.value })}
-                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition font-bold"
+                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition font-bold"
               >
                 <option value="HOT">🔥 HOT</option>
                 <option value="NEW">✨ NEW</option>
@@ -201,7 +201,7 @@ export default function GamesLibraryTab({
                 Cover Image (Choose File)
               </label>
               <div className="flex items-center gap-3">
-                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#121638] border border-white/15 hover:border-cyan-400 rounded-xl cursor-pointer text-xs font-bold text-cyan-300 hover:text-white transition shadow-inner">
+                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#121638] border border-white/15 hover:border-amber-400 rounded-xl cursor-pointer text-xs font-bold text-amber-300 hover:text-white transition shadow-inner">
                   <Upload size={14} />
                   <span>Choose Cover Image</span>
                   <input
@@ -215,7 +215,7 @@ export default function GamesLibraryTab({
                   />
                 </label>
                 {newGame.thumbnail && (
-                  <div className="relative w-11 h-9 rounded-lg overflow-hidden border border-cyan-400/40 bg-black/40 shrink-0">
+                  <div className="relative w-11 h-9 rounded-lg overflow-hidden border border-amber-400/40 bg-black/40 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={newGame.thumbnail} alt="Cover Preview" className="w-full h-full object-cover" />
                   </div>
@@ -233,7 +233,7 @@ export default function GamesLibraryTab({
                 placeholder="https://... (Optional)"
                 value={newGame.url}
                 onChange={(e) => setNewGame({ ...newGame, url: e.target.value })}
-                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
               />
             </div>
 
@@ -255,7 +255,7 @@ export default function GamesLibraryTab({
               <button
                 type="submit"
                 disabled={isSavingGame}
-                className="py-2 px-5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg hover:brightness-110 transition cursor-pointer"
+                className="py-2 px-5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg hover:brightness-110 transition cursor-pointer"
               >
                 <Plus size={14} />
                 <span>{isSavingGame ? 'Saving...' : 'Add Game'}</span>
@@ -266,7 +266,7 @@ export default function GamesLibraryTab({
       </div>
 
       {/* Catalog Table Card */}
-      <div className="rounded-2xl bg-[#090d22]/90 border border-white/10 overflow-hidden shadow-2xl">
+      <div className="rounded-2xl bg-[var(--bg-surface)]/90 border border-white/10 overflow-hidden shadow-2xl">
         <div className="p-4 bg-[#060817] border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-heading font-black text-white uppercase tracking-wider">All Catalog Games</span>
@@ -282,7 +282,7 @@ export default function GamesLibraryTab({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Filter games by title..."
-              className="w-full bg-[#090d22] border border-white/10 focus:border-cyan-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white outline-none"
+              className="w-full bg-[var(--bg-surface)] border border-white/10 focus:border-amber-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white outline-none"
             />
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function GamesLibraryTab({
                         </span>
                       )}
                       {badgeUpper === 'EXCLUSIVE' && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/20 text-[var(--neon-cyan)] border border-amber-500/40">
                           💎 EXCLUSIVE
                         </span>
                       )}
@@ -370,7 +370,7 @@ export default function GamesLibraryTab({
                           href={g.playUrl || g.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-cyan-400 hover:underline flex items-center gap-1"
+                          className="text-[var(--neon-cyan)] hover:underline flex items-center gap-1"
                         >
                           <span className="truncate max-w-[150px]">{g.playUrl || g.url}</span>
                           <ExternalLink size={11} />
@@ -394,7 +394,7 @@ export default function GamesLibraryTab({
                               isActive: isOnline,
                             })
                           }
-                          className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 transition cursor-pointer"
+                          className="p-2 rounded-lg bg-amber-500/10 text-[var(--neon-cyan)] hover:bg-amber-500/20 border border-amber-500/30 transition cursor-pointer"
                           title="Edit Game"
                         >
                           <Edit2 size={14} />
@@ -424,10 +424,10 @@ export default function GamesLibraryTab({
       {/* Edit Game Modal */}
       {editingGame && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0b0f24] border border-cyan-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 animate-in fade-in">
+          <div className="bg-[#0b0f24] border border-amber-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
-                <Edit2 size={16} className="text-cyan-400" />
+                <Edit2 size={16} className="text-[var(--neon-cyan)]" />
                 <h3 className="text-base font-black text-white">Edit Game: {editingGame.title}</h3>
               </div>
               <button
@@ -448,7 +448,7 @@ export default function GamesLibraryTab({
                   value={editingGame.title}
                   onChange={(e) => setEditingGame({ ...editingGame, title: e.target.value })}
                   required
-                  className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
                 />
               </div>
 
@@ -461,7 +461,7 @@ export default function GamesLibraryTab({
                     type="text"
                     value={editingGame.provider}
                     onChange={(e) => setEditingGame({ ...editingGame, provider: e.target.value })}
-                    className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
                   />
                 </div>
 
@@ -472,7 +472,7 @@ export default function GamesLibraryTab({
                   <select
                     value={editingGame.badge || ''}
                     onChange={(e) => setEditingGame({ ...editingGame, badge: e.target.value })}
-                    className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition font-bold"
+                    className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition font-bold"
                   >
                     <option value="HOT">🔥 HOT</option>
                     <option value="NEW">✨ NEW</option>
@@ -489,7 +489,7 @@ export default function GamesLibraryTab({
                   Cover Image
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="relative w-14 h-11 rounded-lg overflow-hidden border border-cyan-400/40 bg-black/40 shrink-0">
+                  <div className="relative w-14 h-11 rounded-lg overflow-hidden border border-amber-400/40 bg-black/40 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={editingGame.thumbnail || '/images/vegas-777.svg'}
@@ -497,7 +497,7 @@ export default function GamesLibraryTab({
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#121638] border border-white/15 hover:border-cyan-400 rounded-xl cursor-pointer text-xs font-bold text-cyan-300 hover:text-white transition">
+                  <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#121638] border border-white/15 hover:border-amber-400 rounded-xl cursor-pointer text-xs font-bold text-amber-300 hover:text-white transition">
                     <Upload size={14} />
                     <span>Upload New Cover Image</span>
                     <input
@@ -523,7 +523,7 @@ export default function GamesLibraryTab({
                   value={editingGame.url || ''}
                   onChange={(e) => setEditingGame({ ...editingGame, url: e.target.value })}
                   placeholder="https://..."
-                  className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-[#060817] border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-amber-400 transition"
                 />
               </div>
 
@@ -558,7 +558,7 @@ export default function GamesLibraryTab({
                 <button
                   type="submit"
                   disabled={isSavingGame}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg hover:brightness-110 transition cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg hover:brightness-110 transition cursor-pointer"
                 >
                   <Check size={14} />
                   <span>{isSavingGame ? 'Saving...' : 'Save Changes'}</span>

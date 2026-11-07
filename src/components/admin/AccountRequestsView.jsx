@@ -77,23 +77,23 @@ export default function AccountRequestsView({
       <div
         className="p-5 sm:p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl"
         style={{
-          backgroundColor: '#0E0A24',
-          background: 'linear-gradient(135deg, #0E0A24 0%, #140E33 100%)',
-          border: '1px solid rgba(0, 240, 255, 0.28)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 240, 255, 0.1)',
+          backgroundColor: 'var(--bg-surface)',
+          background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-card) 100%)',
+          border: '1px solid rgba(255, 215, 0, 0.28)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.1)',
         }}
       >
         <div
           className="flex items-center gap-2 p-1.5 rounded-xl w-full md:w-auto overflow-x-auto"
           style={{
-            backgroundColor: '#070514',
+            backgroundColor: 'var(--bg-deep)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           {[
             { key: 'PENDING', label: 'Pending', count: pendingCount, color: '#F59E0B' },
             { key: 'READY', label: 'Ready', count: readyCount, color: '#10B981' },
-            { key: 'ALL', label: 'All Requests', count: requests.length, color: '#00F0FF' },
+            { key: 'ALL', label: 'All Requests', count: requests.length, color: 'var(--neon-cyan)' },
           ].map(({ key, label, count, color }) => {
             const isActive = filter === key;
             return (
@@ -106,7 +106,7 @@ export default function AccountRequestsView({
                   isActive
                     ? {
                         backgroundColor: color,
-                        color: key === 'READY' ? '#FFFFFF' : '#070514',
+                        color: key === 'READY' ? '#FFFFFF' : 'var(--bg-deep)',
                         boxShadow: `0 0 16px ${color}55`,
                       }
                     : {
@@ -119,7 +119,7 @@ export default function AccountRequestsView({
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor: isActive ? '#070514' : '#F59E0B',
+                      backgroundColor: isActive ? 'var(--bg-deep)' : '#F59E0B',
                       boxShadow: isActive ? 'none' : '0 0 8px #F59E0B',
                     }}
                   />
@@ -143,11 +143,11 @@ export default function AccountRequestsView({
           <div
             className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl w-full md:w-72 transition-all"
             style={{
-              backgroundColor: '#070514',
-              border: '1px solid rgba(0, 240, 255, 0.28)',
+              backgroundColor: 'var(--bg-deep)',
+              border: '1px solid rgba(255, 215, 0, 0.28)',
             }}
           >
-            <Search size={14} className="text-cyan-400 shrink-0" />
+            <Search size={14} className="text-[var(--neon-cyan)] shrink-0" />
             <input
               type="text"
               placeholder="Search player, game, ID..."
@@ -173,10 +173,10 @@ export default function AccountRequestsView({
             disabled={isRefreshing}
             className="px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer hover:scale-[1.03]"
             style={{
-              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(224, 38, 216, 0.15) 100%)',
-              border: '1px solid rgba(0, 240, 255, 0.4)',
-              color: '#00F0FF',
-              boxShadow: '0 0 15px rgba(0, 240, 255, 0.2)',
+              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%)',
+              border: '1px solid rgba(255, 215, 0, 0.4)',
+              color: 'var(--neon-cyan)',
+              boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)',
               fontFamily: 'Lexend, sans-serif',
             }}
           >
@@ -191,10 +191,10 @@ export default function AccountRequestsView({
           style={{
             padding: '72px 28px',
             textAlign: 'center',
-            background: 'radial-gradient(ellipse at center, rgba(0, 240, 255, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
+            background: 'radial-gradient(ellipse at center, rgba(255, 215, 0, 0.12) 0%, rgba(7, 5, 20, 0.95) 75%)',
             borderRadius: '20px',
-            border: '1.5px dashed rgba(0, 240, 255, 0.35)',
-            boxShadow: 'inset 0 0 40px rgba(0, 240, 255, 0.06)',
+            border: '1.5px dashed rgba(255, 215, 0, 0.35)',
+            boxShadow: 'inset 0 0 40px rgba(255, 215, 0, 0.06)',
           }}
         >
           <div
@@ -202,25 +202,25 @@ export default function AccountRequestsView({
               width: '68px',
               height: '68px',
               borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
-              border: '1.5px solid rgba(0, 240, 255, 0.5)',
-              boxShadow: '0 0 30px rgba(0, 240, 255, 0.4)',
+              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%)',
+              border: '1.5px solid rgba(255, 215, 0, 0.5)',
+              boxShadow: '0 0 30px rgba(255, 215, 0, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 18px auto',
             }}
           >
-            <Gamepad2 size={34} color="#00F0FF" />
+            <Gamepad2 size={34} color="var(--neon-cyan)" />
           </div>
           <div
             style={{
               display: 'inline-block',
               padding: '4px 14px',
               borderRadius: '20px',
-              backgroundColor: 'rgba(0, 240, 255, 0.15)',
-              border: '1px solid rgba(0, 240, 255, 0.35)',
-              color: '#00F0FF',
+              backgroundColor: 'rgba(255, 215, 0, 0.15)',
+              border: '1px solid rgba(255, 215, 0, 0.35)',
+              color: 'var(--neon-cyan)',
               fontSize: '11px',
               fontWeight: 900,
               letterSpacing: '1px',
@@ -244,9 +244,9 @@ export default function AccountRequestsView({
           <div
             className="hidden lg:block rounded-2xl overflow-hidden shadow-2xl"
             style={{
-              backgroundColor: '#0E0A24',
-              border: '1px solid rgba(0, 240, 255, 0.28)',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.1)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid rgba(255, 215, 0, 0.28)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.1)',
             }}
           >
             <table className="w-full text-left text-xs border-collapse" style={{ fontFamily: 'Lexend, sans-serif' }}>
@@ -258,7 +258,7 @@ export default function AccountRequestsView({
                 <col style={{ width: '12%' }} />
                 <col style={{ width: '12%' }} />
               </colgroup>
-              <thead style={{ backgroundColor: '#070514', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <thead style={{ backgroundColor: 'var(--bg-deep)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <tr>
                   <th style={{ padding: '14px 18px', color: '#9A91A8', fontWeight: 900, fontSize: '11px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Player</th>
                   <th style={{ padding: '14px 18px', color: '#9A91A8', fontWeight: 900, fontSize: '11px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Requested Game</th>
@@ -280,7 +280,7 @@ export default function AccountRequestsView({
                     >
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-black text-white text-xs uppercase shadow">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-800 flex items-center justify-center font-black text-white text-xs uppercase shadow">
                             {req.userName ? req.userName.charAt(0) : 'P'}
                           </div>
                           <div>
@@ -301,7 +301,7 @@ export default function AccountRequestsView({
                               <button
                                 type="button"
                                 onClick={() => setPreviewScreenshot(req.freeplayScreenshot || req.screenshot)}
-                                className="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                                className="text-[10px] font-bold text-[var(--neon-cyan)] hover:text-amber-300 underline cursor-pointer"
                               >
                                 View Proof
                               </button>
@@ -339,7 +339,7 @@ export default function AccountRequestsView({
                         {req.gameAccountUsername ? (
                           <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-cyan-300 font-black text-xs">U: {req.gameAccountUsername}</span>
+                              <span className="text-amber-300 font-black text-xs">U: {req.gameAccountUsername}</span>
                               <button
                                 onClick={() => handleCopy(`${req.gameAccountUsername} / ${req.gameAccountPassword}`, req.id)}
                                 className="p-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
@@ -410,13 +410,13 @@ export default function AccountRequestsView({
                   key={req.id}
                   className={`p-4 rounded-2xl border flex flex-col gap-3.5 transition shadow-xl ${
                     isPending
-                      ? 'bg-[#0E0A24] border-amber-500/40 shadow-amber-500/10'
-                      : 'bg-[#0E0A24] border-[#00F0FF]/25'
+                      ? 'bg-[var(--bg-surface)] border-amber-500/40 shadow-amber-500/10'
+                      : 'bg-[var(--bg-surface)] border-[var(--neon-cyan)]/25'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00F0FF] to-[#E026D8] flex items-center justify-center font-black text-black text-sm shadow">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--neon-cyan)] to-[var(--neon-purple)] flex items-center justify-center font-black text-black text-sm shadow">
                         {req.userName ? req.userName.charAt(0) : 'P'}
                       </div>
                       <div>
@@ -437,7 +437,7 @@ export default function AccountRequestsView({
                     )}
                   </div>
 
-                  <div className="p-3 bg-[#140E33] rounded-xl border border-white/5 space-y-2">
+                  <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400 font-bold">Game Requested:</span>
                       <span className="font-heading font-black text-amber-400 text-sm">{req.gameTitle}</span>
@@ -454,7 +454,7 @@ export default function AccountRequestsView({
                             <button
                               type="button"
                               onClick={() => setPreviewScreenshot(req.freeplayScreenshot || req.screenshot)}
-                              className="text-[10.5px] font-bold text-cyan-400 underline"
+                              className="text-[10.5px] font-bold text-[var(--neon-cyan)] underline"
                             >
                               Proof
                             </button>
@@ -479,9 +479,9 @@ export default function AccountRequestsView({
                   </div>
 
                   {req.gameAccountUsername && (
-                    <div className="p-3 bg-cyan-500/[0.06] rounded-xl border border-cyan-500/20 flex items-center justify-between">
+                    <div className="p-3 bg-amber-500/[0.06] rounded-xl border border-amber-500/20 flex items-center justify-between">
                       <div className="font-mono text-xs">
-                        <p className="text-cyan-300 font-bold">User: {req.gameAccountUsername}</p>
+                        <p className="text-amber-300 font-bold">User: {req.gameAccountUsername}</p>
                         <p className="text-gray-400">Pass: {req.gameAccountPassword}</p>
                       </div>
                       <button
@@ -533,7 +533,7 @@ export default function AccountRequestsView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-2xl w-full bg-[#0E0A24] border border-cyan-500/40 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4"
+            className="relative max-w-2xl w-full bg-[var(--bg-surface)] border border-amber-500/40 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
@@ -558,7 +558,7 @@ export default function AccountRequestsView({
               <button
                 type="button"
                 onClick={() => setPreviewScreenshot(null)}
-                className="px-5 py-2 rounded-xl bg-cyan-500 text-black font-black text-xs uppercase"
+                className="px-5 py-2 rounded-xl bg-[var(--neon-cyan)] text-black font-black text-xs uppercase"
               >
                 Close Preview
               </button>

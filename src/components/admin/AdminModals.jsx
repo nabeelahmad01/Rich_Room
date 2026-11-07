@@ -60,16 +60,16 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-lg bg-[#0a0d1f] border border-cyan-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] space-y-5 max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="relative w-full max-w-lg bg-[#0a0d1f] border border-amber-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(255,215,0,0.2)] space-y-5 max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-[var(--neon-cyan)]">
               <KeyRound size={20} />
             </div>
             <div>
               <h3 className="font-heading font-black text-white text-base">APPROVE GAME ACCOUNT</h3>
               <p className="text-xs text-slate-400">
-                Platform: <strong className="text-cyan-300">{request.gameTitle || request.gamePlatform}</strong>
+                Platform: <strong className="text-amber-300">{request.gameTitle || request.gamePlatform}</strong>
               </p>
             </div>
           </div>
@@ -93,7 +93,7 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Game Platform:</span>
-            <span className="font-bold text-cyan-400">{request.gameTitle || request.gamePlatform}</span>
+            <span className="font-bold text-[var(--neon-cyan)]">{request.gameTitle || request.gamePlatform}</span>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
             <button
               type="button"
               onClick={handleAutoGenerate}
-              className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-bold text-[var(--neon-cyan)] hover:text-amber-300 flex items-center gap-1 cursor-pointer"
             >
               <Sparkles size={13} /> Auto-Generate
             </button>
@@ -126,7 +126,7 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. panda_player77"
-              className="w-full bg-slate-950/90 border border-slate-700 focus:border-cyan-400 text-white rounded-xl px-3.5 py-2.5 text-xs outline-none"
+              className="w-full bg-slate-950/90 border border-slate-700 focus:border-amber-400 text-white rounded-xl px-3.5 py-2.5 text-xs outline-none"
             />
           </div>
 
@@ -140,7 +140,7 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="e.g. Pass@9921"
-              className="w-full bg-slate-950/90 border border-slate-700 focus:border-cyan-400 text-white rounded-xl px-3.5 py-2.5 text-xs outline-none font-mono"
+              className="w-full bg-slate-950/90 border border-slate-700 focus:border-amber-400 text-white rounded-xl px-3.5 py-2.5 text-xs outline-none font-mono"
             />
           </div>
 
@@ -155,7 +155,7 @@ export function ApproveRequestModal({ isOpen, onClose, request, onConfirm }) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-50"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.4)] disabled:opacity-50"
             >
               {loading ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               <span>CONFIRM & DISPATCH</span>
@@ -278,7 +278,7 @@ export function InspectProofModal({ isOpen, onClose, transaction, onApprove, onR
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl bg-[#0a0d1f] border border-cyan-500/30 rounded-3xl p-6 shadow-[0_0_50px_rgba(0,240,255,0.25)] space-y-4 max-h-[90vh] flex flex-col cursor-default"
+        className="relative w-full max-w-2xl bg-[#0a0d1f] border border-amber-500/30 rounded-3xl p-6 shadow-[0_0_50px_rgba(255,215,0,0.25)] space-y-4 max-h-[90vh] flex flex-col cursor-default"
       >
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div>
@@ -300,11 +300,11 @@ export function InspectProofModal({ isOpen, onClose, transaction, onApprove, onR
           </div>
           <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
             <div className="text-[10px] text-slate-400">AMOUNT</div>
-            <div className="font-bold text-cyan-400">${Number(transaction.amountSC || transaction.amount || 0).toFixed(2)} SC</div>
+            <div className="font-bold text-[var(--neon-cyan)]">${Number(transaction.amountSC || transaction.amount || 0).toFixed(2)} SC</div>
           </div>
           <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
             <div className="text-[10px] text-slate-400">SENDER TAG</div>
-            <div className="font-bold text-purple-300 truncate">{transaction.senderTag || transaction.cashtag || 'N/A'}</div>
+            <div className="font-bold text-amber-300 truncate">{transaction.senderTag || transaction.cashtag || 'N/A'}</div>
           </div>
           <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
             <div className="text-[10px] text-slate-400">STATUS</div>
@@ -397,15 +397,15 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-cyan-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-amber-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(255,215,0,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-[var(--neon-cyan)]">
               <Coins size={20} />
             </div>
             <div>
               <h3 className="font-heading font-black text-white text-base">BALANCE ADJUSTER</h3>
-              <p className="text-xs text-slate-400">Player: <strong className="text-cyan-300">@{targetUser.username}</strong></p>
+              <p className="text-xs text-slate-400">Player: <strong className="text-amber-300">@{targetUser.username}</strong></p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-400 hover:text-white">
@@ -415,13 +415,13 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
 
         {/* Current Balances */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="p-3 rounded-xl bg-slate-950 border border-cyan-500/30">
+          <div className="p-3 rounded-xl bg-slate-950 border border-amber-500/30">
             <div className="text-[10px] text-slate-400">CURRENT SC</div>
-            <div className="text-sm font-heading font-bold text-cyan-400">${Number(targetUser.balanceSC || 0).toFixed(2)}</div>
+            <div className="text-sm font-heading font-bold text-[var(--neon-cyan)]">${Number(targetUser.balanceSC || 0).toFixed(2)}</div>
           </div>
-          <div className="p-3 rounded-xl bg-slate-950 border border-purple-500/30">
+          <div className="p-3 rounded-xl bg-slate-950 border border-amber-600/30">
             <div className="text-[10px] text-slate-400">CURRENT GC</div>
-            <div className="text-sm font-heading font-bold text-purple-400">{Number(targetUser.balanceGC || 0).toLocaleString()}</div>
+            <div className="text-sm font-heading font-bold text-[var(--neon-purple)]">{Number(targetUser.balanceGC || 0).toLocaleString()}</div>
           </div>
         </div>
 
@@ -470,7 +470,7 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
                 value={amountSC}
                 onChange={(e) => setAmountSC(e.target.value)}
                 placeholder="0.00"
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
             <div>
@@ -481,7 +481,7 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
                 value={amountGC}
                 onChange={(e) => setAmountGC(e.target.value)}
                 placeholder="0"
-                className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
           </div>
@@ -493,7 +493,7 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
               required
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -508,7 +508,7 @@ export function QuickAllotmentModal({ isOpen, onClose, targetUser, onComplete })
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.4)] disabled:opacity-50"
             >
               {submitting ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               <span>EXECUTE ADJUSTMENT</span>
@@ -566,10 +566,10 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-cyan-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-amber-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(255,215,0,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-[var(--neon-cyan)]">
               <CreditCard size={20} />
             </div>
             <div>
@@ -598,7 +598,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. Cash App VIP, Zelle Fast, Bitcoin"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -608,7 +608,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               >
                 <option value="CRYPTO">Crypto (BTC/ETH/USDT)</option>
                 <option value="CARD">Credit/Debit Card</option>
@@ -624,7 +624,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
                 value={form.identifierTag}
                 onChange={(e) => setForm({ ...form, identifierTag: e.target.value })}
                 placeholder="$PlayerParadisePay"
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
           </div>
@@ -636,7 +636,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
                 type="number"
                 value={form.minDeposit}
                 onChange={(e) => setForm({ ...form, minDeposit: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
             <div>
@@ -645,7 +645,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
                 type="number"
                 value={form.maxDeposit}
                 onChange={(e) => setForm({ ...form, maxDeposit: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
           </div>
@@ -657,7 +657,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
               value={form.instructions}
               onChange={(e) => setForm({ ...form, instructions: e.target.value })}
               placeholder="Put your username in transfer note"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -672,7 +672,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.4)] disabled:opacity-50"
             >
               {submitting ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               <span>SAVE GATEWAY</span>
@@ -720,10 +720,10 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-purple-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(192,38,211,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-amber-600/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/40 flex items-center justify-center text-purple-400">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-600/40 flex items-center justify-center text-[var(--neon-purple)]">
               <UserPlus size={20} />
             </div>
             <div>
@@ -752,7 +752,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
               placeholder="e.g. staff_alex"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -764,7 +764,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="alex@playersparadisehub.com"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -776,7 +776,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="••••••••••••"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -785,7 +785,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
             <select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             >
               <option value="operation_admin">Operational Manager (Full Operational Access)</option>
               <option value="financial_manager">Financial Manager (Ledger & Gateways)</option>
@@ -805,7 +805,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(192,38,211,0.4)] disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] disabled:opacity-50"
             >
               {submitting ? <RefreshCw size={14} className="animate-spin" /> : <UserPlus size={14} />}
               <span>CREATE STAFF ACCOUNT</span>
@@ -888,10 +888,10 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-cyan-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="relative w-full max-w-md bg-[#0a0d1f] border border-amber-500/30 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(255,215,0,0.2)] space-y-4 max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-[var(--neon-cyan)]">
               <KeyRound size={20} />
             </div>
             <div>
@@ -920,7 +920,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
               value={playerEmail}
               onChange={(e) => setPlayerEmail(e.target.value)}
               placeholder="player@demo.com"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
             {usersList.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1.5">
@@ -930,7 +930,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
                     key={u.id || u._id}
                     type="button"
                     onClick={() => setPlayerEmail(u.email)}
-                    className="text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400"
+                    className="text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:text-[var(--neon-cyan)]"
                   >
                     @{u.username}
                   </button>
@@ -944,7 +944,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
             <select
               value={selectedGame}
               onChange={(e) => setSelectedGame(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             >
               {activeGames.map((g) => (
                 <option key={g} value={g}>{g}</option>
@@ -957,7 +957,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
             <button
               type="button"
               onClick={handleAutoGenerate}
-              className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-bold text-[var(--neon-cyan)] hover:text-amber-300 flex items-center gap-1 cursor-pointer"
             >
               <Sparkles size={12} /> Auto-Generate
             </button>
@@ -971,7 +971,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. panda_vip99"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
 
@@ -983,7 +983,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Pass@8821"
-              className="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
+              className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
             />
           </div>
 
@@ -998,7 +998,7 @@ export function ManualAddAccountModal({ isOpen, onClose, usersList = [], gamesLi
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(255,215,0,0.4)] disabled:opacity-50 cursor-pointer"
             >
               {submitting ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               <span>SAVE &amp; ASSIGN ACCOUNT</span>
@@ -1047,12 +1047,12 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-[#0a0d1f] border border-cyan-500/40 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in fade-in max-h-[92vh] overflow-y-auto modal-scrollable">
+      <div className="bg-[#0a0d1f] border border-amber-500/40 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in fade-in max-h-[92vh] overflow-y-auto modal-scrollable">
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div>
             <h3 className="font-heading font-black text-sm md:text-base text-white">Reset Player Password</h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Target: <strong className="text-cyan-400">@{user.username}</strong> ({user.email})
+              Target: <strong className="text-[var(--neon-cyan)]">@{user.username}</strong> ({user.email})
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white">
@@ -1075,7 +1075,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
               <button
                 type="button"
                 onClick={handleGenerate}
-                className="text-[10px] text-cyan-400 font-bold hover:underline"
+                className="text-[10px] text-[var(--neon-cyan)] font-bold hover:underline"
               >
                 Auto-Generate
               </button>
@@ -1086,11 +1086,11 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="e.g. Paradise2026!"
               required
-              className="w-full bg-[#060817] border border-white/10 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-cyan-300 font-mono outline-none"
+              className="w-full bg-[#060817] border border-white/10 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-amber-300 font-mono outline-none"
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800 text-[11px] text-cyan-300">
+          <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-800 text-[11px] text-amber-300">
             💡 The player can immediately log in with this new password. Make sure to share it via Live Chat or SMS.
           </div>
 
@@ -1105,7 +1105,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-lg disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-lg disabled:opacity-50 cursor-pointer"
             >
               {submitting ? <RefreshCw size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
               <span>CONFIRM &amp; RESET</span>
