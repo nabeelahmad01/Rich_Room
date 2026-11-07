@@ -25,10 +25,11 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import AuthModal from '@/components/modals/AuthModal';
 import { diffSet } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, clearCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -48,8 +49,11 @@ export default function ProfilePage() {
       const res = await fetch('/api/auth/me', { cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
+        writeCachedPlayer(data.user);
         diffSet(setUser, data.user);
       } else if (!isSilent) {
+        clearCachedPlayer();
+        diffSet(setUser, null);
         router.push('/login?redirect=/profile');
       }
     } catch (err) {
@@ -143,6 +147,7 @@ export default function ProfilePage() {
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            broadcastPlayerLogout();
             router.push('/');
           }}
         />

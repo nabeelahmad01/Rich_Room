@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
 import { diffSet, areEqual } from '@/lib/fastDiff';
+import { readCachedPlayer, writeCachedPlayer, clearCachedPlayer } from '@/lib/playerSessionCache';
 
 export default function CyberNavbar({
   onToggleSidebar,
@@ -35,7 +36,7 @@ export default function CyberNavbar({
   const [profileOpen, setProfileOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [jackpot, setJackpot] = useState(184920.45);
-  const [liveUser, setLiveUser] = useState(user || null);
+  const [liveUser, setLiveUser] = useState(() => user || readCachedPlayer() || null);
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadNotifsCount);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [balancePulse, setBalancePulse] = useState(false);
@@ -155,6 +156,7 @@ export default function CyberNavbar({
             diffSet(setLiveUser, data.user);
 
             // Dispatch event to sync parent page states automatically
+            writeCachedPlayer(data.user);
             if (typeof window !== 'undefined') {
               if (data.user.email) {
                 localStorage.setItem('pp_user_email', data.user.email);
@@ -182,6 +184,7 @@ export default function CyberNavbar({
             lastUserRef.current = null;
             diffSet(setLiveUser, null);
             diffSet(setLiveUnreadCount, 0);
+            clearCachedPlayer();
             if (typeof window !== 'undefined') {
               localStorage.removeItem('pp_user_email');
               window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
@@ -455,6 +458,7 @@ export default function CyberNavbar({
                     onClick={async () => {
                       setProfileOpen(false);
                       setLiveUser(null);
+                      clearCachedPlayer();
                       if (typeof window !== 'undefined') {
                         window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
                       }

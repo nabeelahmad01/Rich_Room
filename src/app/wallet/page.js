@@ -20,10 +20,11 @@ import CyberFooter from '@/components/common/CyberFooter';
 import WalletModal from '@/components/modals/WalletModal';
 import AuthModal from '@/components/modals/AuthModal';
 import { diffSet } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function WalletPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [walletModal, setWalletModal] = useState({ open: false, tab: 'deposit' });
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -36,6 +37,7 @@ export default function WalletPage() {
       const meRes = await fetch('/api/auth/me');
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
+        writeCachedPlayer(meData.user);
         diffSet(setUser, meData.user);
         const [depRes, withRes] = await Promise.all([
           fetch('/api/payments/deposit'),
@@ -112,6 +114,7 @@ export default function WalletPage() {
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            broadcastPlayerLogout();
           }}
         />
 

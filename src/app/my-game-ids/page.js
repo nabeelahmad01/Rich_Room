@@ -13,6 +13,7 @@ import ExternalGameModal from '@/components/modals/ExternalGameModal';
 import Panda777SlotsModal from '@/components/games/Panda777SlotsModal';
 import CyberCrashModal from '@/components/games/CyberCrashModal';
 
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 import {
   KeyRound,
   ShieldCheck,
@@ -23,7 +24,7 @@ import {
 
 export default function MyGameIdsPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,6 +43,7 @@ export default function MyGameIdsPage() {
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.authenticated && data.user) {
+        writeCachedPlayer(data.user);
         setUser(data.user);
       } else {
         setUser(null);
@@ -118,6 +120,7 @@ export default function MyGameIdsPage() {
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            broadcastPlayerLogout();
           }}
         />
 

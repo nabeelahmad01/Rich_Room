@@ -28,10 +28,11 @@ import {
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { gamesCacheKey, readGamesFromSession, writeGamesToSession } from '@/lib/gamesClientCache';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function GamesPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [games, setGames] = useState([]);
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
@@ -74,6 +75,7 @@ export default function GamesPage() {
       const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
+        writeCachedPlayer(data.user);
         diffSet(setUser, data.user);
         loadUserGameAccounts(data.user.email);
       } else {
@@ -356,6 +358,7 @@ export default function GamesPage() {
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            broadcastPlayerLogout();
           }}
         />
 

@@ -26,6 +26,7 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, readCachedPlayer } from '@/lib/playerSessionCache';
 
 function ProvisioningContent() {
   const router = useRouter();
@@ -33,7 +34,7 @@ function ProvisioningContent() {
   const requestId = searchParams.get('requestId');
   const gameParam = searchParams.get('game') || 'Game Platform';
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -58,8 +59,9 @@ function ProvisioningContent() {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
         if (data.authenticated && data.user) {
+          writeCachedPlayer(data.user);
           diffSet(setUser, data.user);
-        } else {
+        } else if (!readCachedPlayer()) {
           router.push('/login');
         }
       } catch (e) {

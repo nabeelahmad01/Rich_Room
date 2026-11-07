@@ -21,11 +21,12 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberFooter from '@/components/common/CyberFooter';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import { WHEEL_SLICES } from '@/lib/wheelConstants';
+import { getInitialPlayerUser, writeCachedPlayer, readCachedPlayer } from '@/lib/playerSessionCache';
 
 export default function SpinWheelPage() {
   const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [canSpin, setCanSpin] = useState(false);
   const [availableSpins, setAvailableSpins] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function SpinWheelPage() {
       const [uData, sData] = await Promise.all([uRes.json(), sRes.json()]);
 
       if (uData.authenticated && uData.user) {
+        writeCachedPlayer(uData.user);
         setUser(uData.user);
       }
       if (sData.success) {
@@ -72,7 +74,7 @@ export default function SpinWheelPage() {
   const sliceAngle = 360 / slices.length;
 
   const handleSpin = async () => {
-    if (!user) {
+    if (!user && !readCachedPlayer()) {
       router.push('/login?redirect=/spin-wheel');
       return;
     }

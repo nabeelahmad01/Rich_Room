@@ -50,12 +50,13 @@ import {
   X
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function HomePage() {
   const router = useRouter();
 
   // User & UI States
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -113,6 +114,7 @@ export default function HomePage() {
       const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
+        writeCachedPlayer(data.user);
         diffSet(setUser, data.user);
         loadUserGameAccounts(data.user.email);
       } else {
@@ -213,9 +215,7 @@ export default function HomePage() {
     setUser(null);
     setUserGameAccounts([]);
     setPendingAccountRequests([]);
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
-    }
+    broadcastPlayerLogout();
   };
 
   const handlePlayGame = (game) => {

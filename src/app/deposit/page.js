@@ -30,10 +30,11 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, clearCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function DepositPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [loadingUser, setLoadingUser] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -79,11 +80,14 @@ export default function DepositPage() {
       const [uData, sData] = await Promise.all([uRes.json(), sRes.json()]);
 
       if (uData.authenticated && uData.user) {
+        writeCachedPlayer(uData.user);
         diffSet(setUser, uData.user);
         if (uData.user.email) {
           setPlayerPaymentEmail((prev) => prev || uData.user.email);
         }
       } else if (!isSilent) {
+        clearCachedPlayer();
+        diffSet(setUser, null);
         router.push('/login?redirect=/deposit');
       }
 

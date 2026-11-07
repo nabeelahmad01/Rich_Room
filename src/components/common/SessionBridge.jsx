@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
 
 /**
  * Keeps client UI in sync with the httpOnly session cookie after client-side navigation.
@@ -12,18 +13,26 @@ export default function SessionBridge() {
 
   useEffect(() => {
     let cancelled = false;
+
+    const cached = readCachedPlayer();
+    if (cached && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: cached }));
+    }
+
     const sync = async () => {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
         const data = await res.json();
         if (cancelled || typeof window === 'undefined') return;
         if (data.authenticated && data.user) {
+          writeCachedPlayer(data.user);
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
         } else {
+          writeCachedPlayer(null);
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }
       } catch {
-        if (!cancelled && typeof window !== 'undefined') {
+        if (!cancelled && typeof window !== 'undefined' && !readCachedPlayer()) {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }
       }

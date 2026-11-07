@@ -26,10 +26,11 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer } from '@/lib/playerSessionCache';
 
 export default function WithdrawPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [loadingUser, setLoadingUser] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -69,6 +70,7 @@ export default function WithdrawPage() {
       const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.authenticated && data.user) {
+        writeCachedPlayer(data.user);
         diffSet(setUser, data.user);
       }
     } catch (err) {

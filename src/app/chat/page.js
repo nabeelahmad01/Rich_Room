@@ -23,12 +23,13 @@ import {
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, areEqual } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function ChatPage() {
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
   const [guestId, setGuestId] = useState('');
   const [messages, setMessages] = useState([]);
@@ -52,6 +53,7 @@ export default function ChatPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d?.authenticated && d.user) {
+          writeCachedPlayer(d.user);
           diffSet(setUser, d.user);
           try {
             localStorage.removeItem('pp_guest_chat_id');
@@ -360,9 +362,7 @@ export default function ChatPage() {
           onLogout={async () => {
             setUser(null);
             setMessages([]);
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
-            }
+            broadcastPlayerLogout();
             try {
               await fetch('/api/auth/logout', { method: 'POST' });
             } catch {}

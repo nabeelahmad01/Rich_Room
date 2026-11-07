@@ -6,12 +6,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Mail, Lock, User, Sparkles, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { getOrCreateDeviceId } from '@/lib/deviceClient';
+import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect');
 
+  const [checkingSession, setCheckingSession] = useState(true);
   const [step, setStep] = useState('details'); // 'details' | 'otp'
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -23,6 +25,37 @@ function RegisterForm() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const go = (dest) => {
+      if (!cancelled) router.replace(dest);
+    };
+    const cached = readCachedPlayer();
+    if (cached) {
+      go(redirectTarget || '/');
+      return () => {
+        cancelled = true;
+      };
+    }
+    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.authenticated && data?.user) {
+          writeCachedPlayer(data.user);
+          go(redirectTarget || '/');
+        } else {
+          setCheckingSession(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCheckingSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [redirectTarget, router]);
 
   // Auto-capture referral code from URL parameter (?ref=PP-CCZFE) or saved cache
   useEffect(() => {
@@ -176,6 +209,7 @@ function RegisterForm() {
       } catch {}
 
       setSuccessMsg('Account verified! Welcome to Rich Room. Redirecting...');
+      if (data.user) writeCachedPlayer(data.user);
 
       try {
         const confetti = (await import('canvas-confetti')).default;
@@ -198,6 +232,15 @@ function RegisterForm() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="w-full max-w-md p-8 rounded-3xl border border-[var(--chrome-border)] bg-[#070919] flex flex-col items-center gap-3">
+        <Sparkles size={28} className="text-[var(--neon-purple)] animate-pulse" />
+        <p className="text-xs text-slate-400">Checking your session…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md p-5 sm:p-8 rounded-3xl border border-[var(--chrome-border)] bg-[#070919] shadow-2xl space-y-6 relative overflow-hidden">

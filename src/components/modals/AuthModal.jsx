@@ -21,6 +21,7 @@ import {
   Coins
 } from 'lucide-react';
 import { getOrCreateDeviceId } from '@/lib/deviceClient';
+import { writeCachedPlayer } from '@/lib/playerSessionCache';
 
 export default function AuthModal({
   isOpen,
@@ -124,6 +125,7 @@ export default function AuthModal({
 
       if (data.success) {
         setSuccessMsg(`Welcome back, ${data.user?.username || 'Player'}!`);
+        writeCachedPlayer(data.user);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
         }
@@ -275,6 +277,7 @@ export default function AuthModal({
           });
         } catch {}
 
+        writeCachedPlayer(data.user);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
         }

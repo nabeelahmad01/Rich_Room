@@ -22,19 +22,18 @@ import {
   Wallet
 } from 'lucide-react';
 import { diffSet } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function ReferralPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
+  const [authResolved, setAuthResolved] = useState(() => !!getInitialPlayerUser());
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState('');
-  /** false until first /api/auth/me completes — avoids flashing "log in" for logged-in users */
-  const [authResolved, setAuthResolved] = useState(false);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -47,6 +46,7 @@ export default function ReferralPage() {
       const meRes = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
+        writeCachedPlayer(meData.user);
         diffSet(setUser, meData.user);
         const affRes = await fetch('/api/affiliates', { credentials: 'include', cache: 'no-store' });
         const affData = await affRes.json();
@@ -164,6 +164,7 @@ export default function ReferralPage() {
           onOpenNotifications={() => {}}
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+              broadcastPlayerLogout();
               window.location.href = '/';
             });
           }}

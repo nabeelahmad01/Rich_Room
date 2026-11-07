@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { readCachedPlayer } from '@/lib/playerSessionCache';
 
 const DEFAULT_GAME_THUMB = '/images/vegas-777.svg';
 
@@ -391,42 +392,59 @@ export default function PlayerGameAccountsHub({
         </div>
 
         {!user ? (
-          /* Guest Lock Card */
-          <div
-            style={{
-              background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.7) 0%, rgba(10, 6, 26, 0.7) 100%)',
-              border: '1px dashed var(--chrome-border)',
-              borderRadius: '18px',
-              padding: '30px 20px',
-              textAlign: 'center',
-            }}
-          >
-            <Key size={36} color="var(--neon-cyan)" style={{ margin: '0 auto 12px auto', opacity: 0.8 }} />
-            <h4 style={{ margin: '0 0 6px 0', fontFamily: 'Lexend, sans-serif', fontSize: '16px', fontWeight: 900, color: '#FFFFFF' }}>
-              Sign in to view your game accounts
-            </h4>
-            <p style={{ margin: '0 0 16px 0', fontSize: '12.5px', color: '#A69FB3', fontFamily: 'Lexend, sans-serif', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Your usernames, passwords, and balances for Fire Kirin, Orion Stars, and Juwa will appear here once authenticated.
-            </p>
-            <button
-              type="button"
-              onClick={() => onOpenAuth && onOpenAuth('login')}
+          readCachedPlayer() ? (
+            <div
               style={{
-                background: 'var(--primary-gradient)',
-                color: '#030712',
-                border: 'none',
-                borderRadius: '9999px',
-                padding: '10px 28px',
-                fontFamily: 'Lexend, sans-serif',
-                fontSize: '12px',
-                fontWeight: 900,
-                cursor: 'pointer',
-                boxShadow: '0 4px 18px var(--neon-cyan-glow)',
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--chrome-border)',
+                borderRadius: '18px',
+                padding: '28px 20px',
+                textAlign: 'center',
               }}
             >
-              SIGN IN / REGISTER
-            </button>
-          </div>
+              <RefreshCw size={28} color="var(--neon-cyan)" style={{ margin: '0 auto 10px auto', opacity: 0.85 }} className="animate-spin" />
+              <p style={{ margin: 0, fontSize: '12px', color: '#8E849E', fontFamily: 'Lexend, sans-serif' }}>
+                Restoring your session…
+              </p>
+            </div>
+          ) : (
+            /* Guest Lock Card */
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.7) 0%, rgba(10, 6, 26, 0.7) 100%)',
+                border: '1px dashed var(--chrome-border)',
+                borderRadius: '18px',
+                padding: '30px 20px',
+                textAlign: 'center',
+              }}
+            >
+              <Key size={36} color="var(--neon-cyan)" style={{ margin: '0 auto 12px auto', opacity: 0.8 }} />
+              <h4 style={{ margin: '0 0 6px 0', fontFamily: 'Lexend, sans-serif', fontSize: '16px', fontWeight: 900, color: '#FFFFFF' }}>
+                Sign in to view your game accounts
+              </h4>
+              <p style={{ margin: '0 0 16px 0', fontSize: '12.5px', color: '#A69FB3', fontFamily: 'Lexend, sans-serif', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+                Your usernames, passwords, and balances for Fire Kirin, Orion Stars, and Juwa will appear here once authenticated.
+              </p>
+              <button
+                type="button"
+                onClick={() => onOpenAuth && onOpenAuth('login')}
+                style={{
+                  background: 'var(--primary-gradient)',
+                  color: '#030712',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  padding: '10px 28px',
+                  fontFamily: 'Lexend, sans-serif',
+                  fontSize: '12px',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 18px var(--neon-cyan-glow)',
+                }}
+              >
+                SIGN IN / REGISTER
+              </button>
+            </div>
+          )
         ) : activeAccounts.length === 0 ? (
           /* User has 0 active accounts yet */
           <div

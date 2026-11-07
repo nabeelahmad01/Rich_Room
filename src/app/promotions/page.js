@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Crown,
@@ -16,13 +16,21 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
+import { getInitialPlayerUser } from '@/lib/playerSessionCache';
 
 export default function PromotionsPage() {
   const router = useRouter();
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [promotions, setPromotions] = useState([]);
   const [loadingPromos, setLoadingPromos] = useState(true);
+
+  useEffect(() => {
+    const onSync = (e) => setUser(e.detail || null);
+    window.addEventListener('paradise-user-sync', onSync);
+    return () => window.removeEventListener('paradise-user-sync', onSync);
+  }, []);
 
   React.useEffect(() => {
     fetch('/api/promotions', { cache: 'no-store' })
@@ -81,7 +89,7 @@ export default function PromotionsPage() {
         setCollapsed={setSidebarCollapsed}
         mobileOpen={mobileSidebarOpen}
         setMobileOpen={setMobileSidebarOpen}
-        user={null}
+        user={user}
         onOpenWallet={() => router.push('/wallet')}
         onOpenGameRequest={() => router.push('/')}
         onOpenChat={() => {}}
@@ -91,7 +99,7 @@ export default function PromotionsPage() {
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'}`}>
         <CyberNavbar
           onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          user={null}
+          user={user}
           onOpenAuth={() => router.push('/')}
           onOpenWallet={() => router.push('/wallet')}
           onOpenDailyBonus={() => {}}
@@ -214,7 +222,7 @@ export default function PromotionsPage() {
         <CyberFooter />
       </div>
 
-      <CyberMobileBottomNav user={null} onOpenAuth={() => {}} onOpenWallet={() => router.push('/wallet')} onOpenGameRequest={() => router.push('/')} />
+      <CyberMobileBottomNav user={user} onOpenAuth={() => router.push('/login')} onOpenWallet={() => router.push('/wallet')} onOpenGameRequest={() => router.push('/')} />
     </div>
   );
 }

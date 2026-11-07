@@ -1,21 +1,59 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Mail, Lock, Sparkles, AlertCircle, CheckCircle2, ArrowRight, ShieldCheck, User, Loader2 } from 'lucide-react';
 import { getOrCreateDeviceId } from '@/lib/deviceClient';
+import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect');
 
   const [identifier, setIdentifier] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    const go = (dest) => {
+      if (!cancelled) router.replace(dest);
+    };
+    const cached = readCachedPlayer();
+    if (cached) {
+      go(redirectTarget || '/');
+      return () => {
+        cancelled = true;
+      };
+    }
+    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.authenticated && data?.user) {
+          writeCachedPlayer(data.user);
+          const dest =
+            data.isAdmin || redirectTarget === '/admin' || (data.user?.role && data.user.role !== 'player')
+              ? '/admin'
+              : redirectTarget || '/';
+          go(dest);
+        } else {
+          setCheckingSession(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCheckingSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [redirectTarget, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +76,7 @@ function LoginForm() {
 
       const username = data.user?.username || identifier;
       setSuccessMsg(`Welcome back, ${username}! Redirecting...`);
+      writeCachedPlayer(data.user);
 
       // Determine redirect destination
       const destination =
@@ -54,6 +93,15 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="w-full max-w-md p-8 rounded-3xl border border-[var(--chrome-border)] bg-[#070919] flex flex-col items-center gap-3">
+        <Loader2 size={28} className="text-[var(--neon-cyan)] animate-spin" />
+        <p className="text-xs text-slate-400">Checking your session…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md p-5 sm:p-8 rounded-3xl border border-[var(--chrome-border)] bg-[#070919] shadow-2xl space-y-6 relative overflow-hidden">

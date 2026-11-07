@@ -28,10 +28,11 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { diffSet } from '@/lib/fastDiff';
+import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 
 export default function LedgerPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialPlayerUser);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -48,6 +49,7 @@ export default function LedgerPage() {
       const meRes = await fetch('/api/auth/me', { cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
+        writeCachedPlayer(meData.user);
         diffSet(setUser, meData.user);
         const isStaff = meData.user.role && meData.user.role !== 'player';
         if (!isStaff) {
@@ -284,6 +286,7 @@ export default function LedgerPage() {
           onLogout={() => {
             fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            broadcastPlayerLogout();
             router.push('/login');
           }}
         />
