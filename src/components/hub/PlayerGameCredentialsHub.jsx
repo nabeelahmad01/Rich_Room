@@ -25,11 +25,23 @@ import {
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { readCachedPlayer } from '@/lib/playerSessionCache';
+import {
+  readGameAccountsCache,
+  writeGameAccountsCache,
+} from '@/lib/gameAccountsClientCache';
 
 const DEFAULT_GAME_THUMB = '/images/vegas-777.svg';
 
 function normalizeGameTitleKey(s) {
   return cleanGameTitle(String(s || '')).toLowerCase().trim();
+}
+
+function mapSeedAccounts(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((a) => ({
+    ...a,
+    gameTitle: cleanGameTitle(a.gameTitle),
+  }));
 }
 
 export default function PlayerGameAccountsHub({
@@ -38,13 +50,38 @@ export default function PlayerGameAccountsHub({
   onOpenAuth,
   onPlayGame,
   onDeposit,
+  seedReadyAccounts = null,
+  seedPendingRequests = null,
 }) {
   const router = useRouter();
-  const [activeAccounts, setActiveAccounts] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [rejectedRequests, setRejectedRequests] = useState([]);
+  const resolvedEmail = user?.email || readCachedPlayer()?.email || '';
+
+  const initialFromCache = resolvedEmail ? readGameAccountsCache(resolvedEmail) : null;
+  const initialActive =
+    seedReadyAccounts?.length > 0
+      ? mapSeedAccounts(seedReadyAccounts)
+      : initialFromCache?.active?.length
+        ? initialFromCache.active
+        : [];
+  const initialPending =
+    seedPendingRequests?.length > 0
+      ? seedPendingRequests
+      : initialFromCache?.pending?.length
+        ? initialFromCache.pending
+        : [];
+
+  const [activeAccounts, setActiveAccounts] = useState(initialActive);
+  const [pendingRequests, setPendingRequests] = useState(initialPending);
+  const [rejectedRequests, setRejectedRequests] = useState(
+    () => initialFromCache?.rejected || []
+  );
   const [loadCoinsModal, setLoadCoinsModal] = useState({ open: false, game: null });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    () => Boolean(resolvedEmail) && initialActive.length === 0 && initialPending.length === 0
+  );
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(
+    () => initialActive.length > 0 || initialPending.length > 0
+  );
   const [copiedKey, setCopiedKey] = useState(null);
   const [showPasswordMap, setShowPasswordMap] = useState({});
   const [requestingGameId, setRequestingGameId] = useState(null);
@@ -152,6 +189,14 @@ export default function PlayerGameAccountsHub({
       diffSet(setActiveAccounts, readyList);
       diffSet(setPendingRequests, pendingList);
       diffSet(setRejectedRequests, rejectedList);
+      if (user?.email) {
+        writeGameAccountsCache(user.email, {
+          active: readyList,
+          pending: pendingList,
+          rejected: rejectedList,
+        });
+      }
+      setHasFetchedOnce(true);
     } catch (err) {
       console.error('Error fetching game accounts:', err);
     } finally {
@@ -160,8 +205,25 @@ export default function PlayerGameAccountsHub({
   };
 
   useEffect(() => {
-    if (user?.email) {
-      fetchAccountsAndRequests();
+    if (seedReadyAccounts?.length) {
+      diffSet(setActiveAccounts, mapSeedAccounts(seedReadyAccounts));
+      setHasFetchedOnce(true);
+      setLoading(false);
+    }
+    if (seedPendingRequests?.length) {
+      diffSet(setPendingRequests, seedPendingRequests);
+      setHasFetchedOnce(true);
+      setLoading(false);
+    }
+  }, [seedReadyAccounts, seedPendingRequests]);
+
+  useEffect(() => {
+    const email = user?.email || readCachedPlayer()?.email;
+    if (email) {
+      if (!hasFetchedOnce && activeAccounts.length === 0 && pendingRequests.length === 0) {
+        setLoading(true);
+      }
+      fetchAccountsAndRequests(activeAccounts.length > 0 || pendingRequests.length > 0);
       const interval = setInterval(() => {
         if (!document.hidden) fetchAccountsAndRequests(true);
       }, 4000);
@@ -177,10 +239,12 @@ export default function PlayerGameAccountsHub({
         document.removeEventListener('visibilitychange', handleFocus);
         window.removeEventListener('accountRequestUpdated', handleFocus);
       };
-    } else {
+    } else if (!readCachedPlayer()) {
       diffSet(setActiveAccounts, []);
       diffSet(setPendingRequests, []);
       diffSet(setRejectedRequests, []);
+      setLoading(false);
+      setHasFetchedOnce(false);
     }
   }, [user?.email]);
 
@@ -445,8 +509,39 @@ export default function PlayerGameAccountsHub({
               </button>
             </div>
           )
+        ) : loading && activeAccounts.length === 0 ? (
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--chrome-border)',
+              borderRadius: '18px',
+              padding: '24px 16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <RefreshCw size={18} color="var(--neon-cyan)" className="animate-spin" />
+              <p style={{ margin: 0, fontSize: '12.5px', fontWeight: 800, color: '#E2DCEB', fontFamily: 'Lexend, sans-serif' }}>
+                Loading your game IDs…
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+              {[0, 1].map((i) => (
+                <div
+                  key={`skel-acc-${i}`}
+                  style={{
+                    height: '120px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'pulse 1.4s ease-in-out infinite',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         ) : activeAccounts.length === 0 ? (
-          /* User has 0 active accounts yet */
+          /* User has 0 active accounts after load */
           <div
             style={{
               backgroundColor: 'var(--bg-surface)',
@@ -461,7 +556,7 @@ export default function PlayerGameAccountsHub({
               No Active Platform IDs Yet
             </p>
             <p style={{ margin: 0, fontSize: '12px', color: '#8E849E', fontFamily: 'Lexend, sans-serif' }}>
-              Your direct credentials and platform accounts will appear here once approved by our desk. Browse our games or make a deposit to activate your accounts.
+              Request a platform from the games lobby or open Live Support — approved IDs show up here automatically.
             </p>
           </div>
         ) : (

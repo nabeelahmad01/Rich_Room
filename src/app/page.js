@@ -569,6 +569,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
               <PlayerGameCredentialsHub
                 user={user}
                 games={games}
+                seedReadyAccounts={userGameAccounts}
+                seedPendingRequests={pendingAccountRequests}
                 onRequestNewGame={() => handleRequestGame()}
                 onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
               />
@@ -691,6 +693,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
               <PlayerGameCredentialsHub
                 user={user}
                 games={games}
+                seedReadyAccounts={userGameAccounts}
+                seedPendingRequests={pendingAccountRequests}
                 onRequestNewGame={() => handleRequestGame()}
                 onOpenAuth={(tab) => setAuthModal({ open: true, tab })}
               />

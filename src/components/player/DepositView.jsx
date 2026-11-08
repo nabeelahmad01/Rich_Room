@@ -34,31 +34,10 @@ import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
-
-const DEFAULT_GATEWAYS = [
-  {
-    id: 'cashapp',
-    name: 'Cash App',
-    type: 'cashapp',
-    tagName: '$PlayersParadiseCash',
-    accountDetails: '$PlayersParadiseCash',
-    paymentUrl: 'https://cash.app/$PlayersParadiseCash',
-    qrCode: '',
-    minDeposit: 10,
-    instructions: 'Send exact amount via Cash App. Upload your payment receipt below.',
-  },
-  {
-    id: 'crypto-btc',
-    name: 'Bitcoin (BTC)',
-    type: 'crypto',
-    tagName: 'bc1qplayersparadisehubdeposit777address',
-    accountDetails: 'bc1qplayersparadisehubdeposit777address',
-    paymentUrl: '',
-    qrCode: '',
-    minDeposit: 20,
-    instructions: 'Send exact BTC equivalent. Paste TxHash or tag below.',
-  },
-];
+import {
+  readPaymentMethodsCache,
+  writePaymentMethodsCache,
+} from '@/lib/paymentMethodsCache';
 
 export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -76,9 +55,20 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     regularBonusActive: true,
   });
 
-  // Deposit Form State
-  const [gateways, setGateways] = useState(DEFAULT_GATEWAYS);
-  const [selectedGateway, setSelectedGateway] = useState(DEFAULT_GATEWAYS[0]);
+  // Deposit Form State (never show placeholder Paradise gateways — cache or API only)
+  const [gateways, setGateways] = useState(() => {
+    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
+    return cached?.length ? cached : [];
+  });
+  const [selectedGateway, setSelectedGateway] = useState(() => {
+    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
+    return cached?.[0] || null;
+  });
+  const [loadingGateways, setLoadingGateways] = useState(() => {
+    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
+    return !cached?.length;
+  });
+  const [gatewaysError, setGatewaysError] = useState(null);
   const [amount, setAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');
   const [senderAccount, setSenderAccount] = useState('');
@@ -135,43 +125,32 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   };
 
   // 2. Fetch gateways
-  const fetchGateways = async () => {
+  const fetchGateways = async (isSilent = false) => {
+    if (!isSilent && gateways.length === 0) setLoadingGateways(true);
+    setGatewaysError(null);
     try {
-      const res = await fetch('/api/payments/methods');
+      const res = await fetch('/api/payments/methods', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       const data = await res.json();
       if (data.success && data.methods && data.methods.length > 0) {
-        setGateways(data.methods);
-        setSelectedGateway(data.methods[0]);
-      } else {
-        const defaults = [
-          {
-            id: 'cashapp',
-            name: 'Cash App',
-            type: 'cashapp',
-            tagName: '$PlayersParadiseCash',
-            accountDetails: '$PlayersParadiseCash',
-            paymentUrl: 'https://cash.app/$PlayersParadiseCash',
-            qrCode: '',
-            minDeposit: 10,
-            instructions: 'Send exact amount via Cash App. Upload your payment receipt below.',
-          },
-          {
-            id: 'crypto-btc',
-            name: 'Bitcoin (BTC)',
-            type: 'crypto',
-            tagName: 'bc1qplayersparadisehubdeposit777address',
-            accountDetails: 'bc1qplayersparadisehubdeposit777address',
-            paymentUrl: '',
-            qrCode: '',
-            minDeposit: 20,
-            instructions: 'Send exact BTC equivalent. Paste TxHash or tag below.',
-          },
-        ];
-        setGateways(defaults);
-        setSelectedGateway(defaults[0]);
+        writePaymentMethodsCache(data.methods);
+        diffSet(setGateways, data.methods);
+        setSelectedGateway((prev) => {
+          if (prev && data.methods.some((m) => m.id === prev.id)) return prev;
+          return data.methods[0];
+        });
+      } else if (gateways.length === 0) {
+        setGatewaysError('Payment gateways are not available right now. Please try again or contact live support.');
       }
     } catch (err) {
       console.error(err);
+      if (gateways.length === 0) {
+        setGatewaysError('Could not load payment options. Check your connection and tap Retry.');
+      }
+    } finally {
+      setLoadingGateways(false);
     }
   };
 
@@ -258,7 +237,15 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     }
 
     fetchUserAndSettings(true);
-    fetchGateways();
+    if (gateways.length === 0) {
+      const cachedGw = readPaymentMethodsCache();
+      if (cachedGw?.length) {
+        setGateways(cachedGw);
+        setSelectedGateway(cachedGw[0]);
+        setLoadingGateways(false);
+      }
+    }
+    fetchGateways(gateways.length > 0);
     fetchHistory(true);
     fetchGameAccounts();
     fetchGames();
@@ -270,6 +257,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
         fetchUserAndSettings(true);
         fetchGameAccounts();
         fetchGames();
+        fetchGateways(true);
       }
     }, 5000);
 
@@ -378,13 +366,21 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
       return;
     }
 
+    const activeGateway = selectedGateway || (gateways?.length ? gateways[0] : null);
+    if (!activeGateway || loadingGateways) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Payment gateways are still loading. Please wait a moment and try again.',
+      });
+      return;
+    }
+
     setSubmitting(true);
     setStatusMessage(null);
 
     try {
-      const activeGateway = selectedGateway || (gateways && gateways.length > 0 ? gateways[0] : null);
-      const chosenMethodName = activeGateway?.name || 'Cash App';
-      const chosenMethodId = activeGateway?.id || 'cashapp';
+      const chosenMethodName = activeGateway.name || 'Payment';
+      const chosenMethodId = activeGateway.id;
 
       const linkedAccount = userGameAccounts.find(
         (a) => (a.gameTitle || '').toLowerCase().trim() === selectedGame.toLowerCase().trim()
@@ -554,6 +550,28 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {loadingGateways && gateways.length === 0 ? (
+                    [0, 1, 2].map((i) => (
+                      <div
+                        key={`gw-skel-${i}`}
+                        className="p-3.5 rounded-2xl border border-slate-800 bg-slate-900/60 animate-pulse min-h-[72px]"
+                      >
+                        <div className="h-3 w-20 bg-slate-700 rounded mb-2" />
+                        <div className="h-2 w-14 bg-slate-800 rounded" />
+                      </div>
+                    ))
+                  ) : gateways.length === 0 ? (
+                    <div className="col-span-full p-4 rounded-2xl border border-amber-500/30 bg-amber-950/20 text-amber-100 text-xs space-y-2">
+                      <p>{gatewaysError || 'No deposit gateways configured.'}</p>
+                      <button
+                        type="button"
+                        onClick={() => fetchGateways(false)}
+                        className="text-[11px] font-bold text-amber-300 underline"
+                      >
+                        Retry loading gateways
+                      </button>
+                    </div>
+                  ) : null}
                   {gateways.map((gw) => {
                     const isSelected = selectedGateway?.id === gw.id;
                     return (
