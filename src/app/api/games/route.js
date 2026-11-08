@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
+import { withGameDescription } from '@/lib/gameDescriptions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -23,7 +24,7 @@ async function loadAllGamesFromDb() {
   return rawGames.map((g) => {
     const sid = g._id ? g._id.toString() : (g.id || g.gameId);
     const resolvedImage = g.thumbnail || g.image || g.imageUrl || '/images/vegas-777.svg';
-    return {
+    const base = {
       id: sid,
       _id: sid,
       gameId: g.gameId || sid,
@@ -49,6 +50,7 @@ async function loadAllGamesFromDb() {
       rating: g.rating || 4.9,
       createdAt: g.createdAt || null,
     };
+    return withGameDescription(base);
   });
 }
 

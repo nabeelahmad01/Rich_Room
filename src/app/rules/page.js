@@ -8,6 +8,7 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
+import { formatPlayerFacingCopy, MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 
 export default function RulesPage() {
   const router = useRouter();
@@ -74,14 +75,15 @@ export default function RulesPage() {
               <p className="text-xs font-mono text-slate-500 py-6 text-center">LOADING CASHOUT RULES...</p>
             ) : cashoutRules ? (
               <div className="whitespace-pre-line text-xs sm:text-sm font-sans leading-relaxed text-slate-200 space-y-2">
-                {cashoutRules}
+                {formatPlayerFacingCopy(cashoutRules)}
               </div>
             ) : (
               <div className="space-y-3 text-xs sm:text-sm">
                 <p>1. All winnings from eligible sweepstakes games can be redeemed directly to your active cashout method.</p>
-                <p>2. Cashouts are processed 24/7 with zero minimum fees.</p>
-                <p>3. Ensure your Cashtag, handle, or crypto address matches your verified account.</p>
-                <p>4. Processing time is usually within 5 to 15 minutes.</p>
+                <p>2. Minimum redeem / cashout amount is ${MIN_CASHOUT_USD} USD ({MIN_CASHOUT_USD} SC).</p>
+                <p>3. Cashouts are processed 24/7 with zero processing fees.</p>
+                <p>4. Ensure your Cashtag, handle, or crypto address matches your verified account.</p>
+                <p>5. Processing time is usually within 5 to 15 minutes.</p>
               </div>
             )}
           </div>

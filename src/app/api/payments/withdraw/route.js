@@ -5,6 +5,7 @@ import { getDb } from '@/lib/mongodb';
 import { sendEmail } from '@/lib/email';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
 import { findUserGameAccount } from '@/lib/gameAccounts';
+import { resolveMinCashoutFromSettings } from '@/lib/cashoutPolicy';
 
 // GET: List Redemptions
 export async function GET(req) {
@@ -165,6 +166,19 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Please enter a valid withdrawal amount.' }, { status: 400 });
     }
 
+    const db = await getDb();
+    const settingsDoc = await db.collection('system_settings').findOne({ key: 'general' });
+    const minCashout = resolveMinCashoutFromSettings(settingsDoc || {});
+    if (redeemAmount < minCashout) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Minimum cashout is $${minCashout.toFixed(0)}. Please enter $${minCashout.toFixed(0)} or more.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const finalTag = (destinationTag || destinationAddress || '').trim();
     if (!finalTag) {
       return NextResponse.json({ success: false, error: 'Your Payout Tag Name / Cashtag is required.' }, { status: 400 });
@@ -182,7 +196,6 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Your Payout QR Code screenshot is required.' }, { status: 400 });
     }
 
-    const db = await getDb();
     const usersCol = db.collection('users');
     const redemptionsCol = db.collection('redemptions');
     const ledgerCol = db.collection('ledger');

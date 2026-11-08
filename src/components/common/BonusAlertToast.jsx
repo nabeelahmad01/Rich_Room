@@ -41,7 +41,7 @@ export default function BonusAlertToast({ onAllowed }) {
   return (
     <div className="bonus-alert-toast">
       <div className="flex items-center gap-3 flex-1">
-        <div className="w-9 h-9 rounded-xl bg-purple-900/50 border border-purple-500/40 flex items-center justify-center text-amber-400 shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-amber-950/50 border border-amber-500/40 flex items-center justify-center text-[var(--neon-cyan)] shrink-0">
           <Bell size={18} />
         </div>
         <div>

@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { diffSet } from '@/lib/fastDiff';
+import { formatPlayerFacingCopy } from '@/lib/cashoutPolicy';
 
 export default function NotificationsModal({ isOpen, onClose, user, onAllRead }) {
   const router = useRouter();
@@ -233,7 +234,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
                 </div>
 
                 <p className="text-slate-300 leading-relaxed text-[11px] pl-8">
-                  {n.message}
+                  {formatPlayerFacingCopy(n.message)}
                 </p>
 
                 {n.url && n.url !== '/' && (

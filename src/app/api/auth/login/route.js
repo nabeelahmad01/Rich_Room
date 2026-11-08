@@ -170,7 +170,7 @@ export async function POST(req) {
         return NextResponse.json(
           {
             success: false,
-            error: `Device Binding Restriction: Yeh device doosre account (${boundUser.email}) ke sath bind hai. Iss device par sirf ${boundUser.email} login ho sakti hai. (This device is bound to ${boundUser.email})`,
+            error: `Device restriction: This device is linked to ${boundUser.email}. Only that account can sign in on this device.`,
           },
           { status: 403 }
         );

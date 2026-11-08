@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Bell, X, ExternalLink, Sparkles, ShieldCheck, MessageSquare } from 'lucide-react';
 import { playTune, unlockAudioContext } from '@/lib/soundAlerts';
+import { formatPlayerFacingCopy } from '@/lib/cashoutPolicy';
 
 export default function PushNotificationManager() {
   const router = useRouter();
@@ -310,7 +311,7 @@ export default function PushNotificationManager() {
           </h4>
 
           <p className="text-[11px] text-slate-300 mt-0.5 leading-snug line-clamp-2">
-            {activeToast.message}
+            {formatPlayerFacingCopy(activeToast.message)}
           </p>
 
           {/* Quick Action Button */}

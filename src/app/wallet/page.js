@@ -183,7 +183,7 @@ export default function WalletPage() {
                   <h3 className="font-heading font-black text-base text-white group-hover:text-emerald-300">
                     REDEEM CASHOUT
                   </h3>
-                  <p className="text-xs text-slate-400">Min $20 • Instant 24/7 payout</p>
+                  <p className="text-xs text-slate-400">Min $40 • Instant 24/7 payout</p>
                 </div>
               </div>
               <span className="text-xs font-bold text-emerald-400">START →</span>

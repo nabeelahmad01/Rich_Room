@@ -27,6 +27,7 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer } from '@/lib/playerSessionCache';
+import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 
 export default function WithdrawPage() {
   const router = useRouter();
@@ -281,6 +282,13 @@ export default function WithdrawPage() {
       setStatusMessage({ type: 'error', text: 'Please enter a valid withdrawal amount.' });
       return;
     }
+    if (finalAmount < MIN_CASHOUT_USD) {
+      setStatusMessage({
+        type: 'error',
+        text: `Minimum cashout is $${MIN_CASHOUT_USD}. Please enter $${MIN_CASHOUT_USD} or more.`,
+      });
+      return;
+    }
 
     if (!recipientTag.trim()) {
       setStatusMessage({ type: 'error', text: 'Please enter your Payout Tag Name / Cashtag.' });
@@ -390,7 +398,7 @@ export default function WithdrawPage() {
         ? [...new Set(userGameAccounts.map((a) => cleanGameTitle(a.gameTitle)).filter(Boolean))]
         : []);
 
-  const presetAmounts = [10, 25, 50, 100, 250];
+  const presetAmounts = [40, 50, 100, 250, 500];
 
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] text-white flex flex-col font-sans selection:bg-[var(--neon-cyan)] selection:text-black">
@@ -688,16 +696,28 @@ export default function WithdrawPage() {
                     />
                     <input
                       type="number"
-                      min="1"
+                      min={MIN_CASHOUT_USD}
                       step="1"
-                      placeholder="e.g. 150"
+                      placeholder={`e.g. ${MIN_CASHOUT_USD} or more`}
                       value={customAmount}
-                      onChange={(e) => setCustomAmount(e.target.value)}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === '') {
+                          setCustomAmount('');
+                          return;
+                        }
+                        const n = parseFloat(raw);
+                        if (Number.isFinite(n) && n < MIN_CASHOUT_USD) {
+                          setCustomAmount(String(MIN_CASHOUT_USD));
+                          return;
+                        }
+                        setCustomAmount(raw);
+                      }}
                       className="w-full pl-9 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:outline-none focus:border-[var(--neon-cyan)] text-sm"
                     />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                    💡 You can request to cash out any amount won from your game platform. Upload your score proof below for instant desk verification.
+                    💡 Minimum cashout is ${MIN_CASHOUT_USD} USD. Upload your score proof below for desk verification.
                   </p>
                 </div>
               </div>

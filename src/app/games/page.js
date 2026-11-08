@@ -376,15 +376,16 @@ export default function GamesPage() {
               </p>
             </div>
 
-            <div className="relative w-full md:w-72">
+            <div className="relative w-full md:w-72 min-w-0 shrink">
               <input
-                type="text"
+                type="search"
                 placeholder="Search platforms..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="cyber-input pl-9 py-2 text-xs"
+                className="cyber-input games-search-input pl-9 py-2.5"
+                autoComplete="off"
               />
-              <Search size={15} className="absolute left-3 top-2.5 text-slate-500" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
             </div>
           </div>
 

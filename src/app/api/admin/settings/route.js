@@ -27,8 +27,9 @@ export async function GET() {
       welcomeBonusActive: true,
       regularBonusActive: true,
       referralBonusActive: true,
-      minRedemptionSC: 1.0,
-      cashoutRules: '1. All winnings from eligible sweepstakes games can be redeemed directly to your active cashout method.\n2. Cashouts are processed 24/7 with zero minimum fees.\n3. Ensure your Cashtag, handle, or crypto address matches your verified account.\n4. Processing time is usually within 5 to 15 minutes.',
+      minRedemptionSC: 40,
+      cashoutRules:
+        '1. All winnings from eligible sweepstakes games can be redeemed directly to your active cashout method.\n2. Minimum redeem / cashout amount is $40 USD (40 SC).\n3. Cashouts are processed 24/7 with zero processing fees.\n4. Ensure your Cashtag, handle, or crypto address matches your verified account.\n5. Processing time is usually within 5 to 15 minutes.',
       geoRestrictionEnabled: false,
       restrictedStates: [],
       maintenanceMode: false,

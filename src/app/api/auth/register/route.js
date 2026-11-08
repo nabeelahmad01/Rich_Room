@@ -143,7 +143,7 @@ export async function POST(req) {
         return NextResponse.json(
           {
             success: false,
-            error: `Device Restriction: Yeh device pehle se account (${boundUser.email}) ke sath bind hai. Aik device par sirf aik account allowed hai. (This device is already bound to ${boundUser.email})`,
+            error: `Device restriction: This device is already linked to ${boundUser.email}. Only one player account is allowed per device. Log in with that account or contact support.`,
           },
           { status: 403 }
         );

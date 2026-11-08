@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { defaultGameDescription } from '@/lib/gameDescriptions';
 import {
   Play,
   KeyRound,
@@ -22,6 +23,9 @@ export default function GameCard({
   isPending = false,
   onViewCredentials = null,
 }) {
+  const description =
+    (game.description && String(game.description).trim()) || defaultGameDescription(game);
+
   const imgSrc =
     game.thumbnail ||
     game.image ||
@@ -94,8 +98,8 @@ export default function GameCard({
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
-            {game.description}
+          <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed min-h-[2.5rem]">
+            {description}
           </p>
         </div>
 

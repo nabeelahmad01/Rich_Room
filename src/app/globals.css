@@ -318,6 +318,53 @@ h1, h2, h3, h4, .font-heading {
   color: #64748b;
 }
 
+.games-search-input {
+  width: 100%;
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+@media (min-width: 768px) {
+  .games-search-input {
+    font-size: 0.875rem;
+  }
+}
+
+/* Bonus alerts — stay above mobile nav + safe area (no bury at page bottom) */
+.bonus-alert-toast {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left, 12px));
+  right: max(12px, env(safe-area-inset-right, 12px));
+  bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 9500;
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--chrome-border);
+  background: rgba(19, 15, 6, 0.96);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 0 24px var(--neon-cyan-glow);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 1280px) {
+  .bonus-alert-toast {
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    right: 20px;
+    left: auto;
+    margin: 0;
+  }
+}
+
 /* Mascot Wrapper Class */
 .hero-mascot-box {
   position: relative;

@@ -58,7 +58,9 @@ export function middleware(req) {
     return NextResponse.next();
   }
 
-  // If geo header is present and country is NOT USA
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // Production: block when proxy reports a non-US country
   if (country && !ALLOWED_COUNTRIES.has(country)) {
     // Return USA Sweepstakes Compliance Block Screen
     const html = `<!DOCTYPE html>
@@ -150,6 +152,13 @@ export function middleware(req) {
         'Cache-Control': 'no-store, max-age=0',
       },
     });
+  }
+
+  // Production without country header: client GeoRegionGate + /api/geo/check (IP lookup)
+  if (isProd && !country) {
+    const res = NextResponse.next();
+    res.headers.set('x-richroom-geo-pending', '1');
+    return res;
   }
 
   return NextResponse.next();
