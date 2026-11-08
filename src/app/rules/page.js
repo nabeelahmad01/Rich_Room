@@ -9,19 +9,33 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { formatPlayerFacingCopy, MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
+import {
+  CACHE_KEYS,
+  readLocalCache,
+  writeLocalCache,
+} from '@/lib/playerDataCache';
+import { LoadingInline } from '@/components/common/LoadState';
 
 export default function RulesPage() {
   const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [cashoutRules, setCashoutRules] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [cashoutRules, setCashoutRules] = useState(() => {
+    const cached = readLocalCache(CACHE_KEYS.SETTINGS_SNIPPET);
+    return cached?.cashoutRules || '';
+  });
+  const [loading, setLoading] = useState(() => !readLocalCache(CACHE_KEYS.SETTINGS_SNIPPET)?.cashoutRules);
 
   React.useEffect(() => {
-    fetch('/api/admin/settings', { cache: 'no-store' })
+    const cached = readLocalCache(CACHE_KEYS.SETTINGS_SNIPPET);
+    if (!cached?.cashoutRules) setLoading(true);
+    fetch('/api/admin/settings', { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
-        if (d?.success && d?.settings?.cashoutRules) {
-          setCashoutRules(d.settings.cashoutRules);
+        if (d?.success && d?.settings) {
+          if (d.settings.cashoutRules) setCashoutRules(d.settings.cashoutRules);
+          writeLocalCache(CACHE_KEYS.SETTINGS_SNIPPET, {
+            cashoutRules: d.settings.cashoutRules || '',
+          });
         }
       })
       .catch(() => {})
@@ -71,8 +85,8 @@ export default function RulesPage() {
               </h2>
             </div>
 
-            {loading ? (
-              <p className="text-xs font-mono text-slate-500 py-6 text-center">LOADING CASHOUT RULES...</p>
+            {loading && !cashoutRules ? (
+              <LoadingInline label="Loading cashout rules…" />
             ) : cashoutRules ? (
               <div className="whitespace-pre-line text-xs sm:text-sm font-sans leading-relaxed text-slate-200 space-y-2">
                 {formatPlayerFacingCopy(cashoutRules)}

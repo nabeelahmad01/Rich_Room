@@ -26,11 +26,12 @@ import CyberFooter from '@/components/common/CyberFooter';
 import AuthModal from '@/components/modals/AuthModal';
 import { diffSet } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer, clearCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
+import { LoadingInline } from '@/components/common/LoadState';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState(getInitialPlayerUser);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !getInitialPlayerUser());
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
@@ -153,6 +154,9 @@ export default function ProfilePage() {
         />
 
         <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-28 xl:pb-8">
+          {loading && !user ? (
+            <LoadingInline label="Loading your profile…" />
+          ) : null}
           {/* Header Card */}
           <div className="p-6 md:p-8 rounded-3xl border border-[var(--chrome-border)] bg-gradient-to-br from-[#0c1333] via-[#090d24] to-[#050711] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center gap-5">

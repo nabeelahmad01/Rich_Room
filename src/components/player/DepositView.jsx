@@ -38,6 +38,7 @@ import {
   readPaymentMethodsCache,
   writePaymentMethodsCache,
 } from '@/lib/paymentMethodsCache';
+import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 
 export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -87,8 +88,13 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
   // History State
-  const [depositHistory, setDepositHistory] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [depositHistory, setDepositHistory] = useState(() => {
+    const cached = readSessionCache(CACHE_KEYS.DEPOSIT_HISTORY);
+    return Array.isArray(cached) ? cached : [];
+  });
+  const [loadingHistory, setLoadingHistory] = useState(
+    () => !readSessionCache(CACHE_KEYS.DEPOSIT_HISTORY)?.length
+  );
 
   // 1. Fetch current user & settings
   const fetchUserAndSettings = async (isSilent = false) => {
@@ -162,9 +168,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
       const data = await res.json();
       if (data.success && data.deposits) {
         diffSet(setDepositHistory, data.deposits);
-        try {
-          sessionStorage.setItem('pp_deposit_history', JSON.stringify(data.deposits));
-        } catch {}
+        writeSessionCache(CACHE_KEYS.DEPOSIT_HISTORY, data.deposits);
       }
     } catch (err) {
       console.error(err);
@@ -202,7 +206,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
       if (data.success && Array.isArray(data.games) && data.games.length > 0) {
         setAdminGames(data.games);
         try {
-          sessionStorage.setItem('cached_games_list', JSON.stringify(data.games));
+          writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
         } catch {}
         setSelectedGame((prev) => {
           if (!prev) return data.games[0].title || 'Panda Master';
@@ -217,16 +221,10 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   useEffect(() => {
     // 0ms instant hydrate client cache
     try {
-      const cachedGames = sessionStorage.getItem('cached_games_list');
-      if (cachedGames) {
-        const parsed = JSON.parse(cachedGames);
-        if (Array.isArray(parsed) && parsed.length > 0) setAdminGames(parsed);
-      }
-      const rawHist = sessionStorage.getItem('pp_deposit_history');
-      if (rawHist) {
-        const parsed = JSON.parse(rawHist);
-        if (Array.isArray(parsed) && parsed.length > 0) setDepositHistory(parsed);
-      }
+      const cachedGames = readSessionCache(CACHE_KEYS.GAMES_LIST);
+      if (cachedGames?.length) setAdminGames(cachedGames);
+      const cachedHist = readSessionCache(CACHE_KEYS.DEPOSIT_HISTORY);
+      if (cachedHist?.length) setDepositHistory(cachedHist);
     } catch {}
 
     const cached = getCachedUser();

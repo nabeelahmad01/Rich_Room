@@ -187,6 +187,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
         cached.map((g) => ({ ...g, title: cleanGameTitle(g.title) }))
       );
       setLoadingGames(false);
+    } else {
+      setLoadingGames(true);
     }
     try {
       let url = '/api/games';

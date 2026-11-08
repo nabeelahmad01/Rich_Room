@@ -1,23 +1,27 @@
-const STORAGE_KEY = 'rr_payment_methods_v1';
+import {
+  CACHE_KEYS,
+  readLocalCache,
+  writeLocalCache,
+} from '@/lib/playerDataCache';
+
 const TTL_MS = 30 * 60 * 1000;
 
 export function readPaymentMethodsCache() {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed?.methods) || parsed.methods.length === 0) return null;
-    if (Date.now() - (parsed.t || 0) > TTL_MS) return null;
-    return parsed.methods;
-  } catch {
-    return null;
-  }
+  const methods = readLocalCache(CACHE_KEYS.PAYMENT_METHODS, '', TTL_MS);
+  return Array.isArray(methods) && methods.length > 0 ? methods : null;
 }
 
 export function writePaymentMethodsCache(methods) {
-  if (typeof window === 'undefined' || !Array.isArray(methods) || methods.length === 0) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ t: Date.now(), methods }));
-  } catch {}
+  if (!Array.isArray(methods) || methods.length === 0) return;
+  writeLocalCache(CACHE_KEYS.PAYMENT_METHODS, methods, '', TTL_MS);
+}
+
+export function readCashoutMethodsCache() {
+  const methods = readLocalCache(CACHE_KEYS.CASHOUT_METHODS, '', TTL_MS);
+  return Array.isArray(methods) && methods.length > 0 ? methods : null;
+}
+
+export function writeCashoutMethodsCache(methods) {
+  if (!Array.isArray(methods) || methods.length === 0) return;
+  writeLocalCache(CACHE_KEYS.CASHOUT_METHODS, methods, '', TTL_MS);
 }

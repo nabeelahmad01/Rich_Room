@@ -11,11 +11,20 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { WHEEL_SLICES } from '@/lib/wheelConstants';
+import { getCachedUser } from '@/lib/authClient';
+import {
+  CACHE_KEYS,
+  readSessionCache,
+  writeSessionCache,
+} from '@/lib/playerDataCache';
+import { LoadingInline } from '@/components/common/LoadState';
 
 export default function SpinWheelView({ user: propUser, onSelectTab }) {
-  const [user, setUser] = useState(propUser || null);
-  const [canSpin, setCanSpin] = useState(false);
-  const [availableSpins, setAvailableSpins] = useState(0);
+  const [user, setUser] = useState(() => propUser || getCachedUser() || null);
+  const cachedSpin = typeof window !== 'undefined' ? readSessionCache(CACHE_KEYS.SPIN_STATUS) : null;
+  const [canSpin, setCanSpin] = useState(Boolean(cachedSpin?.canSpin));
+  const [availableSpins, setAvailableSpins] = useState(cachedSpin?.availableSpins || 0);
+  const [bootLoading, setBootLoading] = useState(!cachedSpin);
   const [loading, setLoading] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [rotationDegree, setRotationDegree] = useState(0);
@@ -39,18 +48,22 @@ export default function SpinWheelView({ user: propUser, onSelectTab }) {
       const res = await fetch('/api/daily-spin');
       const d = await res.json();
       if (d.success) {
-        setCanSpin(Boolean(d.canSpin));
-        setAvailableSpins(d.availableSpins || 0);
+        const next = { canSpin: Boolean(d.canSpin), availableSpins: d.availableSpins || 0 };
+        setCanSpin(next.canSpin);
+        setAvailableSpins(next.availableSpins);
+        writeSessionCache(CACHE_KEYS.SPIN_STATUS, next);
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setBootLoading(false);
     }
   };
 
   useEffect(() => {
     fetchUser();
     checkStatus();
-    const interval = setInterval(checkStatus, 5000);
+    const interval = setInterval(checkStatus, 8000);
     return () => clearInterval(interval);
   }, []);
 
@@ -124,6 +137,7 @@ export default function SpinWheelView({ user: propUser, onSelectTab }) {
 
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {bootLoading ? <LoadingInline label="Loading spin wheel…" /> : null}
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-slate-900 to-[#0c102b] p-6 sm:p-8 shadow-[0_0_40px_rgba(245,158,11,0.15)]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

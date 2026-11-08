@@ -2,6 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import {
+  CACHE_KEYS,
+  readSessionCache,
+  writeSessionCache,
+  shouldShowInitialLoad,
+} from '@/lib/playerDataCache';
+import { LoadingInline, CardSkeletonGrid } from '@/components/common/LoadState';
+import {
   Crown,
   Sparkles,
   Zap,
@@ -13,15 +20,18 @@ import {
 } from 'lucide-react';
 
 export default function PromotionsView({ onSelectTab }) {
-  const [promotions, setPromotions] = useState([]);
-  const [loadingPromos, setLoadingPromos] = useState(true);
+  const [promotions, setPromotions] = useState(() => readSessionCache(CACHE_KEYS.PROMOTIONS) || []);
+  const [loadingPromos, setLoadingPromos] = useState(() => shouldShowInitialLoad(promotions));
 
   useEffect(() => {
-    fetch('/api/promotions', { cache: 'no-store' })
+    const silent = promotions.length > 0;
+    if (!silent) setLoadingPromos(true);
+    fetch('/api/promotions', { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.success && Array.isArray(d?.promotions)) {
           setPromotions(d.promotions);
+          writeSessionCache(CACHE_KEYS.PROMOTIONS, d.promotions);
         }
       })
       .catch(() => {})
@@ -140,6 +150,10 @@ export default function PromotionsView({ onSelectTab }) {
           </button>
         </div>
       </div>
+
+      {loadingPromos && promotions.length === 0 && (
+        <CardSkeletonGrid count={3} className="mb-8" />
+      )}
 
       {/* VIP Tiers Matrix */}
       <div className="space-y-6">

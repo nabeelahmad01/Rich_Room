@@ -21,6 +21,12 @@ import WalletModal from '@/components/modals/WalletModal';
 import AuthModal from '@/components/modals/AuthModal';
 import { diffSet } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
+import {
+  CACHE_KEYS,
+  readSessionCache,
+  writeSessionCache,
+} from '@/lib/playerDataCache';
+import { LoadingInline, TableSkeleton } from '@/components/common/LoadState';
 
 export default function WalletPage() {
   const router = useRouter();
@@ -29,34 +35,55 @@ export default function WalletPage() {
   const [authModal, setAuthModal] = useState({ open: false, tab: 'login' });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [deposits, setDeposits] = useState([]);
-  const [redemptions, setRedemptions] = useState([]);
+  const [deposits, setDeposits] = useState(() => {
+    const snap = readSessionCache(CACHE_KEYS.WALLET_SNAPSHOT);
+    return snap?.deposits || [];
+  });
+  const [redemptions, setRedemptions] = useState(() => {
+    const snap = readSessionCache(CACHE_KEYS.WALLET_SNAPSHOT);
+    return snap?.redemptions || [];
+  });
+  const [loadingWallet, setLoadingWallet] = useState(
+    () => typeof window !== 'undefined' && readSessionCache(CACHE_KEYS.WALLET_SNAPSHOT) == null
+  );
 
-  const loadData = async () => {
+  const loadData = async (isSilent = false) => {
+    if (!isSilent && !readSessionCache(CACHE_KEYS.WALLET_SNAPSHOT)) {
+      setLoadingWallet(true);
+    }
     try {
-      const meRes = await fetch('/api/auth/me');
+      const meRes = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
         writeCachedPlayer(meData.user);
         diffSet(setUser, meData.user);
         const [depRes, withRes] = await Promise.all([
-          fetch('/api/payments/deposit'),
-          fetch('/api/payments/withdraw'),
+          fetch('/api/payments/deposit?lightweight=true', { credentials: 'include', cache: 'no-store' }),
+          fetch('/api/payments/withdraw?lightweight=true', { credentials: 'include', cache: 'no-store' }),
         ]);
         const depData = await depRes.json();
         const withData = await withRes.json();
-        if (depData.success) diffSet(setDeposits, depData.deposits || []);
-        if (withData.success) diffSet(setRedemptions, withData.redemptions || []);
+        const nextDeposits = depData.success ? depData.deposits || [] : deposits;
+        const nextRedemptions = withData.success ? withData.redemptions || [] : redemptions;
+        if (depData.success) diffSet(setDeposits, nextDeposits);
+        if (withData.success) diffSet(setRedemptions, nextRedemptions);
+        writeSessionCache(CACHE_KEYS.WALLET_SNAPSHOT, {
+          deposits: nextDeposits,
+          redemptions: nextRedemptions,
+        });
       }
     } catch {}
+    finally {
+      if (!isSilent) setLoadingWallet(false);
+    }
   };
 
   useEffect(() => {
-    loadData();
+    loadData(Boolean(readSessionCache(CACHE_KEYS.WALLET_SNAPSHOT)));
 
     const interval = setInterval(() => {
-      if (!document.hidden) loadData();
-    }, 2000);
+      if (!document.hidden) loadData(true);
+    }, 8000);
 
     const handleUserSync = (e) => {
       if (e.detail) diffSet(setUser, e.detail);
@@ -200,6 +227,8 @@ export default function WalletPage() {
               <p className="text-xs text-slate-400 py-6 text-center">
                 Please sign in to view your personal deposit and cashout history.
               </p>
+            ) : loadingWallet ? (
+              <TableSkeleton rows={5} />
             ) : deposits.length === 0 && redemptions.length === 0 ? (
               <p className="text-xs text-slate-400 py-6 text-center">
                 No transactions recorded yet. Use the buttons above to load credits or redeem winnings!

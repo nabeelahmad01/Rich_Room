@@ -2,6 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { diffSet } from '@/lib/fastDiff';
+import { getCachedUser } from '@/lib/authClient';
+import {
+  CACHE_KEYS,
+  readSessionCache,
+  writeSessionCache,
+  shouldShowInitialLoad,
+} from '@/lib/playerDataCache';
+import { LoadingInline, StatSkeletonRow } from '@/components/common/LoadState';
 import {
   Users,
   Copy,
@@ -16,24 +24,37 @@ import {
 } from 'lucide-react';
 
 export default function ReferralView({ user: propUser, onOpenAuth }) {
-  const [user, setUser] = useState(propUser || null);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(!propUser);
+  const [user, setUser] = useState(() => propUser || getCachedUser() || null);
+  const userKey = user?.userId || user?.id || user?._id || user?.email || '';
+  const [stats, setStats] = useState(() =>
+    userKey ? readSessionCache(CACHE_KEYS.AFFILIATE_STATS, userKey) : null
+  );
+  const [loading, setLoading] = useState(() =>
+    (propUser || getCachedUser()) && shouldShowInitialLoad(stats)
+  );
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState('');
 
   const loadUserAndStats = async (isSilent = false) => {
+    const cached =
+      userKey ? readSessionCache(CACHE_KEYS.AFFILIATE_STATS, userKey) : null;
+    if (!isSilent && shouldShowInitialLoad(cached) && shouldShowInitialLoad(stats)) {
+      setLoading(true);
+    }
     try {
-      const meRes = await fetch('/api/auth/me', { cache: 'no-store' });
+      const meRes = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       const meData = await meRes.json();
       if (meData.authenticated && meData.user) {
         diffSet(setUser, meData.user);
-        const affRes = await fetch('/api/affiliates', { cache: 'no-store' });
+        const affRes = await fetch('/api/affiliates', { credentials: 'include', cache: 'no-store' });
         const affData = await affRes.json();
         if (affData.success && affData.stats) {
           diffSet(setStats, affData.stats);
+          const scope =
+            meData.user.userId || meData.user.id || meData.user._id || meData.user.email;
+          if (scope) writeSessionCache(CACHE_KEYS.AFFILIATE_STATS, affData.stats, scope);
         }
       }
     } catch {}
@@ -41,10 +62,10 @@ export default function ReferralView({ user: propUser, onOpenAuth }) {
   };
 
   useEffect(() => {
-    loadUserAndStats();
+    loadUserAndStats(Boolean(stats));
     const interval = setInterval(() => {
       if (!document.hidden) loadUserAndStats(true);
-    }, 3000);
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
@@ -125,6 +146,11 @@ export default function ReferralView({ user: propUser, onOpenAuth }) {
           >
             LOG IN / REGISTER
           </button>
+        </div>
+      ) : loading && shouldShowInitialLoad(stats) ? (
+        <div className="space-y-4">
+          <LoadingInline label="Loading referral stats…" />
+          <StatSkeletonRow count={4} />
         </div>
       ) : (
         <div className="space-y-6">

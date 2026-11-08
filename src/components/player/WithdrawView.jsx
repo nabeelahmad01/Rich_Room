@@ -31,6 +31,7 @@ import { getAvailableGamePlatforms, ALL_PLATFORM_GAMES } from '@/lib/gameAssets'
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
 import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
+import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 
 export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -56,11 +57,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const [adminGames, setAdminGames] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const cached = sessionStorage.getItem('cached_games_list');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
+        const cached = readSessionCache(CACHE_KEYS.GAMES_LIST);
+        if (cached?.length) return cached;
       } catch {}
     }
     return ALL_PLATFORM_GAMES.map((title) => ({ title }));
@@ -71,18 +69,15 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
 
   // History State (Hydrated from cache for 0ms instant display)
   const [withdrawHistory, setWithdrawHistory] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = sessionStorage.getItem('pp_withdraw_history');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch {}
-    }
-    return [];
+    const cached = readSessionCache(CACHE_KEYS.WITHDRAW_HISTORY);
+    return Array.isArray(cached) ? cached : [];
   });
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(
+    () => !readSessionCache(CACHE_KEYS.WITHDRAW_HISTORY)?.length
+  );
+  const [loadingAccounts, setLoadingAccounts] = useState(
+    () => !readSessionCache(CACHE_KEYS.GAMES_LIST)?.length
+  );
 
   // 1. Fetch current user
   const fetchUser = async (isSilent = false) => {
@@ -110,9 +105,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       const data = await res.json();
       if (data.success && data.redemptions) {
         diffSet(setWithdrawHistory, data.redemptions);
-        try {
-          sessionStorage.setItem('pp_withdraw_history', JSON.stringify(data.redemptions));
-        } catch {}
+        writeSessionCache(CACHE_KEYS.WITHDRAW_HISTORY, data.redemptions);
       }
     } catch (err) {
       console.error(err);
@@ -122,9 +115,10 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   };
 
   // 3. Fetch user active game credentials
-  const fetchGameAccounts = async () => {
+  const fetchGameAccounts = async (isSilent = false) => {
+    if (!isSilent && userGameAccounts.length === 0) setLoadingAccounts(true);
     try {
-      const res = await fetch('/api/game-accounts', { cache: 'no-store' });
+      const res = await fetch('/api/game-accounts', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.gameAccounts)) {
         diffSet(setUserGameAccounts, data.gameAccounts);
@@ -134,6 +128,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      if (!isSilent) setLoadingAccounts(false);
     }
   };
 
@@ -145,7 +141,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       if (data.success && Array.isArray(data.games) && data.games.length > 0) {
         setAdminGames(data.games);
         try {
-          sessionStorage.setItem('cached_games_list', JSON.stringify(data.games));
+          writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
         } catch {}
       }
     } catch (err) {
