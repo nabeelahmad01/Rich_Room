@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, areEqual } from '@/lib/fastDiff';
+import { isPlayerSoundEnabled, refreshPlayerNotifications } from '@/lib/notificationsClient';
+import { fetchCurrentUser } from '@/lib/authClient';
 
 export default function LiveChatWidget({ user: initialUser, soundEnabled = true }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,7 +35,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
-  const lastStaffMsgCountRef = useRef(0);
+  const lastStaffMsgIdRef = useRef(null);
   const fetchMessagesRef = useRef(null);
   const prevMsgCountRef = useRef(0);
   const prevOpenRef = useRef(false);
@@ -59,8 +61,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     if (initialUser) {
       setCurrentUser(initialUser);
     } else {
-      fetch('/api/auth/me')
-        .then((r) => (r.ok ? r.json() : null))
+      fetchCurrentUser()
         .then((d) => {
           if (d?.user) setCurrentUser(d.user);
         })
@@ -173,7 +174,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       const endpoint = `/api/chat?${params.toString()}`;
 
       try {
-        const res = await fetch(endpoint, { cache: 'no-store' });
+        const res = await fetch(endpoint, { credentials: 'include', cache: 'no-store' });
         const data = await res.json();
         if (isCancelled || !data.success) return;
 
@@ -201,11 +202,20 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
           diffSet(setUnreadStaffCount, data.unreadCount || staffMsgs.filter((m) => !m.read).length);
         }
 
-        // Optional sound alert on new incoming staff message
-        if (soundEnabled && staffMsgs.length > lastStaffMsgCountRef.current && lastStaffMsgCountRef.current > 0) {
-          playTune('bell', 0.6);
+        const latestStaff = staffMsgs[staffMsgs.length - 1];
+        const latestId = latestStaff?.id ?? latestStaff?._id ?? null;
+        if (
+          soundEnabled &&
+          isPlayerSoundEnabled() &&
+          latestId &&
+          lastStaffMsgIdRef.current &&
+          latestId !== lastStaffMsgIdRef.current &&
+          latestStaff.senderRole === 'staff'
+        ) {
+          playTune('bell', 0.65);
         }
-        lastStaffMsgCountRef.current = staffMsgs.length;
+        if (latestId) lastStaffMsgIdRef.current = String(latestId);
+        else if (staffMsgs.length === 0) lastStaffMsgIdRef.current = null;
       } catch {
         // silent polling error
       }
@@ -213,7 +223,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
     fetchMessages();
     fetchMessagesRef.current = fetchMessages;
-    const pollInterval = isOpen ? 3500 : 12000;
+    const pollInterval = isOpen ? 2000 : 5000;
     const interval = setInterval(fetchMessages, pollInterval);
 
     return () => {
@@ -221,6 +231,13 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       clearInterval(interval);
     };
   }, [isOpen, currentUser, guestId, soundEnabled]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('paradise-chat-unread', { detail: { count: unreadStaffCount } })
+    );
+  }, [unreadStaffCount]);
 
   // Real-time zero-delay listener for Staff Replies from Admin Concierge Desk
   useEffect(() => {
@@ -235,6 +252,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
         if (fetchMessagesRef.current) {
           fetchMessagesRef.current();
         }
+        refreshPlayerNotifications({ force: true }).catch(() => {});
       }
     };
 
@@ -375,6 +393,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -410,6 +429,9 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       try {
         localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
       } catch {}
+      if (fetchMessagesRef.current) {
+        fetchMessagesRef.current();
+      }
     } catch (err) {
       // Restore input text so the user doesn't lose it
       setInputMessage(currentText);

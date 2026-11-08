@@ -79,10 +79,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
 
   useEffect(() => {
     fetchData(false);
-    // Silent background polling (1500ms) for real-time live desk operations
+    // Silent background polling (4s) for live desk operations
     const interval = setInterval(() => {
       if (!document.hidden) fetchData(true);
-    }, 1500);
+    }, 4000);
 
     // Cross-tab broadcast listener for instant (0ms) cashout detection
     let channel = null;

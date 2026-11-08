@@ -1245,13 +1245,15 @@ export default function AdminPortal({ initialTab }) {
     };
   }, [user]);
 
-  // Run persistent poller every 1.2 seconds for lightning-fast responsiveness!
+  // Run persistent poller every 3.5 seconds (BroadcastChannel handles instant cross-tab alerts)
   useEffect(() => {
     if (!user) return;
     syncRequestsAndAlerts();
     const interval = setInterval(() => {
-      syncRequestsAndAlerts();
-    }, 1200);
+      if (!document.hidden) {
+        syncRequestsAndAlerts();
+      }
+    }, 3500);
 
     const handleFocus = () => {
       syncRequestsAndAlerts();
@@ -1380,7 +1382,9 @@ export default function AdminPortal({ initialTab }) {
         .catch(() => {});
     };
     fetchChatMsgs();
-    const interval = setInterval(fetchChatMsgs, 1200);
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchChatMsgs();
+    }, 2500);
     return () => clearInterval(interval);
   }, [activeChatConv, activeTab]);
 

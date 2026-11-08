@@ -105,9 +105,10 @@ export default function ChatPage() {
         params.set('guestId', activeGuestId);
       }
 
+      params.set('markRead', 'true');
       const endpoint = `/api/chat?${params.toString()}`;
       try {
-        const res = await fetch(endpoint, { cache: 'no-store' });
+        const res = await fetch(endpoint, { credentials: 'include', cache: 'no-store' });
         const data = await res.json();
         if (!isCancelled && data.success) {
           const newMsgs = data.messages || [];
@@ -136,7 +137,7 @@ export default function ChatPage() {
 
     fetchMsgs();
     fetchMsgsRef.current = fetchMsgs;
-    const interval = setInterval(fetchMsgs, 3000);
+    const interval = setInterval(fetchMsgs, 2000);
     return () => {
       isCancelled = true;
       clearInterval(interval);
@@ -285,6 +286,7 @@ export default function ChatPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

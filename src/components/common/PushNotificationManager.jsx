@@ -3,15 +3,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Bell, X, ExternalLink, Sparkles, ShieldCheck, MessageSquare } from 'lucide-react';
-import { playTune, unlockAudioContext } from '@/lib/soundAlerts';
+import { playTune, unlockAudioContext, updateFaviconBadge } from '@/lib/soundAlerts';
 import { formatPlayerFacingCopy } from '@/lib/cashoutPolicy';
+import {
+  refreshPlayerNotifications,
+  isPlayerSoundEnabled,
+  tuneForNotification,
+} from '@/lib/notificationsClient';
 
 export default function PushNotificationManager() {
   const router = useRouter();
   const pathname = usePathname();
   const [activeToast, setActiveToast] = useState(null);
   const [toastProgress, setToastProgress] = useState(100);
-  const lastSeenIdRef = useRef(null);
+  const seenNotifIdsRef = useRef(new Set());
   const isInitialRef = useRef(true);
   const toastTimerRef = useRef(null);
   const progressIntervalRef = useRef(null);
@@ -79,11 +84,12 @@ export default function PushNotificationManager() {
 
   // Helper to show In-App Pop-Up Toast
   const showInAppToast = (item) => {
-    // Play sci-fi audio alert
-    try {
-      unlockAudioContext();
-      playTune('cyber', 0.65);
-    } catch {}
+    if (isPlayerSoundEnabled()) {
+      try {
+        unlockAudioContext();
+        playTune(tuneForNotification(item?.type), 0.65);
+      } catch {}
+    }
 
     setActiveToast(item);
     setToastProgress(100);
@@ -155,50 +161,61 @@ export default function PushNotificationManager() {
     }
   }, []);
 
-  // 3. Poll for incoming broadcast notifications in real time
+  // 3. Real-time notification hub (deduped API + instant cross-tab sync)
   useEffect(() => {
     let isCancelled = false;
+    if (pathname && pathname.startsWith('/admin')) return undefined;
 
-    const checkIncomingNotifications = async () => {
-      if (document.hidden) return; // Save VPS resources when tab inactive
-      if (pathname && pathname.startsWith('/admin')) return; // Never show on admin operations console
+    const processPayload = (payload) => {
+      if (isCancelled || !payload?.notifications) return;
+      const notifs = payload.notifications;
+      const unreadCount = payload.unreadCount ?? notifs.filter((n) => !n.read).length;
+      updateFaviconBadge(unreadCount);
 
-      try {
-        const activeGuestId = typeof window !== 'undefined' ? (localStorage.getItem('pp_guest_chat_id') || '') : '';
-        const storedEmail = typeof window !== 'undefined' ? (localStorage.getItem('pp_user_email') || '') : '';
-        const params = new URLSearchParams();
-        if (storedEmail) params.set('email', storedEmail);
-        else if (activeGuestId) params.set('guestId', activeGuestId);
-
-        const notifUrl = params.toString() ? `/api/notifications?${params.toString()}` : '/api/notifications';
-        const res = await fetch(notifUrl, { cache: 'no-store' });
-        const data = await res.json();
-        if (isCancelled || !data.success || !Array.isArray(data.notifications)) return;
-
-        const notifs = data.notifications;
-        if (notifs.length === 0) return;
-
-        const newest = notifs[0];
-
-        // On first run, record the newest ID so we don't spam old historical alerts
-        if (isInitialRef.current) {
-          lastSeenIdRef.current = newest.id;
-          isInitialRef.current = false;
-          return;
-        }
-
-        // If a new notification arrived with a different ID
-        if (newest.id && newest.id !== lastSeenIdRef.current) {
-          lastSeenIdRef.current = newest.id;
-          dispatchAlert(newest);
-        }
-      } catch {
-        // silent fail
+      if (isInitialRef.current) {
+        notifs.forEach((n) => {
+          if (n?.id) seenNotifIdsRef.current.add(n.id);
+        });
+        isInitialRef.current = false;
+        return;
       }
+
+      const freshUnread = notifs.filter(
+        (n) => n?.id && !n.read && !seenNotifIdsRef.current.has(n.id)
+      );
+      if (freshUnread.length === 0) return;
+
+      freshUnread.forEach((n) => seenNotifIdsRef.current.add(n.id));
+      dispatchAlert(freshUnread[0]);
     };
 
-    checkIncomingNotifications();
-    const interval = setInterval(checkIncomingNotifications, 4000);
+    const pull = async (force = false) => {
+      if (document.hidden) return;
+      const payload = await refreshPlayerNotifications({ force });
+      processPayload(payload);
+    };
+
+    pull(true);
+
+    const interval = setInterval(() => pull(false), 4500);
+
+    const onSync = (e) => processPayload(e.detail);
+    window.addEventListener('paradise-notifications-sync', onSync);
+
+    let notifChan = null;
+    try {
+      notifChan = new BroadcastChannel('paradise_notifications_sync');
+      notifChan.onmessage = (ev) => processPayload(ev.data);
+    } catch {}
+
+    const onUserOrBalance = () => pull(true);
+    window.addEventListener('paradise-user-sync', onUserOrBalance);
+    window.addEventListener('balanceUpdate', onUserOrBalance);
+    const onFocus = () => pull(true);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) pull(true);
+    });
 
     // Event listener for manual test or in-app triggers
     const handleCustomTrigger = (e) => {
@@ -225,6 +242,11 @@ export default function PushNotificationManager() {
       isCancelled = true;
       clearInterval(interval);
       window.removeEventListener('paradise-show-notification', handleCustomTrigger);
+      window.removeEventListener('paradise-notifications-sync', onSync);
+      window.removeEventListener('paradise-user-sync', onUserOrBalance);
+      window.removeEventListener('balanceUpdate', onUserOrBalance);
+      window.removeEventListener('focus', onFocus);
+      if (notifChan) notifChan.close();
     };
   }, [pathname]);
 
@@ -239,6 +261,7 @@ export default function PushNotificationManager() {
           fetch('/api/notifications', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
               userId: liveUser.userId || liveUser._id || liveUser.id,
               email: liveUser.email,

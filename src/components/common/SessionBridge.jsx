@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
+import { readCachedPlayer } from '@/lib/playerSessionCache';
+import { fetchCurrentUser } from '@/lib/authClient';
 
 /**
  * Keeps client UI in sync with the httpOnly session cookie after client-side navigation.
@@ -21,14 +22,11 @@ export default function SessionBridge() {
 
     const sync = async () => {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
-        const data = await res.json();
+        const data = await fetchCurrentUser();
         if (cancelled || typeof window === 'undefined') return;
-        if (data.authenticated && data.user) {
-          writeCachedPlayer(data.user);
+        if (data?.authenticated && data?.user) {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
         } else {
-          writeCachedPlayer(null);
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }
       } catch {

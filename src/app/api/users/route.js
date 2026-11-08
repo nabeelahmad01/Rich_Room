@@ -37,78 +37,119 @@ export async function GET(req) {
       const uEmail = (u.email || '').toLowerCase().trim();
       const uUsername = u.username || '';
 
-      // User deposits
-      const deposits = await depositsCol
-        .find({
-          $or: [
-            { userId: uIdStr },
-            { username: uUsername },
-            { userEmail: uEmail },
-          ],
-        })
-        .sort({ createdAt: -1 })
-        .toArray();
-
-      // User withdrawals
-      const withdrawals = await redemptionsCol
-        .find({
-          $or: [
-            { userId: uIdStr },
-            { username: uUsername },
-          ],
-        })
-        .sort({ createdAt: -1 })
-        .toArray();
-
-      // User game accounts
-      const gameAccounts = await gameAccountsCol
-        .find({ userEmail: uEmail })
-        .sort({ createdAt: -1 })
-        .toArray();
-
-      // User coin/account requests
-      const accountRequests = await accountRequestsCol
-        .find({
-          $or: [
-            { userEmail: uEmail },
-            { userName: uUsername },
-          ],
-        })
-        .sort({ createdAt: -1 })
-        .toArray();
-
-      // Referrals (users invited by this user)
-      const referralQuery = {
-        $or: [{ referredBy: uUsername }],
+      const depositMatch = {
+        $or: [
+          { userId: uIdStr },
+          { username: uUsername },
+          { userEmail: uEmail },
+        ],
       };
-      if (u.referralCode) {
-        referralQuery.$or.push({ referredBy: u.referralCode });
-      }
-      const referrals = await usersCol
-        .find(referralQuery)
-        .project({ username: 1, email: 1, createdAt: 1, balanceSC: 1, totalDeposited: 1 })
-        .sort({ createdAt: -1 })
-        .toArray();
+      const withdrawMatch = {
+        $or: [{ userId: uIdStr }, { username: uUsername }],
+      };
+      const approvedDepositStatuses = ['APPROVED', 'approved', 'COMPLETED', 'completed'];
+      const paidWithdrawStatuses = ['COMPLETED', 'completed', 'approved', 'PAID'];
 
-      // Ledger history
-      const ledger = await ledgerCol
-        .find({
-          $or: [
-            { userId: uIdStr },
-            { username: uUsername },
-          ],
-        })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray();
+      const proofLen = (field) => ({
+        $gt: [{ $strLenCP: { $ifNull: [field, ''] } }, 0],
+      });
 
-      const totalDepositsAmount = deposits
-        .filter(d => d.status === 'APPROVED' || d.status === 'approved' || d.status === 'COMPLETED')
-        .reduce((sum, d) => sum + Number(d.amount || 0), 0);
+      const [
+        depositTotalAgg,
+        withdrawTotalAgg,
+        deposits,
+        withdrawals,
+        gameAccounts,
+        accountRequests,
+        referrals,
+        ledger,
+      ] = await Promise.all([
+        depositsCol
+          .aggregate([
+            { $match: { ...depositMatch, status: { $in: approvedDepositStatuses } } },
+            { $group: { _id: null, total: { $sum: { $toDouble: '$amount' } } } },
+          ])
+          .toArray(),
+        redemptionsCol
+          .aggregate([
+            { $match: { ...withdrawMatch, status: { $in: paidWithdrawStatuses } } },
+            { $group: { _id: null, total: { $sum: { $toDouble: '$amount' } } } },
+          ])
+          .toArray(),
+        depositsCol
+          .aggregate([
+            { $match: depositMatch },
+            { $sort: { createdAt: -1 } },
+            { $limit: 50 },
+            {
+              $project: {
+                amount: 1,
+                methodName: 1,
+                status: 1,
+                txHash: 1,
+                senderNote: 1,
+                createdAt: 1,
+                proofUrl: 1,
+                hasProofImage: {
+                  $or: [
+                    proofLen('$proofImage'),
+                    proofLen('$receiptImage'),
+                    proofLen('$screenshot'),
+                    proofLen('$proofUrl'),
+                  ],
+                },
+              },
+            },
+          ])
+          .toArray(),
+        redemptionsCol
+          .aggregate([
+            { $match: withdrawMatch },
+            { $sort: { createdAt: -1 } },
+            { $limit: 50 },
+            {
+              $project: {
+                amount: 1,
+                gameTitle: 1,
+                payoutMethod: 1,
+                destinationAddress: 1,
+                status: 1,
+                stage: 1,
+                rejectionReason: 1,
+                createdAt: 1,
+                hasGameScreenshot: proofLen('$gameScreenshot'),
+                hasQrCodeImage: proofLen('$qrCodeImage'),
+              },
+            },
+          ])
+          .toArray(),
+        gameAccountsCol.find({ userEmail: uEmail }).sort({ createdAt: -1 }).limit(100).toArray(),
+        accountRequestsCol
+          .find({
+            $or: [{ userEmail: uEmail }, { userName: uUsername }],
+          })
+          .sort({ createdAt: -1 })
+          .limit(50)
+          .toArray(),
+        (async () => {
+          const referralQuery = { $or: [{ referredBy: uUsername }] };
+          if (u.referralCode) referralQuery.$or.push({ referredBy: u.referralCode });
+          return usersCol
+            .find(referralQuery)
+            .project({ username: 1, email: 1, createdAt: 1, balanceSC: 1, totalDeposited: 1 })
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .toArray();
+        })(),
+        ledgerCol
+          .find({ $or: [{ userId: uIdStr }, { username: uUsername }] })
+          .sort({ createdAt: -1 })
+          .limit(50)
+          .toArray(),
+      ]);
 
-      const totalWithdrawalsAmount = withdrawals
-        .filter(w => w.status === 'COMPLETED' || w.status === 'approved' || w.status === 'PAID')
-        .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+      const totalDepositsAmount = Number(depositTotalAgg[0]?.total || 0);
+      const totalWithdrawalsAmount = Number(withdrawTotalAgg[0]?.total || 0);
 
       return NextResponse.json({
         success: true,
@@ -130,29 +171,42 @@ export async function GET(req) {
           createdAt: u.createdAt,
           lastLoginAt: u.lastLoginAt,
         },
-        deposits: deposits.map(d => ({
-          id: d._id.toString(),
-          amount: Number(d.amount || 0),
-          methodName: d.methodName || 'Payment Rail',
-          status: (d.status || 'PENDING').toUpperCase(),
-          txHash: d.txHash || '',
-          senderNote: d.senderNote || '',
-          proofImage: d.proofImage || null,
-          createdAt: d.createdAt,
-        })),
-        withdrawals: withdrawals.map(w => ({
-          id: w._id.toString(),
-          amount: Number(w.amount || 0),
-          gameTitle: w.gameTitle || 'Sweepstakes Platform',
-          payoutMethod: w.payoutMethod || 'Cash App',
-          destinationAddress: w.destinationAddress || '',
-          status: (w.status || 'PENDING').toUpperCase(),
-          stage: w.stage || '',
-          gameScreenshot: w.gameScreenshot || null,
-          qrCodeImage: w.qrCodeImage || null,
-          rejectionReason: w.rejectionReason || '',
-          createdAt: w.createdAt,
-        })),
+        deposits: deposits.map((d) => {
+          const id = d._id.toString();
+          return {
+            id,
+            amount: Number(d.amount || 0),
+            methodName: d.methodName || 'Payment Rail',
+            status: (d.status || 'PENDING').toUpperCase(),
+            txHash: d.txHash || '',
+            senderNote: d.senderNote || '',
+            hasProofImage: Boolean(d.hasProofImage),
+            proofPreviewUrl: d.hasProofImage ? `/api/payments/deposit/proof?id=${id}` : null,
+            createdAt: d.createdAt,
+          };
+        }),
+        withdrawals: withdrawals.map((w) => {
+          const id = w._id.toString();
+          return {
+            id,
+            amount: Number(w.amount || 0),
+            gameTitle: w.gameTitle || 'Sweepstakes Platform',
+            payoutMethod: w.payoutMethod || 'Cash App',
+            destinationAddress: w.destinationAddress || '',
+            status: (w.status || 'PENDING').toUpperCase(),
+            stage: w.stage || '',
+            hasGameScreenshot: Boolean(w.hasGameScreenshot),
+            hasQrCodeImage: Boolean(w.hasQrCodeImage),
+            gameProofUrl: w.hasGameScreenshot
+              ? `/api/payments/withdraw/proof?id=${id}&type=gameScreenshot`
+              : null,
+            qrProofUrl: w.hasQrCodeImage
+              ? `/api/payments/withdraw/proof?id=${id}&type=qrCodeImage`
+              : null,
+            rejectionReason: w.rejectionReason || '',
+            createdAt: w.createdAt,
+          };
+        }),
         gameAccounts: gameAccounts.map(g => ({
           id: g._id.toString(),
           gameTitle: g.gameTitle,

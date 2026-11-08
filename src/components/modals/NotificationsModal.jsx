@@ -17,6 +17,10 @@ import {
 } from 'lucide-react';
 import { diffSet } from '@/lib/fastDiff';
 import { formatPlayerFacingCopy } from '@/lib/cashoutPolicy';
+import {
+  refreshPlayerNotifications,
+  getLastNotificationPayload,
+} from '@/lib/notificationsClient';
 
 export default function NotificationsModal({ isOpen, onClose, user, onAllRead }) {
   const router = useRouter();
@@ -29,12 +33,9 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
   const fetchNotifs = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
-      const email = user?.email ? encodeURIComponent(user.email) : '';
-      const url = email ? `/api/notifications?email=${email}` : '/api/notifications';
-      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.notifications)) {
-        diffSet(setNotifs, data.notifications);
+      const payload = await refreshPlayerNotifications({ force: !isSilent });
+      if (payload?.notifications) {
+        diffSet(setNotifs, payload.notifications);
       } else if (!isSilent) {
         diffSet(setNotifs, []);
       }
@@ -60,6 +61,7 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
       });
       setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
       if (onAllReadRef.current) onAllReadRef.current();
+      refreshPlayerNotifications({ force: true }).catch(() => {});
     } catch {
       // silent fail
     }
@@ -90,14 +92,28 @@ export default function NotificationsModal({ isOpen, onClose, user, onAllRead })
   useEffect(() => {
     if (!isOpen) return;
 
+    const cached = getLastNotificationPayload();
+    if (cached?.notifications?.length) {
+      diffSet(setNotifs, cached.notifications);
+      setLoading(false);
+    }
+
     fetchNotifs(false);
     markAllRead();
 
+    const onSync = (e) => {
+      if (e.detail?.notifications) diffSet(setNotifs, e.detail.notifications);
+    };
+    window.addEventListener('paradise-notifications-sync', onSync);
+
     const interval = setInterval(() => {
       if (!document.hidden) fetchNotifs(true);
-    }, 5000);
+    }, 4000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('paradise-notifications-sync', onSync);
+    };
   }, [isOpen, fetchNotifs, markAllRead]);
 
   if (!isOpen) return null;

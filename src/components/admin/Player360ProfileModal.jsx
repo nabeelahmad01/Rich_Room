@@ -33,6 +33,7 @@ export default function Player360ProfileModal({
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState('overview');
   const [copiedField, setCopiedField] = useState(null);
 
@@ -104,19 +105,34 @@ export default function Player360ProfileModal({
   };
 
   const fetchProfile = async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      setData(null);
+      return;
+    }
     setLoading(true);
+    setLoadError(null);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
-      const res = await fetch(`/api/users?userId=${encodeURIComponent(userId)}`);
+      const res = await fetch(`/api/users?userId=${encodeURIComponent(userId)}`, {
+        credentials: 'include',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
       const d = await res.json();
       if (d.success) {
         setData(d);
       } else {
-        alert(d.error || 'Failed to load user profile');
+        setLoadError(d.error || 'Failed to load user profile');
       }
     } catch (err) {
       console.error('Fetch player 360 error:', err);
+      setLoadError(
+        err?.name === 'AbortError' ? 'Request timed out — try Refresh.' : 'Could not load profile.'
+      );
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -737,7 +753,25 @@ export default function Player360ProfileModal({
             </div>
           ) : !data ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#9A91A8', fontSize: '13px' }}>
-              Failed to load player data.
+              {loadError || 'Failed to load player data.'}
+              <div style={{ marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={fetchProfile}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
+                    background: 'rgba(255, 215, 0, 0.12)',
+                    color: 'var(--neon-cyan)',
+                    fontWeight: 800,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Try again
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -943,10 +977,10 @@ export default function Player360ProfileModal({
                                 {d.txHash || d.senderNote || '—'}
                               </td>
                               <td style={{ padding: '12px 16px' }}>
-                                {d.proofImage ? (
+                                {d.hasProofImage && d.proofPreviewUrl ? (
                                   <button
                                     type="button"
-                                    onClick={() => setPreviewImage(d.proofImage)}
+                                    onClick={() => setPreviewImage(d.proofPreviewUrl)}
                                     style={{
                                       padding: '4px 10px',
                                       borderRadius: '8px',
@@ -1029,10 +1063,10 @@ export default function Player360ProfileModal({
                                 {w.destinationAddress || '—'}
                               </td>
                               <td style={{ padding: '12px 16px' }}>
-                                {w.gameScreenshot ? (
+                                {w.hasGameScreenshot && w.gameProofUrl ? (
                                   <button
                                     type="button"
-                                    onClick={() => setPreviewImage(w.gameScreenshot)}
+                                    onClick={() => setPreviewImage(w.gameProofUrl)}
                                     style={{
                                       padding: '4px 10px',
                                       borderRadius: '8px',

@@ -1,45 +1,31 @@
-const STORAGE_KEY = 'pp_player_session';
+import {
+  getCachedUser,
+  setCachedUser,
+  fetchCurrentUser,
+} from '@/lib/authClient';
+
+export { fetchCurrentUser };
 
 /** Lightweight player profile for instant UI hydrate (no secrets). */
 export function readCachedPlayer() {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
+  return getCachedUser();
 }
 
 export function writeCachedPlayer(user) {
-  if (typeof window === 'undefined') return;
-  try {
-    if (!user) {
-      localStorage.removeItem(STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-  } catch {
-    /* quota / private mode */
-  }
+  setCachedUser(user);
 }
 
 export function clearCachedPlayer() {
-  writeCachedPlayer(null);
+  setCachedUser(null);
 }
 
 export function getInitialPlayerUser() {
-  return readCachedPlayer();
+  return getCachedUser();
 }
 
 /** Call on logout so every tab and navbar loses guest/login flash state. */
 export function broadcastPlayerLogout() {
   clearCachedPlayer();
   if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem('pp_user_email');
-  } catch {}
   window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
 }
