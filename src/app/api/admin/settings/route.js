@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser, ROLES } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
+import { DEFAULT_CASHOUT_RULES, MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,9 +28,8 @@ export async function GET() {
       welcomeBonusActive: true,
       regularBonusActive: true,
       referralBonusActive: true,
-      minRedemptionSC: 40,
-      cashoutRules:
-        '1. All winnings from eligible sweepstakes games can be redeemed directly to your active cashout method.\n2. Minimum redeem / cashout amount is $40 USD (40 SC).\n3. Cashouts are processed 24/7 with zero processing fees.\n4. Ensure your Cashtag, handle, or crypto address matches your verified account.\n5. Processing time is usually within 5 to 15 minutes.',
+      minRedemptionSC: MIN_CASHOUT_USD,
+      cashoutRules: DEFAULT_CASHOUT_RULES,
       geoRestrictionEnabled: false,
       restrictedStates: [],
       maintenanceMode: false,

@@ -13,7 +13,7 @@ export const CACHE_KEYS = {
   WALLET_SNAPSHOT: 'rr_wallet_snapshot_v1',
   SPIN_STATUS: 'rr_spin_status_v1',
   GAMES_LIST: 'cached_games_list',
-  SETTINGS_SNIPPET: 'rr_settings_snippet_v1',
+  SETTINGS_SNIPPET: 'rr_settings_snippet_v2',
 };
 
 const DEFAULT_TTL = 10 * 60 * 1000;

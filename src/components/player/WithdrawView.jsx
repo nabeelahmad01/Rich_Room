@@ -33,6 +33,7 @@ import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
 import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
+import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 
 export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -73,6 +74,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     () => !(typeof window !== 'undefined' && readCashoutMethodsCache()?.length)
   );
 
+  const [showHistory, setShowHistory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
 
@@ -142,25 +144,16 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  // 4. Fetch active games catalog from Admin
-  const fetchGames = async () => {
-    try {
-      const res = await fetch('/api/games', { cache: 'no-store' });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.games) && data.games.length > 0) {
-        setAdminGames(data.games);
-        try {
-          writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
-        } catch {}
-        setSelectedGame((prev) => {
-          if (prev && data.games.some((g) => (g.title || '').toLowerCase().trim() === prev.toLowerCase().trim())) {
-            return prev;
-          }
-          return data.games[0]?.title || '';
-        });
-      }
-    } catch (err) {
-      console.error(err);
+  const syncGamesCatalog = async (force = false) => {
+    const games = await refreshAdminGamesCatalog({ force });
+    if (games?.length) {
+      setAdminGames(games);
+      setSelectedGame((prev) => {
+        if (prev && games.some((g) => (g.title || '').toLowerCase().trim() === prev.toLowerCase().trim())) {
+          return prev;
+        }
+        return games[0]?.title || prev || '';
+      });
     }
   };
 
@@ -197,7 +190,9 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     fetchUser(true);
     fetchHistory(true);
     fetchGameAccounts();
-    fetchGames();
+    const cachedCatalog = readAdminGamesFromCache();
+    if (cachedCatalog?.length) setAdminGames(cachedCatalog);
+    syncGamesCatalog(false);
     if (payoutMethods.length === 0) {
       const cachedPayout = readCashoutMethodsCache();
       if (cachedPayout?.length) {
@@ -213,7 +208,6 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       if (!document.hidden) {
         fetchHistory(true);
         fetchUser(true);
-        fetchGames();
         fetchCashoutMethods(true);
       }
     }, 10000);
@@ -225,6 +219,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     const handleFocus = () => {
       fetchHistory(true);
       fetchUser(true);
+      syncGamesCatalog(false);
     };
 
     // Instant cross-tab balance sync listener
@@ -428,37 +423,23 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const selectedPayout = payoutMethods.find((m) => m.name === method);
 
   const presetAmounts = [40, 50, 100, 250, 500];
+  const compact = isEmbedded;
 
   const renderWithdrawMain = () => (
-    <main className={`max-w-7xl w-full mx-auto py-6 space-y-6 ${isEmbedded ? 'px-2 sm:px-4' : 'flex-1 px-4 sm:px-6 lg:px-8'}`}>
-          {/* Header Banner */}
-          <div className="relative overflow-hidden rounded-3xl border border-[var(--neon-cyan)]/30 bg-gradient-to-r from-blue-950/40 via-slate-900 to-[#0c102b] p-6 sm:p-8 shadow-[0_0_40px_rgba(0,240,255,0.15)]">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/40 text-[var(--neon-cyan)] text-xs font-bold uppercase tracking-wider mb-2">
-                  <ArrowUpRight size={14} />
-                  <span>Instant Player Cashout Desk</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-heading font-black text-white tracking-tight">
-                  REDEEM YOUR <span className="text-[var(--neon-cyan)]">GAME WINNINGS</span>
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-                  Cash out your game winnings straight to CashApp, Crypto, or Venmo. 1:1 USD guaranteed payouts verified by our 24/7 financial desk.
-                </p>
-              </div>
-
-              {/* Status Badge */}
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-[var(--neon-cyan)]/40 flex flex-col items-end min-w-[170px]">
-                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                  DISPATCH DESK
-                </span>
-                <span className="font-mono font-black text-2xl text-[var(--neon-cyan)] mt-0.5">
-                  LIVE 24/7
-                </span>
-                <span className="text-[10px] text-emerald-400 flex items-center gap-1 mt-1 font-mono">
-                  <CheckCircle2 size={11} /> 0% Payout Fee
-                </span>
-              </div>
+    <main
+      className={`max-w-7xl w-full mx-auto ${compact ? 'py-3 space-y-4 px-0 sm:px-1' : 'py-6 space-y-6 flex-1 px-4 sm:px-6 lg:px-8'}`}
+    >
+          <div
+            className={`border border-[var(--neon-cyan)]/30 bg-gradient-to-r from-blue-950/40 via-slate-900 to-[#0c102b] ${
+              compact ? 'rounded-2xl p-3 sm:p-4' : 'rounded-3xl p-6 sm:p-8 shadow-[0_0_40px_rgba(0,240,255,0.15)]'
+            }`}
+          >
+            <div className="flex flex-row items-center justify-between gap-3">
+              <h1 className={`font-heading font-black text-white ${compact ? 'text-lg' : 'text-2xl sm:text-3xl'}`}>
+                <span className="text-[var(--neon-cyan)]">Cashout</span>
+                {!compact && ' · Redeem winnings'}
+              </h1>
+              <span className="text-[10px] font-mono text-emerald-400 shrink-0">LIVE · 0% fee</span>
             </div>
           </div>
 
@@ -896,20 +877,32 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
             </div>
           </div>
 
-          {/* Previous Cashout History Table with Reject Reason Notes */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-heading font-black text-white flex items-center gap-2">
-                <Clock size={16} className="text-[var(--neon-cyan)]" />
-                <span>Your Cashout History</span>
+          <div className="rounded-2xl bg-[#0d102b] border border-slate-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowHistory((v) => !v)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-900/50"
+            >
+              <h3 className="text-sm font-heading font-black text-white flex items-center gap-2">
+                <Clock size={15} className="text-[var(--neon-cyan)]" />
+                Cashout history
+                {withdrawHistory.length > 0 && (
+                  <span className="text-[10px] font-mono text-slate-500">({withdrawHistory.length})</span>
+                )}
               </h3>
+              <span className="text-[10px] text-slate-400">{showHistory ? 'Hide' : 'Show'}</span>
+            </button>
+
+            {showHistory && (
+            <div className="px-4 pb-4 border-t border-slate-800 pt-3 space-y-2">
+            <div className="flex justify-end">
               <button
                 type="button"
                 onClick={fetchHistory}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
               >
-                <RefreshCw size={12} />
-                <span>Refresh</span>
+                <RefreshCw size={11} />
+                Refresh
               </button>
             </div>
 
@@ -1000,6 +993,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                   </tbody>
                 </table>
               </div>
+            )}
+            </div>
             )}
           </div>
         </main>

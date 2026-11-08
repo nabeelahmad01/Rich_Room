@@ -39,6 +39,7 @@ import {
   writePaymentMethodsCache,
 } from '@/lib/paymentMethodsCache';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
+import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 
 export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
 
   // QR Preview Modal
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // History State
   const [depositHistory, setDepositHistory] = useState(() => {
@@ -206,23 +208,16 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  // 5. Fetch active games catalog from Admin
-  const fetchGames = async () => {
-    try {
-      const res = await fetch('/api/games', { cache: 'no-store' });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.games) && data.games.length > 0) {
-        setAdminGames(data.games);
-        try {
-          writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
-        } catch {}
-        setSelectedGame((prev) => {
-          if (!prev) return data.games[0].title || 'Panda Master';
+  const syncGamesCatalog = async (force = false) => {
+    const games = await refreshAdminGamesCatalog({ force });
+    if (games?.length) {
+      setAdminGames(games);
+      setSelectedGame((prev) => {
+        if (prev && games.some((g) => (g.title || '').toLowerCase().trim() === (prev || '').toLowerCase().trim())) {
           return prev;
-        });
-      }
-    } catch (err) {
-      console.error(err);
+        }
+        return games[0]?.title || prev || '';
+      });
     }
   };
 
@@ -254,18 +249,19 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     fetchGateways(gateways.length > 0);
     fetchHistory(true);
     fetchGameAccounts();
-    fetchGames();
+    const cachedCatalog = readAdminGamesFromCache();
+    if (cachedCatalog?.length) setAdminGames(cachedCatalog);
+    syncGamesCatalog(false);
 
-    // Zero-refresh live polling: updates pending deposits as soon as admin approves/rejects
+    // Live polling — history/accounts only (games catalog uses 5m cache)
     const pollInterval = setInterval(() => {
       if (!document.hidden) {
         fetchHistory(true);
         fetchUserAndSettings(true);
         fetchGameAccounts();
-        fetchGames();
         fetchGateways(true);
       }
-    }, 5000);
+    }, 8000);
 
     const handleUserSync = (e) => {
       if (e.detail) diffSet(setUser, e.detail);
@@ -274,6 +270,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     const handleFocus = () => {
       fetchHistory(true);
       fetchUserAndSettings(true);
+      syncGamesCatalog(false);
     };
 
     window.addEventListener('paradise-user-sync', handleUserSync);
@@ -489,37 +486,54 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const presetAmounts = [20, 50, 100, 200, 500];
   const activeTagName =
     selectedGateway?.tagName || selectedGateway?.accountDetails || selectedGateway?.tag || '';
+  const compact = isEmbedded;
 
   const renderDepositMain = () => (
     <>
       {/* Center Content Body */}
-      <main className={`max-w-7xl w-full mx-auto py-6 space-y-6 ${isEmbedded ? 'px-2 sm:px-4' : 'flex-1 px-4 sm:px-6 lg:px-8'}`}>
+      <main
+        className={`max-w-7xl w-full mx-auto ${compact ? 'py-3 space-y-4' : 'py-6 space-y-6'} ${
+          isEmbedded ? 'px-0 sm:px-1' : 'flex-1 px-4 sm:px-6 lg:px-8'
+        }`}
+      >
           {/* Header Banner */}
-          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-[#0c102b] p-6 sm:p-8 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
-                  <ArrowDownLeft size={14} />
-                  <span>Instant Player Deposit Gateway</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-heading font-black text-white tracking-tight">
-                  LOAD YOUR <span className="text-emerald-400">PLAYING BALANCE</span>
+          <div
+            className={`relative overflow-hidden border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-[#0c102b] shadow-[0_0_40px_rgba(16,185,129,0.12)] ${
+              compact ? 'rounded-2xl p-3 sm:p-4' : 'rounded-3xl p-6 sm:p-8'
+            }`}
+          >
+            <div className="flex flex-row items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h1
+                  className={`font-heading font-black text-white tracking-tight ${
+                    compact ? 'text-lg sm:text-xl' : 'text-2xl sm:text-3xl'
+                  }`}
+                >
+                  {compact ? (
+                    <>
+                      <span className="text-emerald-400">Deposit</span> · 0% fee
+                    </>
+                  ) : (
+                    <>
+                      LOAD YOUR <span className="text-emerald-400">PLAYING BALANCE</span>
+                    </>
+                  )}
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-                  Fund your account instantly with 0% fees. Direct crediting for Fire Kirin, Orion Stars, Juwa, Panda Master, and Ultra Panda.
-                </p>
+                {!compact && (
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+                    Fund instantly via Cash App, crypto, or Zelle — bonus applied on verify.
+                  </p>
+                )}
               </div>
 
-              {/* Balance Widget Card */}
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/40 flex flex-col items-end min-w-[160px]">
-                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                  WALLET BALANCE
-                </span>
-                <span className="font-mono font-black text-2xl sm:text-3xl text-emerald-400 mt-0.5">
-                  ${Number(user?.balanceSC ?? user?.balance ?? 0).toFixed(2)} SC
-                </span>
-                <span className="text-[10px] text-emerald-300/80 flex items-center gap-1 mt-1 font-mono">
-                  <CheckCircle2 size={11} /> 1:1 USD Redeemable
+              <div
+                className={`rounded-xl bg-slate-950/80 border border-emerald-500/40 flex flex-col items-end shrink-0 ${
+                  compact ? 'p-2.5 min-w-[120px]' : 'p-4 min-w-[160px]'
+                }`}
+              >
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase">Balance</span>
+                <span className={`font-mono font-black text-emerald-400 ${compact ? 'text-lg' : 'text-2xl sm:text-3xl'}`}>
+                  ${Number(user?.balanceSC ?? user?.balance ?? 0).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -539,12 +553,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
             </div>
           )}
 
-          {/* Form & Gateway Split Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 7 Columns: Step 1, 2, 3 Inputs */}
-            <div className="lg:col-span-7 space-y-6">
+          {/* Form — compact 2-column desktop */}
+          <div className={compact ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6'}>
+            <div className={compact ? 'space-y-4' : 'lg:col-span-12 xl:col-span-7 space-y-4'}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Step 1: Select Payment Gateway */}
-              <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0d102b] border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
@@ -555,7 +569,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                   <span className="text-xs text-slate-400">0% Transaction Fee</span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
                   {loadingGateways && gateways.length === 0 ? (
                     [0, 1, 2].map((i) => (
                       <div
@@ -610,7 +624,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
 
               {/* Step 2: Checkout Desk — send payment to gateway */}
               {selectedGateway && (
-                <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-emerald-500/30 shadow-lg space-y-5">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#0d102b] border border-emerald-500/30 shadow-lg space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
@@ -657,70 +671,49 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                   )}
 
                   {selectedGateway.qrCode && (
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center gap-3">
-                      <span className="text-[11px] font-bold text-slate-300 uppercase">
-                        Scan &amp; Pay QR Code:
-                      </span>
-                      <div
-                        className="p-2.5 bg-white rounded-xl cursor-pointer hover:scale-102 transition shadow-lg"
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
+                      <button
+                        type="button"
                         onClick={() => setQrModalOpen(true)}
-                        title="Click to zoom QR Code"
+                        className="p-1 bg-white rounded-lg shrink-0"
                       >
                         <img
                           src={selectedGateway.qrCode}
-                          alt={`${selectedGateway.name} QR Code`}
-                          className="w-36 h-36 object-contain"
+                          alt="QR"
+                          className="w-[72px] h-[72px] object-contain"
                         />
-                      </div>
-                      <div className="flex items-center gap-2 w-full pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setQrModalOpen(true)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Eye size={14} className="text-cyan-400" />
-                          <span>View Full</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadQR(selectedGateway.qrCode, selectedGateway.name)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Download size={14} />
-                          <span>Download QR</span>
-                        </button>
-                      </div>
+                      </button>
+                      <input
+                        type="button"
+                        value="View / Save QR"
+                        onClick={() => setQrModalOpen(true)}
+                        className="flex-1 py-2 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-bold text-slate-300 cursor-pointer"
+                      />
                     </div>
                   )}
 
-                  <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs text-slate-300">
-                    <div className="flex items-center gap-2 text-amber-400 font-bold">
-                      <AlertCircle size={14} />
-                      <span>Instructions:</span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-slate-400">
-                      {selectedGateway.instructions ||
-                        'Send exact payment amount to the Tag or QR Code above. Upload screenshot proof with your tag name and associated email to verify.'}
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      Average verification speed: <strong>1 to 3 minutes</strong> 24/7.
-                    </p>
-                  </div>
+                  <p className="text-[10px] text-slate-500 leading-snug">
+                    {selectedGateway.instructions ||
+                      'Pay exact amount, then submit proof below (verify ~1–3 min).'}
+                  </p>
                 </div>
               )}
+              </div>
 
-              {/* Step 3: Choose Deposit Amount & Live Bonus Preview */}
-              <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
+              {/* Steps 3–4: amount + proof */}
+              <form
+                onSubmit={handleSubmitDeposit}
+                className="p-4 sm:p-5 rounded-2xl bg-[#0d102b] border border-slate-800 space-y-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
                       3
                     </span>
-                    Select Amount ($ USD)
+                    Amount &amp; proof
                   </h3>
-                  <span className="text-xs text-emerald-400 font-bold flex items-center gap-1 font-mono" suppressHydrationWarning>
-                    <Sparkles size={13} className="text-amber-400" />
-                    +{bonusPercent}% {isWelcome ? 'First Deposit Match' : 'Reload Bonus'}
+                  <span className="text-[10px] text-emerald-400 font-bold font-mono" suppressHydrationWarning>
+                    +{bonusPercent}% → ${totalSC.toFixed(2)} SC total
                   </span>
                 </div>
 
@@ -745,64 +738,32 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                   ))}
                 </div>
 
-                {/* Custom Amount input */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">
-                    Or Enter Custom Amount:
-                  </label>
-                  <div className="relative">
-                    <DollarSign
-                      size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex-1">
+                    <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="number"
                       min="5"
                       step="1"
-                      placeholder="e.g. 75"
+                      placeholder="Custom $"
                       value={customAmount}
                       onChange={(e) => setCustomAmount(e.target.value)}
-                      className="w-full pl-9 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:outline-none focus:border-emerald-400 text-sm"
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
                     />
                   </div>
+                  <span className="text-[10px] text-slate-400 font-mono shrink-0" suppressHydrationWarning>
+                    ${finalAmount.toFixed(0)} + ${bonusSC.toFixed(0)} bonus
+                  </span>
                 </div>
 
-                {/* Real-time Dynamic Bonus Breakdown Card */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-purple-950/30 to-[#0e122b] border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5" suppressHydrationWarning>
-                      <Sparkles size={12} className="text-amber-400" />
-                      Active Promo Breakdown ({isWelcome ? 'First Deposit Pack' : 'Reload Boost'})
-                    </span>
-                    <p className="text-xs text-slate-300 mt-0.5" suppressHydrationWarning>
-                      Deposit: <strong>${finalAmount.toFixed(2)}</strong> + Bonus (+{bonusPercent}%):{' '}
-                      <span className="text-emerald-400 font-bold font-mono">+${bonusSC.toFixed(2)} SC</span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 uppercase font-mono block">
-                      Total To Receive:
-                    </span>
-                    <span className="text-xl font-mono font-black text-emerald-400" suppressHydrationWarning>
-                      ${totalSC.toFixed(2)} SC
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 4: Player Sender Details & Screenshot Upload */}
-              <form
-                onSubmit={handleSubmitDeposit}
-                className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4"
-              >
-                <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
+                <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2 pt-1">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center text-[10px] font-black">
                     4
                   </span>
-                  Submit Proof &amp; Tag Details
-                </h3>
+                  Game, tag &amp; proof
+                </p>
 
-                <div className="space-y-3.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* Field: Target Game Platform */}
                   <div>
                     {(() => {
@@ -849,19 +810,9 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                             })}
                           </select>
 
-                          {linkedAcc ? (
-                            <p className="text-[11px] text-emerald-400/90 mt-1.5 flex items-center gap-1.5">
-                              <CheckCircle2 size={12} className="shrink-0" />
-                              <span>
-                                Your deposit will be associated with your active <strong>{selectedGame}</strong> ID: <code className="text-emerald-300 bg-emerald-950/60 px-1 py-0.5 rounded">@{linkedAcc.username}</code>
-                              </span>
-                            </p>
-                          ) : (
-                            <p className="text-[11px] text-amber-300/90 mt-1.5 flex items-center gap-1.5 bg-amber-950/30 border border-amber-500/20 p-2 rounded-xl">
-                              <Sparkles size={13} className="shrink-0 text-amber-400" />
-                              <span>
-                                You don&apos;t have an account for <strong>{selectedGame}</strong> yet. You can deposit now! Once verified by Finance, an account request will automatically be created so staff can issue your credentials.
-                              </span>
+                          {!linkedAcc && (
+                            <p className="text-[10px] text-amber-300/90 mt-1">
+                              No ID yet — finance will queue one after approve.
                             </p>
                           )}
                         </>
@@ -882,49 +833,36 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                       onChange={(e) => setSenderAccount(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
                     />
-                    <span className="text-[10.5px] text-slate-400 mt-0.5 block">
-                      Enter the exact Cashtag or handle you sent the payment from.
-                    </span>
                   </div>
 
-                  {/* Field: Player Payment Email (Required) */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">
-                      Your Payment Tag Associated Email *
-                    </label>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Payment email *</label>
                     <input
                       type="email"
                       required
-                      placeholder="e.g. your-cashapp-email@domain.com"
+                      placeholder="Cash App / Zelle email"
                       value={playerPaymentEmail}
                       onChange={(e) => setPlayerPaymentEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
                     />
-                    <span className="text-[10.5px] text-slate-400 mt-0.5 block">
-                      Email tied to your payment app so desk agents can match your transaction instantly.
-                    </span>
                   </div>
 
-                  {/* Field: Optional Transaction ID */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1">
-                      Transaction Web Confirmation / Reference ID (Optional)
-                    </label>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Ref ID (optional)</label>
                     <input
                       type="text"
-                      placeholder="e.g. #981240192 or TxHash"
+                      placeholder="Tx # / hash"
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-400"
                     />
                   </div>
 
-                  {/* Field: Upload Screenshot Proof (Required) */}
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-slate-300 mb-1">
                       Upload Payment Proof Screenshot *
                     </label>
-                    <div className="border-2 border-dashed border-slate-700 hover:border-emerald-500/60 rounded-2xl p-4 text-center cursor-pointer transition-colors bg-slate-900/40 relative">
+                    <div className="border-2 border-dashed border-slate-700 hover:border-emerald-500/60 rounded-xl p-3 text-center cursor-pointer transition-colors bg-slate-900/40 relative">
                       <input
                         type="file"
                         accept="image/*"
@@ -972,7 +910,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-4 rounded-2xl font-heading font-black text-base tracking-wider bg-gradient-to-r from-emerald-400 to-teal-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:scale-101 active:scale-99 transition-all disabled:opacity-50 mt-4 cursor-pointer"
+                  className="w-full py-3 rounded-xl font-heading font-black text-sm tracking-wider bg-gradient-to-r from-emerald-400 to-teal-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all disabled:opacity-50 mt-2 cursor-pointer"
                 >
                   {submitting
                     ? 'SUBMITTING REQUEST...'
@@ -981,42 +919,46 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
               </form>
             </div>
 
-            {/* Right column: trust & tips */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Safe Escrow Assurance Card */}
-              <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
-                    <ShieldCheck size={20} />
+            {!compact && (
+              <div className="hidden xl:block xl:col-span-5">
+                <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 space-y-1 sticky top-4">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-emerald-400" />
+                    Verified 24/7 desk
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white uppercase">Players Paradise Guarantee</h4>
-                    <p className="text-[11px] text-slate-400">All deposits are 100% verified &amp; credited</p>
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate-400 space-y-1">
-                  <div>✓ Instant direct wallet top-up upon review</div>
-                  <div>✓ Bonus automatically credited into playable coins</div>
-                  <div>✓ 24/7 Financial Desk supervision</div>
+                  <p>✓ Bonus on approve · ✓ Wallet top-up · ✓ Live support</p>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Previous Deposit History Table */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-heading font-black text-white flex items-center gap-2">
-                <Clock size={16} className="text-emerald-400" />
-                <span>Your Deposit History</span>
+          {/* Deposit history — collapsed by default to save scroll */}
+          <div className="rounded-2xl bg-[#0d102b] border border-slate-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowHistory((v) => !v)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-900/50 transition-colors"
+            >
+              <h3 className="text-sm font-heading font-black text-white flex items-center gap-2">
+                <Clock size={15} className="text-emerald-400" />
+                Deposit history
+                {depositHistory.length > 0 && (
+                  <span className="text-[10px] font-mono text-slate-500">({depositHistory.length})</span>
+                )}
               </h3>
+              <span className="text-[10px] text-slate-400">{showHistory ? 'Hide' : 'Show'}</span>
+            </button>
+
+            {showHistory && (
+            <div className="px-4 pb-4 space-y-3 border-t border-slate-800 pt-3">
+            <div className="flex justify-end">
               <button
                 type="button"
                 onClick={fetchHistory}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
               >
-                <RefreshCw size={12} />
-                <span>Refresh</span>
+                <RefreshCw size={11} />
+                Refresh
               </button>
             </div>
 
@@ -1105,6 +1047,8 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                   </tbody>
                 </table>
               </div>
+            )}
+            </div>
             )}
           </div>
         </main>

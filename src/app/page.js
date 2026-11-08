@@ -11,6 +11,7 @@ import ReferralView from '@/components/player/ReferralView';
 import PromotionsView from '@/components/player/PromotionsView';
 import DownloadAppView from '@/components/player/DownloadAppView';
 import HowToPlayView from '@/components/player/HowToPlayView';
+import CashoutRulesView from '@/components/player/CashoutRulesView';
 
 // Navigation Components
 import CyberSidebar from '@/components/navigation/CyberSidebar';
@@ -548,6 +549,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
             <DownloadAppView onSelectTab={handleSelectTab} />
           ) : activeTab === 'how-to-play' ? (
             <HowToPlayView onSelectTab={handleSelectTab} />
+          ) : activeTab === 'rules' ? (
+            <CashoutRulesView onSelectTab={handleSelectTab} />
           ) : activeTab === 'my-game-ids' ? (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
