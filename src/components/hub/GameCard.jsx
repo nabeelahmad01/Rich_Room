@@ -35,11 +35,11 @@ export default function GameCard({
     '/images/vegas-777.svg';
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900/80 hover:border-[var(--neon-cyan)]/70 hover:shadow-[0_10px_30px_var(--neon-cyan-glow)] transition-all duration-300 flex flex-col">
+    <div className="group relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900/80 hover:border-[var(--neon-cyan)]/70 hover:shadow-[0_8px_24px_var(--neon-cyan-glow)] transition-all duration-300 flex flex-col">
       {/* Thumbnail Aspect Box */}
       <div
-        className="relative aspect-[4/3] w-full overflow-hidden bg-slate-950"
-        style={{ position: 'relative', width: '100%', aspectRatio: '4/3', overflow: 'hidden' }}
+        className="relative aspect-[5/4] w-full overflow-hidden bg-slate-950"
+        style={{ position: 'relative', width: '100%', aspectRatio: '5/4', overflow: 'hidden' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -86,19 +86,19 @@ export default function GameCard({
       </div>
 
       {/* Card Info Body */}
-      <div className="p-4 flex flex-col flex-1 justify-between gap-3 bg-slate-950/60">
+      <div className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between gap-2 bg-slate-950/60">
         <div>
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-sm text-white group-hover:text-[var(--neon-cyan)] transition-colors truncate">
+          <div className="flex items-center justify-between gap-1.5">
+            <h3 className="font-heading font-bold text-xs text-white group-hover:text-[var(--neon-cyan)] transition-colors truncate">
               {game.title}
             </h3>
             {game.rtp && (
-              <span className="text-[10px] font-mono text-emerald-400 font-bold shrink-0">
-                {game.rtp}% RTP
+              <span className="text-[9px] font-mono text-emerald-400 font-bold shrink-0">
+                {game.rtp}%
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed min-h-[2.5rem]">
+          <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 leading-snug">
             {description}
           </p>
         </div>

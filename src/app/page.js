@@ -629,13 +629,13 @@ export default function HomePage({ initialTab = 'lobby' }) {
 
               {/* Games Grid */}
               {loadingGames && games.length === 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                     <div
                       key={i}
-                      className="rounded-2xl border border-[var(--neon-cyan)]/20 bg-[#0B0F22]/80 p-4 space-y-3 animate-pulse shadow-lg"
+                      className="rounded-xl border border-[var(--neon-cyan)]/20 bg-[#0B0F22]/80 p-3 space-y-2 animate-pulse shadow-lg"
                     >
-                      <div className="h-44 bg-slate-800/60 rounded-xl" />
+                      <div className="h-28 bg-slate-800/60 rounded-lg" />
                       <div className="h-4 bg-slate-700/60 rounded w-3/4" />
                       <div className="h-3 bg-slate-800/60 rounded w-1/2" />
                       <div className="h-9 bg-cyan-950/40 border border-cyan-500/20 rounded-xl" />
@@ -649,7 +649,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
                   <p className="text-xs">Try selecting a different category or clearing the search query.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                   {games.map((g) => {
                     const cleanGTitle = (g.title || '').toLowerCase().trim();
                     const hasAcc = userGameAccounts.some((a) => {
@@ -680,6 +680,9 @@ export default function HomePage({ initialTab = 'lobby' }) {
           ) : (
             /* Lobby View */
             <div className="space-y-8 animate-in fade-in duration-200">
+              {/* Latest wins — top of lobby */}
+              <CyberLatestWinsTicker />
+
               {/* Hero Banner */}
               <CyberHeroBanner
                 user={user}
@@ -687,9 +690,6 @@ export default function HomePage({ initialTab = 'lobby' }) {
                 onOpenWallet={(tab) => handleSelectTab(tab === 'withdraw' || tab === 'redeem' || tab === 'cashout' ? 'withdraw' : 'deposit', tab === 'withdraw' ? '/withdraw' : '/deposit')}
                 onOpenGameRequest={() => handleRequestGame()}
               />
-
-              {/* Marquee Ticker */}
-              <CyberLatestWinsTicker />
 
               {/* Player Game Credentials & Request Station */}
               <PlayerGameCredentialsHub
@@ -753,7 +753,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
 
                 {/* Games Grid */}
                 {loadingGames && games.length === 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <div
                         key={i}
@@ -773,7 +773,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
                     <p className="text-xs">Try selecting a different category or clearing the search query.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                     {games.map((g) => {
                       const cleanGTitle = (g.title || '').toLowerCase().trim();
                       const hasAcc = userGameAccounts.some((a) => {

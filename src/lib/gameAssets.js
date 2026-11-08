@@ -138,8 +138,8 @@ export const ALL_PLATFORM_GAMES = [
 ];
 
 /**
- * Merges games from Admin, player's active accounts, and standard platforms.
- * Sorts them so player's linked active accounts appear first.
+ * Admin-configured active games only (no built-in catalog fallback).
+ * Sorts so the player's linked accounts appear first when they match admin titles.
  */
 export function getAvailableGamePlatforms(adminGames = [], userAccounts = []) {
   const map = new Map();
@@ -148,19 +148,6 @@ export function getAvailableGamePlatforms(adminGames = [], userAccounts = []) {
   (adminGames || []).forEach((g) => {
     const title = (typeof g === 'string' ? g : g?.title || g?.name || '').trim();
     if (title) map.set(title.toLowerCase(), title);
-  });
-
-  // 2. Add user account games
-  (userAccounts || []).forEach((a) => {
-    const title = (a?.gameTitle || a?.title || '').trim();
-    if (title) map.set(title.toLowerCase(), title);
-  });
-
-  // 3. Fallback to all standard platform games
-  ALL_PLATFORM_GAMES.forEach((title) => {
-    if (!map.has(title.toLowerCase())) {
-      map.set(title.toLowerCase(), title);
-    }
   });
 
   const list = Array.from(map.values());

@@ -29,7 +29,7 @@ import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import { diffSet } from '@/lib/fastDiff';
-import { getAvailableGamePlatforms, ALL_PLATFORM_GAMES } from '@/lib/gameAssets';
+import { getAvailableGamePlatforms } from '@/lib/gameAssets';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { compressImageFile } from '@/lib/imageCompress';
@@ -78,7 +78,15 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const [proofImage, setProofImage] = useState('');
   const [proofFileName, setProofFileName] = useState('');
   const [selectedGame, setSelectedGame] = useState('Panda Master');
-  const [adminGames, setAdminGames] = useState(() => ALL_PLATFORM_GAMES.map((title) => ({ title })));
+  const [adminGames, setAdminGames] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = readSessionCache(CACHE_KEYS.GAMES_LIST);
+        if (cached?.length) return cached;
+      } catch {}
+    }
+    return [];
+  });
   const [userGameAccounts, setUserGameAccounts] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -600,12 +608,113 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                 </div>
               </div>
 
-              {/* Step 2: Choose Deposit Amount & Live Bonus Preview */}
+              {/* Step 2: Checkout Desk — send payment to gateway */}
+              {selectedGateway && (
+                <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-emerald-500/30 shadow-lg space-y-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
+                        2
+                      </span>
+                      {selectedGateway.name} Checkout Desk
+                    </h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 shrink-0">
+                      LIVE DESK
+                    </span>
+                  </div>
+
+                  {selectedGateway.paymentUrl && (
+                    <a
+                      href={selectedGateway.paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[var(--neon-cyan)] to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-heading font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <span>OPEN &amp; PAY VIA {selectedGateway.name.toUpperCase()}</span>
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+
+                  {activeTagName && (
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-300 uppercase block mb-1.5">
+                        Tag Name / Cashtag to Send To:
+                      </span>
+                      <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
+                        <span className="font-mono font-black text-sm text-amber-300 select-all break-all">
+                          {activeTagName}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(activeTagName, 'gwTag')}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 flex-shrink-0 transition-colors cursor-pointer"
+                        >
+                          {copiedField === 'gwTag' ? <Check size={14} /> : <Copy size={14} />}
+                          <span>{copiedField === 'gwTag' ? 'Copied' : 'Copy Tag'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedGateway.qrCode && (
+                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center gap-3">
+                      <span className="text-[11px] font-bold text-slate-300 uppercase">
+                        Scan &amp; Pay QR Code:
+                      </span>
+                      <div
+                        className="p-2.5 bg-white rounded-xl cursor-pointer hover:scale-102 transition shadow-lg"
+                        onClick={() => setQrModalOpen(true)}
+                        title="Click to zoom QR Code"
+                      >
+                        <img
+                          src={selectedGateway.qrCode}
+                          alt={`${selectedGateway.name} QR Code`}
+                          className="w-36 h-36 object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 w-full pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setQrModalOpen(true)}
+                          className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Eye size={14} className="text-cyan-400" />
+                          <span>View Full</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadQR(selectedGateway.qrCode, selectedGateway.name)}
+                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Download size={14} />
+                          <span>Download QR</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs text-slate-300">
+                    <div className="flex items-center gap-2 text-amber-400 font-bold">
+                      <AlertCircle size={14} />
+                      <span>Instructions:</span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-slate-400">
+                      {selectedGateway.instructions ||
+                        'Send exact payment amount to the Tag or QR Code above. Upload screenshot proof with your tag name and associated email to verify.'}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      Average verification speed: <strong>1 to 3 minutes</strong> 24/7.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Choose Deposit Amount & Live Bonus Preview */}
               <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
-                      2
+                      3
                     </span>
                     Select Amount ($ USD)
                   </h3>
@@ -681,14 +790,14 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                 </div>
               </div>
 
-              {/* Step 3: Player Sender Details & Screenshot Upload */}
+              {/* Step 4: Player Sender Details & Screenshot Upload */}
               <form
                 onSubmit={handleSubmitDeposit}
                 className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-slate-800 space-y-4"
               >
                 <h3 className="text-sm font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black">
-                    3
+                    4
                   </span>
                   Submit Proof &amp; Tag Details
                 </h3>
@@ -872,111 +981,8 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
               </form>
             </div>
 
-            {/* Right 5 Columns: Gateway Pay Button, Tag Name, QR Code & Download */}
+            {/* Right column: trust & tips */}
             <div className="lg:col-span-5 space-y-6">
-              {selectedGateway && (
-                <div className="p-5 sm:p-6 rounded-3xl bg-[#0d102b] border border-emerald-500/30 shadow-lg space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <span className="text-xs font-heading font-bold text-emerald-400 uppercase tracking-wider">
-                      {selectedGateway.name} Checkout Desk
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                      LIVE DESK
-                    </span>
-                  </div>
-
-                  {/* 1. DIRECT PAYMENT LINK BUTTON (If paymentUrl exists) */}
-                  {selectedGateway.paymentUrl && (
-                    <a
-                      href={selectedGateway.paymentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[var(--neon-cyan)] to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-heading font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <span>OPEN &amp; PAY VIA {selectedGateway.name.toUpperCase()}</span>
-                      <ExternalLink size={16} />
-                    </a>
-                  )}
-
-                  {/* 2. TAG NAME / IDENTIFIER WITH 1-CLICK COPY */}
-                  {activeTagName && (
-                    <div>
-                      <span className="text-[11px] font-bold text-slate-300 uppercase block mb-1.5">
-                        Tag Name / Cashtag to Send To:
-                      </span>
-                      <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
-                        <span className="font-mono font-black text-sm text-amber-300 select-all break-all">
-                          {activeTagName}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(activeTagName, 'gwTag')}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 flex-shrink-0 transition-colors cursor-pointer"
-                        >
-                          {copiedField === 'gwTag' ? <Check size={14} /> : <Copy size={14} />}
-                          <span>{copiedField === 'gwTag' ? 'Copied' : 'Copy Tag'}</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 3. SCANNABLE QR CODE WITH VIEW & DOWNLOAD BUTTONS */}
-                  {selectedGateway.qrCode && (
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center gap-3">
-                      <span className="text-[11px] font-bold text-slate-300 uppercase">
-                        Scan &amp; Pay QR Code:
-                      </span>
-                      <div
-                        className="p-2.5 bg-white rounded-xl cursor-pointer hover:scale-102 transition shadow-lg"
-                        onClick={() => setQrModalOpen(true)}
-                        title="Click to zoom QR Code"
-                      >
-                        <img
-                          src={selectedGateway.qrCode}
-                          alt={`${selectedGateway.name} QR Code`}
-                          className="w-36 h-36 object-contain"
-                        />
-                      </div>
-
-                      {/* View & Download Buttons */}
-                      <div className="flex items-center gap-2 w-full pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setQrModalOpen(true)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Eye size={14} className="text-cyan-400" />
-                          <span>View Full</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadQR(selectedGateway.qrCode, selectedGateway.name)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Download size={14} />
-                          <span>Download QR</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Gateway Instructions */}
-                  <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs text-slate-300">
-                    <div className="flex items-center gap-2 text-amber-400 font-bold">
-                      <AlertCircle size={14} />
-                      <span>Instructions:</span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-slate-400">
-                      {selectedGateway.instructions ||
-                        'Send exact payment amount to the Tag or QR Code above. Upload screenshot proof with your tag name and associated email to verify.'}
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      Average verification speed: <strong>1 to 3 minutes</strong> 24/7.
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Safe Escrow Assurance Card */}
               <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3">
                 <div className="flex items-center gap-3">

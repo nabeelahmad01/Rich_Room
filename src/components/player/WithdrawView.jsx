@@ -27,7 +27,8 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { diffSet } from '@/lib/fastDiff';
-import { getAvailableGamePlatforms, ALL_PLATFORM_GAMES } from '@/lib/gameAssets';
+import { getAvailableGamePlatforms } from '@/lib/gameAssets';
+import { readCashoutMethodsCache, writeCashoutMethodsCache } from '@/lib/paymentMethodsCache';
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
 import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
@@ -46,7 +47,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const [customAmount, setCustomAmount] = useState('50');
   const [method, setMethod] = useState('Cash App');
   const [recipientTag, setRecipientTag] = useState('');
-  const [selectedGame, setSelectedGame] = useState('Fire Kirin');
+  const [selectedGame, setSelectedGame] = useState('');
   const [userGameAccounts, setUserGameAccounts] = useState([]);
 
   // Proof uploads (Required by rules)
@@ -61,8 +62,16 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
         if (cached?.length) return cached;
       } catch {}
     }
-    return ALL_PLATFORM_GAMES.map((title) => ({ title }));
+    return [];
   });
+
+  const [payoutMethods, setPayoutMethods] = useState(() => {
+    const cached = typeof window !== 'undefined' ? readCashoutMethodsCache() : null;
+    return Array.isArray(cached) ? cached : [];
+  });
+  const [loadingPayoutMethods, setLoadingPayoutMethods] = useState(
+    () => !(typeof window !== 'undefined' && readCashoutMethodsCache()?.length)
+  );
 
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -143,9 +152,38 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
         try {
           writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
         } catch {}
+        setSelectedGame((prev) => {
+          if (prev && data.games.some((g) => (g.title || '').toLowerCase().trim() === prev.toLowerCase().trim())) {
+            return prev;
+          }
+          return data.games[0]?.title || '';
+        });
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchCashoutMethods = async (silent = false) => {
+    if (!silent && payoutMethods.length === 0) setLoadingPayoutMethods(true);
+    try {
+      const res = await fetch('/api/payments/cashout-methods', { cache: 'no-store' });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.methods)) {
+        const active = data.methods.filter((m) => m.isActive !== false);
+        setPayoutMethods(active);
+        if (active.length) {
+          writeCashoutMethodsCache(active);
+          setMethod((prev) => {
+            if (prev && active.some((m) => m.name === prev)) return prev;
+            return active[0].name;
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!silent) setLoadingPayoutMethods(false);
     }
   };
 
@@ -160,12 +198,23 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     fetchHistory(true);
     fetchGameAccounts();
     fetchGames();
+    if (payoutMethods.length === 0) {
+      const cachedPayout = readCashoutMethodsCache();
+      if (cachedPayout?.length) {
+        setPayoutMethods(cachedPayout);
+        setMethod((prev) => prev || cachedPayout[0]?.name || '');
+        setLoadingPayoutMethods(false);
+      }
+    }
+    fetchCashoutMethods(payoutMethods.length > 0);
 
     // Zero-refresh live polling: gentle background sync with instant broadcast listeners
     const pollInterval = setInterval(() => {
       if (!document.hidden) {
         fetchHistory(true);
         fetchUser(true);
+        fetchGames();
+        fetchCashoutMethods(true);
       }
     }, 10000);
 
@@ -374,16 +423,9 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  const payoutMethods = [
-    { id: 'cashapp', name: 'Cash App', placeholder: 'e.g. $YourCashtag' },
-    { id: 'crypto-btc', name: 'Bitcoin (BTC)', placeholder: 'e.g. bc1q... wallet address' },
-    { id: 'crypto-usdt', name: 'USDT (TRC20)', placeholder: 'e.g. TX... TRC20 address' },
-    { id: 'venmo', name: 'Venmo', placeholder: 'e.g. @YourVenmoHandle' },
-    { id: 'paypal', name: 'PayPal', placeholder: 'e.g. your-paypal@domain.com' },
-    { id: 'zelle', name: 'Zelle Pay', placeholder: 'e.g. phone number or email' },
-  ];
-
   const popularGames = getAvailableGamePlatforms(adminGames, userGameAccounts);
+
+  const selectedPayout = payoutMethods.find((m) => m.name === method);
 
   const presetAmounts = [40, 50, 100, 250, 500];
 
@@ -536,11 +578,23 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                     Payout Destination *
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {loadingPayoutMethods && payoutMethods.length === 0 ? (
+                      [0, 1, 2].map((i) => (
+                        <div
+                          key={`payout-skel-${i}`}
+                          className="p-3 rounded-2xl border border-slate-800 bg-slate-900/60 animate-pulse min-h-[52px]"
+                        />
+                      ))
+                    ) : payoutMethods.length === 0 ? (
+                      <p className="col-span-full text-xs text-amber-200 bg-amber-950/30 border border-amber-500/30 rounded-xl p-3">
+                        No payout methods are enabled. Finance desk will enable options shortly.
+                      </p>
+                    ) : null}
                     {payoutMethods.map((m) => {
                       const isSelected = method === m.name;
                       return (
                         <button
-                          key={m.id}
+                          key={m.id || m.methodId}
                           type="button"
                           onClick={() => setMethod(m.name)}
                           className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between cursor-pointer ${
@@ -569,7 +623,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. $YourCashtag or wallet address"
+                    placeholder={selectedPayout?.placeholder || 'e.g. $YourCashtag or wallet address'}
                     value={recipientTag}
                     onChange={(e) => setRecipientTag(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-[var(--neon-cyan)]"
