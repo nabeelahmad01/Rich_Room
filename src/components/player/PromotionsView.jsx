@@ -5,9 +5,8 @@ import {
   CACHE_KEYS,
   readSessionCache,
   writeSessionCache,
-  shouldShowInitialLoad,
 } from '@/lib/playerDataCache';
-import { LoadingInline, CardSkeletonGrid } from '@/components/common/LoadState';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 import {
   Crown,
   Sparkles,
@@ -21,21 +20,20 @@ import {
 
 export default function PromotionsView({ onSelectTab }) {
   const [promotions, setPromotions] = useState(() => readSessionCache(CACHE_KEYS.PROMOTIONS) || []);
-  const [loadingPromos, setLoadingPromos] = useState(() => shouldShowInitialLoad(promotions));
-
   useEffect(() => {
-    const silent = promotions.length > 0;
-    if (!silent) setLoadingPromos(true);
-    fetch('/api/promotions', { credentials: 'include', cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
+    let cancelled = false;
+  fetchJsonQuick('/api/promotions', { credentials: 'include', cache: 'no-store' })
+      .then(({ data: d }) => {
+        if (cancelled) return;
         if (d?.success && Array.isArray(d?.promotions)) {
           setPromotions(d.promotions);
           writeSessionCache(CACHE_KEYS.PROMOTIONS, d.promotions);
         }
       })
-      .catch(() => {})
-      .finally(() => setLoadingPromos(false));
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const tiers = [
@@ -151,8 +149,21 @@ export default function PromotionsView({ onSelectTab }) {
         </div>
       </div>
 
-      {loadingPromos && promotions.length === 0 && (
-        <CardSkeletonGrid count={3} className="mb-8" />
+      {promotions.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {promotions.slice(0, 6).map((p) => (
+            <div
+              key={p._id || p.id || p.title}
+              className="p-6 rounded-3xl bg-slate-900/80 border border-slate-700 flex flex-col gap-3"
+            >
+              {p.badge ? (
+                <span className="text-[10px] font-bold text-cyan-300 uppercase">{p.badge}</span>
+              ) : null}
+              <h3 className="font-heading font-black text-lg text-white">{p.title}</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">{p.description}</p>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* VIP Tiers Matrix */}

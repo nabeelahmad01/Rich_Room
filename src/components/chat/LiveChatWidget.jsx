@@ -10,13 +10,13 @@ import {
   Paperclip,
   CheckCheck,
   AlertCircle,
-  RefreshCw,
   MessageSquare,
 } from 'lucide-react';
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, areEqual } from '@/lib/fastDiff';
 import { isPlayerSoundEnabled, refreshPlayerNotifications } from '@/lib/notificationsClient';
 import { fetchCurrentUser } from '@/lib/authClient';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 
 export default function LiveChatWidget({ user: initialUser, soundEnabled = true }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +25,6 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
   const [inputMessage, setInputMessage] = useState('');
   const [attachedImage, setAttachedImage] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(null);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [guestId, setGuestId] = useState('');
@@ -174,9 +173,12 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       const endpoint = `/api/chat?${params.toString()}`;
 
       try {
-        const res = await fetch(endpoint, { credentials: 'include', cache: 'no-store' });
-        const data = await res.json();
-        if (isCancelled || !data.success) return;
+        const { data } = await fetchJsonQuick(
+          endpoint,
+          { credentials: 'include', cache: 'no-store' },
+          8000
+        );
+        if (isCancelled || !data?.success) return;
 
         const newMsgs = data.messages || [];
         setMessages((prev) => {
@@ -223,7 +225,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
     fetchMessages();
     fetchMessagesRef.current = fetchMessages;
-    const pollInterval = isOpen ? 2000 : 5000;
+    const pollInterval = isOpen ? 1200 : 5000;
     const interval = setInterval(fetchMessages, pollInterval);
 
     return () => {
@@ -309,7 +311,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const maxDim = 1200;
+        const maxDim = 720;
         let width = img.width;
         let height = img.height;
         if (width > maxDim || height > maxDim) {
@@ -328,7 +330,10 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        let compressedDataUrl = canvas.toDataURL('image/jpeg', 0.62);
+        if (compressedDataUrl.length > 420_000) {
+          compressedDataUrl = canvas.toDataURL('image/jpeg', 0.45);
+        }
         setAttachedImage(compressedDataUrl);
         setUploadingImage(false);
       };
@@ -347,7 +352,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     if (e && e.preventDefault) e.preventDefault();
 
     const textToSend = directText !== null ? directText.trim() : inputMessage.trim();
-    if ((!textToSend && !attachedImage) || sending) return;
+    if (!textToSend && !attachedImage) return;
 
     const currentText = textToSend;
     const currentAttachment = attachedImage;
@@ -356,7 +361,6 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
     setInputMessage('');
     setAttachedImage(null);
     setSendError(null);
-    setSending(true);
 
     const effectiveGuestId =
       guestId ||
@@ -378,70 +382,66 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
     setMessages((prev) => [...prev, optimisticMsg]);
 
-    try {
-      const payload = {
-        text: currentText,
-        imageUrl: currentAttachment,
-        conversationId: currentUser ? (currentUser.userId || currentUser.id || currentUser._id) : effectiveGuestId,
-        username: currentUser?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`,
-      };
-      if (!currentUser) {
-        payload.guestId = effectiveGuestId;
-        payload.guestName = `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
-      }
+    const convId = String(
+      currentUser ? (currentUser.userId || currentUser.id || currentUser._id) : effectiveGuestId
+    );
+    const senderName = currentUser?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send message. Please retry.');
-      }
-
-      // Replace optimistic message with verified server message
-      if (data.message) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === optimisticMsg.id ? data.message : m))
-        );
-      }
-
-      // Immediately notify Admin Concierge Desk via BroadcastChannel & localStorage
-      const convId = String(
-        currentUser ? (currentUser.userId || currentUser.id || currentUser._id) : effectiveGuestId
-      );
-      const senderName = currentUser?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
-      const staffAlert = {
-        type: 'NEW_CHAT_MESSAGE',
-        username: senderName,
-        text: currentText || (currentAttachment ? '📷 [Image Attachment]' : 'New inquiry'),
-        conversationId: convId,
-        time: Date.now(),
-      };
-      try {
-        const ch = new BroadcastChannel('paradise_staff_alerts');
-        ch.postMessage(staffAlert);
-        ch.close();
-      } catch {}
-      try {
-        localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
-      } catch {}
-      if (fetchMessagesRef.current) {
-        fetchMessagesRef.current();
-      }
-    } catch (err) {
-      // Restore input text so the user doesn't lose it
-      setInputMessage(currentText);
-      setAttachedImage(currentAttachment);
-      setSendError(err.message || 'Delivery failed. Tap to retry.');
-      // Remove optimistic message on failure
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-    } finally {
-      setSending(false);
+    const payload = {
+      text: currentText,
+      imageUrl: currentAttachment,
+      conversationId: convId,
+      username: senderName,
+    };
+    if (!currentUser) {
+      payload.guestId = effectiveGuestId;
+      payload.guestName = senderName;
     }
+
+    const staffAlert = {
+      type: 'NEW_CHAT_MESSAGE',
+      username: senderName,
+      text: currentText || (currentAttachment ? '📷 [Image Attachment]' : 'New inquiry'),
+      conversationId: convId,
+      time: Date.now(),
+    };
+    try {
+      const ch = new BroadcastChannel('paradise_staff_alerts');
+      ch.postMessage(staffAlert);
+      ch.close();
+    } catch {}
+    try {
+      localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
+    } catch {}
+
+    (async () => {
+      try {
+        const { res, data } = await fetchJsonQuick(
+          '/api/chat',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload),
+          },
+          currentAttachment ? 25000 : 10000
+        );
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to send message. Please retry.');
+        }
+        if (data.message) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === optimisticMsg.id ? { ...data.message, id: data.message.id } : m))
+          );
+        }
+        fetchMessagesRef.current?.();
+      } catch (err) {
+        setSendError(err.message || 'Delivery failed. Tap Send to retry.');
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        setInputMessage((prev) => prev || currentText);
+        setAttachedImage((prev) => prev || currentAttachment);
+      }
+    })();
   };
 
   const quickInquiries = [
@@ -614,7 +614,6 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
                     key={idx}
                     type="button"
                     onClick={() => handleSendMessage(null, q)}
-                    disabled={sending}
                     className="text-[10.5px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/50 text-cyan-200 transition text-left cursor-pointer active:scale-95"
                   >
                     {q}
@@ -773,7 +772,7 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingImage || sending}
+              disabled={uploadingImage}
               className="p-2 rounded-xl text-slate-300 hover:text-[var(--neon-cyan)] bg-white/5 hover:bg-white/10 transition shrink-0 cursor-pointer"
               title="Attach screenshot or photo"
             >
@@ -792,7 +791,6 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
                   ? 'Type message or attach image...'
                   : 'Type message (no account needed)...'
               }
-              disabled={sending}
               value={inputMessage}
               onFocus={() => {
                 setTimeout(() => {
@@ -813,18 +811,14 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
             <button
               type="submit"
-              disabled={(!inputMessage.trim() && !attachedImage) || sending}
+              disabled={!inputMessage.trim() && !attachedImage}
               className="p-2.5 rounded-xl font-bold flex items-center justify-center transition disabled:opacity-40 cursor-pointer shrink-0 text-black"
               style={{
                 background: 'var(--primary-gradient)',
                 boxShadow: '0 0 12px var(--neon-cyan-glow)',
               }}
             >
-              {sending ? (
-                <RefreshCw size={14} className="animate-spin text-white" />
-              ) : (
-                <Send size={15} />
-              )}
+              <Send size={15} />
             </button>
           </form>
         </div>

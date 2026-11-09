@@ -23,7 +23,7 @@ export default function SessionBridge() {
 
     const sync = async () => {
       try {
-        const data = await fetchCurrentUser({ force: true });
+        const data = await fetchCurrentUser();
         if (cancelled || typeof window === 'undefined') return;
         if (data?.authenticated && data?.user) {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));

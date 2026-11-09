@@ -8,7 +8,7 @@ import { getDeviceIdFromRequest } from '@/lib/deviceServer';
 
 export async function POST(req) {
   try {
-    await ensureDbInitialized();
+    ensureDbInitialized().catch(() => {});
 
     const body = await req.json();
     const {

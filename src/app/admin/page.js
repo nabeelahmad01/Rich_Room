@@ -1129,7 +1129,10 @@ export default function AdminPortal({ initialTab }) {
         });
 
         if (activeTab === 'chat' && activeChatConv?._id) {
-          fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}`, { credentials: 'include', cache: 'no-store' })
+          fetch(
+            `/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`,
+            { credentials: 'include', cache: 'no-store' }
+          )
             .then((r) => r.json())
             .then((d) => {
               if (d.success) setChatMessages(d.messages);
@@ -1243,6 +1246,25 @@ export default function AdminPortal({ initialTab }) {
           cid: payload.conversationId || '',
           username: uName,
         });
+
+        const incomingCid = String(payload.conversationId || '').trim();
+        if (incomingCid) {
+          setActiveTab('chat');
+          setActiveChatConv((prev) =>
+            prev?._id === incomingCid
+              ? prev
+              : { _id: incomingCid, username: uName, userId: incomingCid }
+          );
+          fetch(
+            `/api/chat?conversationId=${encodeURIComponent(incomingCid)}&admin=true&markRead=true`,
+            { credentials: 'include', cache: 'no-store' }
+          )
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.success) setChatMessages(d.messages || []);
+            })
+            .catch(() => {});
+        }
 
         // Fast zero-delay inbox refresh (do NOT mark conversation read in background so unread badge stays visible!)
         fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' })
@@ -1429,7 +1451,7 @@ export default function AdminPortal({ initialTab }) {
     fetchChatMsgs();
     const interval = setInterval(() => {
       if (!document.hidden) fetchChatMsgs();
-    }, 2500);
+    }, 1200);
     return () => clearInterval(interval);
   }, [activeChatConv, activeTab]);
 
@@ -4339,7 +4361,7 @@ export default function AdminPortal({ initialTab }) {
                             <button
                               type="button"
                               onClick={() => {
-                                fetch(`/api/chat?conversationId=${activeChatConv._id}`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
+                                fetch(`/api/chat?conversationId=${encodeURIComponent(activeChatConv._id)}&admin=true&markRead=true`, { credentials: 'include', cache: 'no-store' }).then(r => r.json()).then(d => { if (d.success) setChatMessages(d.messages); });
                               }}
                               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition"
                               title="Refresh Chat"

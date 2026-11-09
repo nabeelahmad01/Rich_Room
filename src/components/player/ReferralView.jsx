@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { diffSet } from '@/lib/fastDiff';
-import { getCachedUser } from '@/lib/authClient';
+import { fetchCurrentUser, getCachedUser } from '@/lib/authClient';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 import {
   CACHE_KEYS,
   readSessionCache,
@@ -23,14 +24,27 @@ import {
   Wallet
 } from 'lucide-react';
 
+function normalizeAffiliateStats(raw) {
+  if (!raw) return null;
+  return {
+    ...raw,
+    totalReferred: raw.totalReferred ?? raw.totalReferrals ?? 0,
+    activeDepositors: raw.activeDepositors ?? 0,
+    commissionPercent: raw.commissionPercent ?? raw.commissionRate ?? 10,
+    claimableBalance: raw.claimableBalance ?? raw.commissionsUnpaid ?? 0,
+    referralCode: raw.referralCode || '',
+  };
+}
+
 export default function ReferralView({ user: propUser, onOpenAuth }) {
   const [user, setUser] = useState(() => propUser || getCachedUser() || null);
   const userKey = user?.userId || user?.id || user?._id || user?.email || '';
-  const [stats, setStats] = useState(() =>
-    userKey ? readSessionCache(CACHE_KEYS.AFFILIATE_STATS, userKey) : null
-  );
-  const [loading, setLoading] = useState(() =>
-    (propUser || getCachedUser()) && shouldShowInitialLoad(stats)
+  const [stats, setStats] = useState(() => {
+    const raw = userKey ? readSessionCache(CACHE_KEYS.AFFILIATE_STATS, userKey) : null;
+    return normalizeAffiliateStats(raw);
+  });
+  const [loading, setLoading] = useState(
+    () => Boolean(propUser || getCachedUser()) && shouldShowInitialLoad(stats)
   );
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -38,31 +52,35 @@ export default function ReferralView({ user: propUser, onOpenAuth }) {
   const [claimSuccess, setClaimSuccess] = useState('');
 
   const loadUserAndStats = async (isSilent = false) => {
-    const cached =
-      userKey ? readSessionCache(CACHE_KEYS.AFFILIATE_STATS, userKey) : null;
-    if (!isSilent && shouldShowInitialLoad(cached) && shouldShowInitialLoad(stats)) {
+    if (!isSilent && shouldShowInitialLoad(stats)) {
       setLoading(true);
     }
     try {
-      const meRes = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
-      const meData = await meRes.json();
-      if (meData.authenticated && meData.user) {
+      const meData = await fetchCurrentUser();
+      if (meData?.authenticated && meData?.user) {
         diffSet(setUser, meData.user);
-        const affRes = await fetch('/api/affiliates', { credentials: 'include', cache: 'no-store' });
-        const affData = await affRes.json();
+        const { data: affData } = await fetchJsonQuick('/api/affiliates', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
         if (affData.success && affData.stats) {
-          diffSet(setStats, affData.stats);
+          const normalized = normalizeAffiliateStats(affData.stats);
+          diffSet(setStats, normalized);
           const scope =
             meData.user.userId || meData.user.id || meData.user._id || meData.user.email;
-          if (scope) writeSessionCache(CACHE_KEYS.AFFILIATE_STATS, affData.stats, scope);
+          if (scope) writeSessionCache(CACHE_KEYS.AFFILIATE_STATS, normalized, scope);
+        } else if (!stats) {
+          diffSet(setStats, normalizeAffiliateStats({
+            referralCode: meData.user.referralCode || meData.user.username,
+          }));
         }
       }
     } catch {}
-    if (!isSilent) setLoading(false);
+    setLoading(false);
   };
 
   useEffect(() => {
-    loadUserAndStats(Boolean(stats));
+    loadUserAndStats(!shouldShowInitialLoad(stats));
     const interval = setInterval(() => {
       if (!document.hidden) loadUserAndStats(true);
     }, 8000);

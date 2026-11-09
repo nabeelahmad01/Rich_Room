@@ -3,6 +3,7 @@ import {
   setCachedUser,
   fetchCurrentUser,
   invalidateAuthCache,
+  primeAuthCache,
 } from '@/lib/authClient';
 
 export { fetchCurrentUser };
@@ -13,7 +14,7 @@ export function readCachedPlayer() {
 }
 
 export function writeCachedPlayer(user) {
-  setCachedUser(user);
+  primeAuthCache(user);
 }
 
 export function clearCachedPlayer() {

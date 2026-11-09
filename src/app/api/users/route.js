@@ -27,6 +27,44 @@ export async function GET(req) {
         return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
+      const snapshot = searchParams.get('snapshot') === '1';
+      if (snapshot) {
+        return NextResponse.json({
+          success: true,
+          snapshot: true,
+          user: {
+            id: u._id.toString(),
+            _id: u._id.toString(),
+            username: u.username,
+            email: u.email,
+            balanceSC: u.balanceSC ?? 0,
+            balanceGC: u.balanceGC ?? 0,
+            kycStatus: u.kycStatus || 'unverified',
+            isBanned: Boolean(u.isBanned),
+            banReason: u.banReason || '',
+            referralCode: u.referralCode || '',
+            referredBy: u.referredBy || '',
+            deviceId: u.deviceId || u.boundDevices?.[0] || null,
+            boundDevices: u.boundDevices || [],
+            state: u.state || 'CA',
+            country: u.country || 'US',
+            createdAt: u.createdAt,
+            lastLoginAt: u.lastLoginAt,
+          },
+          deposits: [],
+          withdrawals: [],
+          gameAccounts: [],
+          accountRequests: [],
+          referrals: [],
+          ledger: [],
+          totals: {
+            totalDepositsAmount: Number(u.totalDeposited || 0),
+            totalWithdrawalsAmount: 0,
+            netPosition: Number(u.totalDeposited || 0),
+          },
+        });
+      }
+
       const depositsCol = db.collection('deposits');
       const redemptionsCol = db.collection('redemptions');
       const gameAccountsCol = db.collection('gameAccounts');

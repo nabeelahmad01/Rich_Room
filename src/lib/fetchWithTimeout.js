@@ -1,3 +1,8 @@
+/** Fast player-tab fetches — never leave "Loading…" forever. */
+export async function fetchJsonQuick(url, options = {}, timeoutMs = 8000) {
+  return fetchJsonWithTimeout(url, options, timeoutMs);
+}
+
 /** JSON fetch with abort timeout so UI never sticks on "Submitting…". */
 export async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 28000) {
   const controller = new AbortController();

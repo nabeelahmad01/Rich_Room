@@ -31,6 +31,15 @@ export function invalidateAuthCache() {
   setCachedUser(null);
 }
 
+/** After login/register — skip redundant /api/auth/me round-trips. */
+export function primeAuthCache(user) {
+  if (!user) return;
+  lastAuthResult = { authenticated: true, user };
+  lastAuthResponseTime = Date.now();
+  inFlightAuthPromise = null;
+  setCachedUser(user);
+}
+
 export function setCachedUser(user) {
   if (typeof window === 'undefined') return;
   try {
@@ -51,7 +60,7 @@ export function setCachedUser(user) {
 export async function fetchCurrentUser({ force = false } = {}) {
   const now = Date.now();
 
-  if (!force && lastAuthResult && now - lastAuthResponseTime < 3000) {
+  if (!force && lastAuthResult && now - lastAuthResponseTime < 15000) {
     return lastAuthResult;
   }
 

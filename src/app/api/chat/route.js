@@ -26,61 +26,54 @@ function isStaffRole(role) {
  */
 async function buildStaffInbox(chatCol) {
   try {
-    const rawMessages = await chatCol
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(2000)
+    const rows = await chatCol
+      .aggregate([
+        { $sort: { createdAt: -1 } },
+        { $limit: 500 },
+        {
+          $group: {
+            _id: {
+              $toString: { $ifNull: ['$conversationId', '$userId'] },
+            },
+            latest: { $first: '$$ROOT' },
+            unreadCount: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $eq: ['$senderRole', 'player'] },
+                      { $ne: ['$read', true] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+        { $sort: { 'latest.createdAt': -1 } },
+        { $limit: 100 },
+      ])
       .toArray();
 
-    const convMap = new Map();
-
-    for (const msg of rawMessages) {
-      const cid = String(msg.conversationId || msg.userId || '').trim();
-      if (!cid) continue;
-
+    return rows.map((row) => {
+      const msg = row.latest || {};
+      const cid = row._id || '';
       const customerName =
         msg.customerUsername || (msg.senderRole === 'player' ? msg.username : null);
-      const customerUid =
-        msg.customerUserId || (msg.senderRole === 'player' ? msg.userId : null);
-
-      const isUnreadPlayerMsg = msg.read === false && msg.senderRole === 'player';
-
-      if (!convMap.has(cid)) {
-        convMap.set(cid, {
-          _id: cid,
-          userId: customerUid || msg.userId || cid,
-          username: customerName || msg.username || 'Player',
-          lastMessage:
-            msg.text || (msg.imageUrl ? '📷 [Image Attachment]' : 'Active inquiry'),
-          lastSenderRole: msg.senderRole || 'player',
-          updatedAt: msg.createdAt || new Date(),
-          unreadCount: isUnreadPlayerMsg ? 1 : 0,
-          unreadStaff: isUnreadPlayerMsg,
-        });
-      } else {
-        const conv = convMap.get(cid);
-        // Enrich customer name if previously unknown
-        if (
-          customerName &&
-          (conv.username === 'Player' || conv.username === 'Rich Room Support' || conv.username === 'Rich Room Support')
-        ) {
-          conv.username = customerName;
-        }
-        if (customerUid && conv.userId === cid) {
-          conv.userId = customerUid;
-        }
-        if (isUnreadPlayerMsg) {
-          conv.unreadCount = (conv.unreadCount || 0) + 1;
-          conv.unreadStaff = true;
-        }
-      }
-    }
-
-    return Array.from(convMap.values()).sort((a, b) => {
-      const aUnread = (a.unreadCount || 0) > 0 || Boolean(a.unreadStaff);
-      const bUnread = (b.unreadCount || 0) > 0 || Boolean(b.unreadStaff);
-      if (aUnread !== bUnread) return aUnread ? -1 : 1;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      const customerUid = msg.customerUserId || msg.userId || cid;
+      return {
+        _id: cid,
+        userId: customerUid,
+        username: customerName || msg.username || 'Player',
+        lastMessage:
+          msg.text || (msg.imageUrl ? '📷 [Image Attachment]' : 'Active inquiry'),
+        lastSenderRole: msg.senderRole || 'player',
+        updatedAt: msg.createdAt || new Date(),
+        unreadCount: row.unreadCount || 0,
+        unreadStaff: (row.unreadCount || 0) > 0,
+      };
     });
   } catch (err) {
     console.error('buildStaffInbox error:', err);
@@ -130,13 +123,9 @@ export async function GET(req) {
     if (isStaff && conversationId && conversationId !== 'all') {
       targetConvIds = [conversationId];
     } else if (!isStaff && session && session.userId && (session.role === 'player' || !guestId)) {
-      // Authenticated player: strictly isolated to their own user credentials
       targetConvIds.push(String(session.userId));
       if (session.username) targetConvIds.push(session.username);
-      try {
-        const u = await db.collection('users').findOne(getUserFilter(session));
-        if (u?._id) targetConvIds.push(u._id.toString());
-      } catch {}
+      if (conversationId) targetConvIds.push(conversationId);
     } else if (guestId && guestId !== 'guest_session') {
       targetConvIds = [guestId];
     } else if (conversationId && conversationId !== 'guest_session') {
@@ -174,8 +163,7 @@ export async function GET(req) {
     // 4. Mark unread messages as read ONLY when actively opened/viewed
     if (isStaff) {
       if (markRead) {
-        // Staff actively viewing this conversation in Admin Chat tab
-        await chatCol
+        chatCol
           .updateMany(
             {
               $or: [
@@ -191,8 +179,7 @@ export async function GET(req) {
           .catch(() => {});
       }
     } else if (searchParams.get('markRead') !== 'false') {
-      // Player reading staff messages
-      await chatCol
+      chatCol
         .updateMany(
           {
             $or: [{ conversationId: { $in: targetConvIds } }, { customerUserId: { $in: targetConvIds } }],
@@ -270,7 +257,13 @@ export async function POST(req) {
       cleanGuestParam || `guest_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
 
     const cleanText = typeof text === 'string' ? text.trim().slice(0, 5000) : '';
-    const cleanImageUrl = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
+    let cleanImageUrl = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
+    if (cleanImageUrl && cleanImageUrl.length > 900_000) {
+      return NextResponse.json(
+        { success: false, error: 'Image is too large. Please send a smaller screenshot.' },
+        { status: 413 }
+      );
+    }
 
     if (!cleanText && !cleanImageUrl) {
       return NextResponse.json(
@@ -304,12 +297,13 @@ export async function POST(req) {
       senderUsername = 'Rich Room Support';
       staffName = session.username;
     } else if (hasPlayerSession) {
-      // Scenario B: Logged-in user inquiry from front-end widget or /chat page
-      const sessionDbUser = await db.collection('users').findOne(getUserFilter(session));
-      const cleanUid = sessionDbUser?._id ? sessionDbUser._id.toString() : String(session.userId);
+      const cleanUid = String(session.userId);
       resolvedConvId = cleanUid;
       customerUserId = cleanUid;
-      customerUsername = sessionDbUser?.username || session.username || 'Player';
+      customerUsername =
+        (typeof body.username === 'string' && body.username.trim()) ||
+        session.username ||
+        'Player';
       senderRole = 'player';
       senderUserId = cleanUid;
       senderUsername = customerUsername;

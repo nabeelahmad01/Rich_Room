@@ -24,6 +24,7 @@ import {
 import { playTune } from '@/lib/soundAlerts';
 import { diffSet, areEqual } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -108,9 +109,12 @@ export default function ChatPage() {
       params.set('markRead', 'true');
       const endpoint = `/api/chat?${params.toString()}`;
       try {
-        const res = await fetch(endpoint, { credentials: 'include', cache: 'no-store' });
-        const data = await res.json();
-        if (!isCancelled && data.success) {
+        const { data } = await fetchJsonQuick(
+          endpoint,
+          { credentials: 'include', cache: 'no-store' },
+          8000
+        );
+        if (!isCancelled && data?.success) {
           const newMsgs = data.messages || [];
           setMessages((prev) => {
             const pendingOpts = prev.filter(
@@ -137,7 +141,7 @@ export default function ChatPage() {
 
     fetchMsgs();
     fetchMsgsRef.current = fetchMsgs;
-    const interval = setInterval(fetchMsgs, 2000);
+    const interval = setInterval(fetchMsgs, 1200);
     return () => {
       isCancelled = true;
       clearInterval(interval);
@@ -208,7 +212,7 @@ export default function ChatPage() {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const maxDim = 1200;
+        const maxDim = 720;
         let width = img.width;
         let height = img.height;
         if (width > maxDim || height > maxDim) {
@@ -226,7 +230,10 @@ export default function ChatPage() {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressed = canvas.toDataURL('image/jpeg', 0.82);
+        let compressed = canvas.toDataURL('image/jpeg', 0.62);
+        if (compressed.length > 420_000) {
+          compressed = canvas.toDataURL('image/jpeg', 0.45);
+        }
         setAttachedImage(compressed);
         setUploadingImage(false);
       };
@@ -244,25 +251,27 @@ export default function ChatPage() {
   const handleSendMessage = async (e, directText = null) => {
     if (e && e.preventDefault) e.preventDefault();
     const textToSend = directText !== null ? directText.trim() : inputMessage.trim();
-    if ((!textToSend && !attachedImage) || sending) return;
+    if (!textToSend && !attachedImage) return;
 
     const currentText = textToSend;
     const currentAttachment = attachedImage;
     setInputMessage('');
     setAttachedImage(null);
     setSendError(null);
-    setSending(true);
 
     const effectiveGuestId =
       guestId ||
       (typeof window !== 'undefined' ? localStorage.getItem('pp_guest_chat_id') : '') ||
       `guest_${Date.now().toString(36)}`;
 
+    const convId = String(user ? (user.userId || user.id || user._id) : effectiveGuestId);
+    const senderName = user?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
+
     const optimisticMsg = {
       id: `opt_${Date.now()}`,
-      conversationId: user ? (user.id || user.userId || user._id) : effectiveGuestId,
-      userId: user ? (user.id || user.userId || user._id) : effectiveGuestId,
-      username: user?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`,
+      conversationId: convId,
+      userId: convId,
+      username: senderName,
       senderRole: 'player',
       text: currentText,
       imageUrl: currentAttachment || null,
@@ -271,64 +280,61 @@ export default function ChatPage() {
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
-    try {
-      const payload = {
-        text: currentText,
-        imageUrl: currentAttachment,
-        conversationId: user ? (user.userId || user.id || user._id) : effectiveGuestId,
-        username: user?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`,
-      };
-      if (!user) {
-        payload.guestId = effectiveGuestId;
-        payload.guestName = `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
-      }
-
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send message. Please retry.');
-      }
-
-      if (data.message) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === optimisticMsg.id ? data.message : m))
-        );
-      }
-
-      // Immediately notify Admin Concierge Desk via BroadcastChannel & localStorage
-      const convId = String(
-        user ? (user.userId || user.id || user._id) : effectiveGuestId
-      );
-      const senderName = user?.username || `Guest #${effectiveGuestId.slice(-4).toUpperCase()}`;
-      const staffAlert = {
-        type: 'NEW_CHAT_MESSAGE',
-        username: senderName,
-        text: currentText || (currentAttachment ? '📷 [Image Attachment]' : 'New inquiry'),
-        conversationId: convId,
-        time: Date.now(),
-      };
-      try {
-        const ch = new BroadcastChannel('paradise_staff_alerts');
-        ch.postMessage(staffAlert);
-        ch.close();
-      } catch {}
-      try {
-        localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
-      } catch {}
-    } catch (err) {
-      setInputMessage(currentText);
-      setAttachedImage(currentAttachment);
-      setSendError(err.message || 'Delivery failed. Tap to retry.');
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-    } finally {
-      setSending(false);
+    const payload = {
+      text: currentText,
+      imageUrl: currentAttachment,
+      conversationId: convId,
+      username: senderName,
+    };
+    if (!user) {
+      payload.guestId = effectiveGuestId;
+      payload.guestName = senderName;
     }
+
+    const staffAlert = {
+      type: 'NEW_CHAT_MESSAGE',
+      username: senderName,
+      text: currentText || (currentAttachment ? '📷 [Image Attachment]' : 'New inquiry'),
+      conversationId: convId,
+      time: Date.now(),
+    };
+    try {
+      const ch = new BroadcastChannel('paradise_staff_alerts');
+      ch.postMessage(staffAlert);
+      ch.close();
+    } catch {}
+    try {
+      localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
+    } catch {}
+
+    (async () => {
+      try {
+        const { res, data } = await fetchJsonQuick(
+          '/api/chat',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload),
+          },
+          currentAttachment ? 25000 : 10000
+        );
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to send message. Please retry.');
+        }
+        if (data.message) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === optimisticMsg.id ? data.message : m))
+          );
+        }
+        fetchMsgsRef.current?.();
+      } catch (err) {
+        setInputMessage(currentText);
+        setAttachedImage(currentAttachment);
+        setSendError(err.message || 'Delivery failed. Tap to retry.');
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      }
+    })();
   };
 
   const quickInquiries = [

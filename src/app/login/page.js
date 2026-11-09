@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Mail, Lock, Sparkles, AlertCircle, CheckCircle2, ArrowRight, ShieldCheck, User, Loader2 } from 'lucide-react';
 import { getOrCreateDeviceId } from '@/lib/deviceClient';
 import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
+import { fetchCurrentUser } from '@/lib/authClient';
 
 function LoginForm() {
   const router = useRouter();
@@ -14,7 +15,7 @@ function LoginForm() {
   const redirectTarget = searchParams.get('redirect');
 
   const [identifier, setIdentifier] = useState('');
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(() => Boolean(readCachedPlayer()));
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,24 +33,19 @@ function LoginForm() {
         cancelled = true;
       };
     }
-    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
-      .then((r) => r.json())
+    fetchCurrentUser()
       .then((data) => {
         if (cancelled) return;
         if (data?.authenticated && data?.user) {
           writeCachedPlayer(data.user);
           const dest =
-            data.isAdmin || redirectTarget === '/admin' || (data.user?.role && data.user.role !== 'player')
+            redirectTarget === '/admin' || (data.user?.role && data.user.role !== 'player')
               ? '/admin'
               : redirectTarget || '/';
           go(dest);
-        } else {
-          setCheckingSession(false);
         }
       })
-      .catch(() => {
-        if (!cancelled) setCheckingSession(false);
-      });
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -88,10 +84,8 @@ function LoginForm() {
           ? '/admin'
           : redirectTarget || '/';
 
-      // Full-page location change guarantees cookies are sent and app state is refreshed
-      setTimeout(() => {
-        window.location.href = destination;
-      }, 700);
+      setLoading(false);
+      router.replace(destination);
     } catch (err) {
       setError(err.message);
       setLoading(false);

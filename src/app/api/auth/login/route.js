@@ -7,7 +7,8 @@ import { getDeviceIdFromRequest } from '@/lib/deviceServer';
 
 export async function POST(req) {
   try {
-    await ensureDbInitialized();
+    // Never block login on heavy index/seed work (runs once in background).
+    ensureDbInitialized().catch(() => {});
 
     const body = await req.json();
     const { identifier, password, deviceId: rawDeviceId, isAdminLogin } = body;
@@ -193,21 +194,25 @@ export async function POST(req) {
     const updateOps = { $set: updateFields };
     if (deviceId) {
       updateOps.$addToSet = { boundDevices: deviceId };
-      // Also bind any existing device FCM subscription to this user
-      db.collection('subscriptions').updateMany(
-        { deviceId },
-        {
-          $set: {
-            userId: user._id.toString(),
-            email: (user.email || '').toLowerCase().trim(),
-            username: user.username,
-            role: user.role || 'player',
-            updatedAt: new Date(),
-          },
-        }
-      ).catch(() => {});
     }
     await usersCol.updateOne({ _id: user._id }, updateOps);
+
+    if (deviceId) {
+      db.collection('subscriptions')
+        .updateMany(
+          { deviceId },
+          {
+            $set: {
+              userId: user._id.toString(),
+              email: (user.email || '').toLowerCase().trim(),
+              username: user.username,
+              role: user.role || 'player',
+              updatedAt: new Date(),
+            },
+          }
+        )
+        .catch(() => {});
+    }
 
     const token = signToken({
       userId,

@@ -25,6 +25,7 @@ import {
   Send,
   MessageCircle,
 } from 'lucide-react';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 
 export default function Player360ProfileModal({
   userId,
@@ -113,27 +114,32 @@ export default function Player360ProfileModal({
     }
     setLoading(true);
     setLoadError(null);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
     try {
-      const res = await fetch(`/api/users?userId=${encodeURIComponent(userId)}`, {
-        credentials: 'include',
-        cache: 'no-store',
-        signal: controller.signal,
-      });
-      const d = await res.json();
-      if (d.success) {
-        setData(d);
+      const { data: snap } = await fetchJsonQuick(
+        `/api/users?userId=${encodeURIComponent(userId)}&snapshot=1`,
+        { credentials: 'include', cache: 'no-store' },
+        8000
+      );
+      if (snap?.success) {
+        setData(snap);
+        setLoading(false);
       } else {
-        setLoadError(d.error || 'Failed to load user profile');
+        setLoadError(snap?.error || 'Failed to load user profile');
+        setLoading(false);
+        return;
+      }
+      const { data: full } = await fetchJsonQuick(
+        `/api/users?userId=${encodeURIComponent(userId)}`,
+        { credentials: 'include', cache: 'no-store' },
+        20000
+      );
+      if (full?.success) {
+        setData(full);
+        setLoadError(null);
       }
     } catch (err) {
       console.error('Fetch player 360 error:', err);
-      setLoadError(
-        err?.name === 'AbortError' ? 'Request timed out — try Refresh.' : 'Could not load profile.'
-      );
-    } finally {
-      clearTimeout(timeoutId);
+      setLoadError(err?.message || 'Could not load profile.');
       setLoading(false);
     }
   };

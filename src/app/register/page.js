@@ -7,13 +7,14 @@ import Image from 'next/image';
 import { Mail, Lock, User, Sparkles, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { getOrCreateDeviceId } from '@/lib/deviceClient';
 import { readCachedPlayer, writeCachedPlayer } from '@/lib/playerSessionCache';
+import { fetchCurrentUser } from '@/lib/authClient';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect');
 
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(() => Boolean(readCachedPlayer()));
   const [step, setStep] = useState('details'); // 'details' | 'otp'
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -38,20 +39,15 @@ function RegisterForm() {
         cancelled = true;
       };
     }
-    fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
-      .then((r) => r.json())
+    fetchCurrentUser()
       .then((data) => {
         if (cancelled) return;
         if (data?.authenticated && data?.user) {
           writeCachedPlayer(data.user);
           go(redirectTarget || '/');
-        } else {
-          setCheckingSession(false);
         }
       })
-      .catch(() => {
-        if (!cancelled) setCheckingSession(false);
-      });
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -220,13 +216,7 @@ function RegisterForm() {
         });
       } catch {}
 
-      setTimeout(() => {
-        if (redirectTarget) {
-          window.location.href = redirectTarget;
-        } else {
-          window.location.href = '/';
-        }
-      }, 800);
+      router.replace(redirectTarget || '/');
     } catch (err) {
       setError(err.message);
       setLoading(false);

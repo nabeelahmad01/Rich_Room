@@ -30,6 +30,9 @@ export async function ensureDbInitialized() {
             db.collection('games').createIndex({ isActive: 1, isFeatured: -1 }),
             db.collection('payment_methods').createIndex({ isActive: 1 }),
             db.collection('ledger').createIndex({ userId: 1, createdAt: -1 }),
+            db.collection('chat_messages').createIndex({ conversationId: 1, createdAt: 1 }),
+            db.collection('chat_messages').createIndex({ customerUserId: 1, createdAt: -1 }),
+            db.collection('chat_messages').createIndex({ userId: 1, createdAt: -1 }),
           ]);
         }
       } catch (idxErr) {

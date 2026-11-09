@@ -45,6 +45,7 @@ import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { fetchCurrentUser, getCachedUser, setCachedUser } from '@/lib/authClient';
+import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
 
 // Games
 import Panda777SlotsModal from '@/components/games/Panda777SlotsModal';
@@ -364,6 +365,31 @@ export default function HomePage({ initialTab = 'lobby' }) {
   useEffect(() => {
     userEmailRef.current = user?.email || null;
   }, [user?.email]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    const scope = user.userId || user.id || user.email;
+    Promise.allSettled([
+      fetchJsonQuick('/api/daily-spin', { credentials: 'include' }).then(({ data: d }) => {
+        if (d?.success) {
+          writeSessionCache(CACHE_KEYS.SPIN_STATUS, {
+            canSpin: Boolean(d.canSpin),
+            availableSpins: d.availableSpins || 0,
+          });
+        }
+      }),
+      fetchJsonQuick('/api/promotions', { credentials: 'include' }).then(({ data: d }) => {
+        if (d?.success && Array.isArray(d.promotions)) {
+          writeSessionCache(CACHE_KEYS.PROMOTIONS, d.promotions);
+        }
+      }),
+      fetchJsonQuick('/api/affiliates', { credentials: 'include' }).then(({ data: d }) => {
+        if (d?.success && d.stats && scope) {
+          writeSessionCache(CACHE_KEYS.AFFILIATE_STATS, d.stats, scope);
+        }
+      }),
+    ]).catch(() => {});
+  }, [user?.email, user?.userId, user?.id]);
 
   useEffect(() => {
     if (user?.email) {
