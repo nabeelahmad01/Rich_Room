@@ -1,3 +1,5 @@
+import { cleanGameTitle } from '@/lib/fastDiff';
+
 const STORAGE_KEY = 'rr_game_accounts_v1';
 const TTL_MS = 10 * 60 * 1000;
 
@@ -23,6 +25,20 @@ export function readGameAccountsCache(email) {
   } catch {
     return null;
   }
+}
+
+export function readCachedGameAccountSeeds(email) {
+  const cached = readGameAccountsCache(email);
+  if (!cached) return { active: [], pending: [] };
+  const active = (cached.active || []).map((a) => ({
+    ...a,
+    gameTitle: cleanGameTitle(a.gameTitle),
+  }));
+  const pending = (cached.pending || []).map((r) => ({
+    ...r,
+    gameTitle: cleanGameTitle(r.gameTitle),
+  }));
+  return { active, pending };
 }
 
 export function writeGameAccountsCache(email, { active, pending, rejected }) {

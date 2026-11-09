@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Standalone Player Views for 0ms instant tab switching
@@ -24,7 +24,6 @@ import CyberHeroBanner from '@/components/hub/CyberHeroBanner';
 import CyberLatestWinsTicker from '@/components/hub/CyberLatestWinsTicker';
 import PlayerGameCredentialsHub from '@/components/hub/PlayerGameCredentialsHub';
 import GameCard from '@/components/hub/GameCard';
-import { DEFAULT_FALLBACK_GAMES } from '@/lib/gameAssets';
 
 // Modals
 import AuthModal from '@/components/modals/AuthModal';
@@ -35,7 +34,10 @@ import SubscriptionPromoModal from '@/components/modals/SubscriptionPromoModal';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import KycModal from '@/components/modals/KycModal';
 import { diffSet, areEqual, cleanGameTitle } from '@/lib/fastDiff';
-import { gamesCacheKey, readGamesFromSession, writeGamesToSession } from '@/lib/gamesClientCache';
+import { gamesCacheKey, readGamesFromSession, writeGamesToSession, readInitialGamesCatalog } from '@/lib/gamesClientCache';
+import { writeSessionCache, CACHE_KEYS } from '@/lib/playerDataCache';
+import { readCachedGameAccountSeeds, writeGameAccountsCache } from '@/lib/gameAccountsClientCache';
+import { buildGameAccountIndex, gameHasReadyAccount, gameHasPendingAccount } from '@/lib/gameAccountMatch';
 import { broadcastPlayerLogout } from '@/lib/playerSessionCache';
 import { subscribePlayerAccountsSync, broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
 import { broadcastStaffNewRequest } from '@/lib/staffAlertsSync';
@@ -130,12 +132,22 @@ export default function HomePage({ initialTab = 'lobby' }) {
   const [crashOpen, setCrashOpen] = useState(false);
 
   // Games & Filter state with curated fallback (0ms SSR matching)
-  const [games, setGames] = useState(DEFAULT_FALLBACK_GAMES);
+  const [games, setGames] = useState(() => readInitialGamesCatalog('all', ''));
   const [searchTerm, setSearchTerm] = useState('');
   const category = 'all';
-  const [loadingGames, setLoadingGames] = useState(false);
-  const [userGameAccounts, setUserGameAccounts] = useState([]);
-  const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
+  const [loadingGames, setLoadingGames] = useState(
+    () => readInitialGamesCatalog('all', '').length === 0
+  );
+  const [userGameAccounts, setUserGameAccounts] = useState(() => {
+    const email = getCachedUser()?.email;
+    if (!email) return [];
+    return readCachedGameAccountSeeds(email).active;
+  });
+  const [pendingAccountRequests, setPendingAccountRequests] = useState(() => {
+    const email = getCachedUser()?.email;
+    if (!email) return [];
+    return readCachedGameAccountSeeds(email).pending;
+  });
   const [requestToast, setRequestToast] = useState(null);
   const userEmailRef = useRef(null);
   const accountsReadyInitRef = useRef(false);
@@ -187,9 +199,19 @@ export default function HomePage({ initialTab = 'lobby' }) {
 
         diffSet(setUserGameAccounts, cleanAccounts);
         diffSet(setPendingAccountRequests, cleanRequests);
+        writeGameAccountsCache(userEmail, {
+          active: cleanAccounts,
+          pending: cleanRequests,
+          rejected: [],
+        });
       }
     } catch {}
   }, []);
+
+  const gameAccountIndex = useMemo(
+    () => buildGameAccountIndex(userGameAccounts, pendingAccountRequests),
+    [userGameAccounts, pendingAccountRequests]
+  );
 
   // Load User Session (Deduplicated via authClient)
   const loadUser = async () => {
@@ -239,6 +261,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
         }));
         diffSet(setGames, sanitized);
         writeGamesToSession(key, sanitized);
+        writeSessionCache(CACHE_KEYS.GAMES_LIST, sanitized);
         try {
           if (category === 'all' && !searchTerm) {
             localStorage.setItem('pp_games_cache', JSON.stringify(sanitized));
@@ -356,6 +379,12 @@ export default function HomePage({ initialTab = 'lobby' }) {
   useEffect(() => {
     loadGames();
   }, [category, searchTerm]);
+
+  useEffect(() => {
+    if (activeTab !== 'games' && activeTab !== 'lobby') return;
+    const email = userEmailRef.current || getCachedUser()?.email;
+    if (email) loadUserGameAccounts(email);
+  }, [activeTab, loadUserGameAccounts]);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -656,15 +685,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                   {games.map((g) => {
-                    const cleanGTitle = (g.title || '').toLowerCase().trim();
-                    const hasAcc = userGameAccounts.some((a) => {
-                      const t = (a.gameTitle || '').toLowerCase().trim();
-                      return t === cleanGTitle || (cleanGTitle && t.includes(cleanGTitle)) || (t && cleanGTitle.includes(t));
-                    });
-                    const isPend = !hasAcc && pendingAccountRequests.some((p) => {
-                      const t = (p.gameTitle || '').toLowerCase().trim();
-                      return t === cleanGTitle || (cleanGTitle && t.includes(cleanGTitle)) || (t && cleanGTitle.includes(t));
-                    });
+                    const hasAcc = gameHasReadyAccount(g.title, gameAccountIndex);
+                    const isPend = gameHasPendingAccount(g.title, gameAccountIndex);
 
                     return (
                       <GameCard
@@ -766,15 +788,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                     {games.map((g) => {
-                      const cleanGTitle = (g.title || '').toLowerCase().trim();
-                      const hasAcc = userGameAccounts.some((a) => {
-                        const t = (a.gameTitle || '').toLowerCase().trim();
-                        return t === cleanGTitle || (cleanGTitle && t.includes(cleanGTitle)) || (t && cleanGTitle.includes(t));
-                      });
-                      const isPend = !hasAcc && pendingAccountRequests.some((p) => {
-                        const t = (p.gameTitle || '').toLowerCase().trim();
-                        return t === cleanGTitle || (cleanGTitle && t.includes(cleanGTitle)) || (t && cleanGTitle.includes(t));
-                      });
+                      const hasAcc = gameHasReadyAccount(g.title, gameAccountIndex);
+                      const isPend = gameHasPendingAccount(g.title, gameAccountIndex);
 
                       return (
                         <GameCard
