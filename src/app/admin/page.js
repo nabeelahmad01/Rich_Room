@@ -217,7 +217,7 @@ export default function AdminPortal({ initialTab }) {
   const [games, setGames] = useState([]);
   const [newGame, setNewGame] = useState({
     title: '',
-    provider: 'Players Paradise Studio',
+    provider: 'Rich Room Studio',
     thumbnail: '/images/vegas-777.svg',
     badge: 'HOT',
     url: '',
@@ -2115,7 +2115,7 @@ export default function AdminPortal({ initialTab }) {
             }`}
           style={{ flex: 1 }}
         >
-          {/* TAB 1: OVERVIEW (COMMAND CENTER) - Ultra-Luxurious Players Paradise Marquee Architecture */}
+          {/* TAB 1: OVERVIEW (COMMAND CENTER) - Ultra-Luxurious Rich Room Marquee Architecture */}
           {activeTab === 'overview' && (
             <div className="flex flex-col gap-6 sm:gap-8 w-full" style={{ fontFamily: 'var(--font-lexend, Lexend), sans-serif' }}>
               {/* Header Hero Card matching casino theme */}
@@ -2158,7 +2158,7 @@ export default function AdminPortal({ initialTab }) {
                       </span>
                     </div>
                     <p className="text-xs sm:text-[13px] text-[#9A91A8] mt-1.5 leading-relaxed m-0 font-medium">
-                      Real-time Players Paradise cashier velocity, player liquidity, and sweepstakes platform activity overview
+                      Real-time Rich Room cashier velocity, player liquidity, and sweepstakes platform activity overview
                     </p>
                   </div>
                 </div>
@@ -2835,7 +2835,7 @@ export default function AdminPortal({ initialTab }) {
                           const gameToSubmit = { ...newGame };
                           setNewGame({
                             title: '',
-                            provider: 'Players Paradise Studio',
+                            provider: 'Rich Room Studio',
                             thumbnail: '/images/vegas-777.svg',
                             badge: 'HOT',
                             url: '',
@@ -2884,7 +2884,7 @@ export default function AdminPortal({ initialTab }) {
                             <label className="block text-[11px] font-bold text-gray-300 mb-1 uppercase tracking-wider">Provider / Studio</label>
                             <input
                               type="text"
-                              placeholder="e.g. Orion Stars, Juwa, Players Paradise"
+                              placeholder="e.g. Orion Stars, Juwa, Rich Room"
                               value={newGame.provider}
                               onChange={(e) => setNewGame({ ...newGame, provider: e.target.value })}
                               className="w-full rounded-xl px-3.5 py-2.5 text-white text-xs outline-none transition-all"
@@ -3174,7 +3174,7 @@ export default function AdminPortal({ initialTab }) {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-gray-400 mt-0.5">{g.provider || 'Players Paradise Studio'}</div>
+                                <div className="text-[11px] text-gray-400 mt-0.5">{g.provider || 'Rich Room Studio'}</div>
                                 <div className="text-[10px] text-gray-500 font-mono mt-0.5">Plays: {g.playsCount?.toLocaleString() || 0}</div>
                               </div>
                             </div>
@@ -3222,7 +3222,7 @@ export default function AdminPortal({ initialTab }) {
                                   onClick={() => setEditingGame({
                                     id: g.id || g._id,
                                     title: g.title || '',
-                                    provider: g.provider || 'Players Paradise Studio',
+                                    provider: g.provider || 'Rich Room Studio',
                                     thumbnail: g.thumbnail || '/images/vegas-777.svg',
                                     badge: g.badge || (g.isHot ? 'HOT' : ''),
                                     url: g.url || '',
@@ -3326,7 +3326,7 @@ export default function AdminPortal({ initialTab }) {
                                 </td>
                                 <td className="py-3 px-4">
                                   <div className="font-bold text-white text-sm hover:text-[var(--neon-cyan)] transition-colors">{g.title}</div>
-                                  <div className="text-[11px] text-gray-400 mt-0.5">{g.provider || 'Players Paradise Studio'}</div>
+                                  <div className="text-[11px] text-gray-400 mt-0.5">{g.provider || 'Rich Room Studio'}</div>
                                 </td>
                                 <td className="py-3 px-4">
                                   {badgeUpper === 'HOT' && (
@@ -3433,7 +3433,7 @@ export default function AdminPortal({ initialTab }) {
                                       onClick={() => setEditingGame({
                                         id: g.id || g._id,
                                         title: g.title || '',
-                                        provider: g.provider || 'Players Paradise Studio',
+                                        provider: g.provider || 'Rich Room Studio',
                                         thumbnail: g.thumbnail || '/images/vegas-777.svg',
                                         badge: g.badge || (g.isHot ? 'HOT' : ''),
                                         url: g.url || '',
@@ -5226,7 +5226,7 @@ export default function AdminPortal({ initialTab }) {
                         <label className="text-[11px] font-bold text-gray-300 block mb-1 uppercase">Staff Email *</label>
                         <input
                           type="email"
-                          placeholder="staff@playersparadisehub.com"
+                          placeholder="staff@richroom.games"
                           value={newStaff.email}
                           onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
                           className="w-full bg-[var(--bg-deep)] border border-white/15 focus:border-[var(--neon-cyan)] rounded-xl px-3 py-2.5 text-xs text-white outline-none transition"
@@ -6823,7 +6823,7 @@ export default function AdminPortal({ initialTab }) {
                           <label className="text-[11px] font-bold text-gray-300 block mb-1 uppercase">Identifier ($Cashtag or Address) *</label>
                           <input
                             type="text"
-                            placeholder="e.g. $ParadisePay or pay@playersparadisehub.com"
+                            placeholder="e.g. $RichRoomPay or pay@richroom.games"
                             value={newMethod.accountDetails}
                             onChange={(e) => setNewMethod({ ...newMethod, accountDetails: e.target.value })}
                             className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-[var(--neon-cyan)] transition"
@@ -6839,7 +6839,7 @@ export default function AdminPortal({ initialTab }) {
                           </label>
                           <input
                             type="url"
-                            placeholder="e.g. https://cash.app/$ParadisePay"
+                            placeholder="e.g. https://cash.app/$RichRoomPay"
                             value={newMethod.paymentUrl}
                             onChange={(e) => setNewMethod({ ...newMethod, paymentUrl: e.target.value })}
                             className="w-full bg-[var(--bg-deep)] border border-white/15 rounded-xl p-2.5 text-xs text-white outline-none focus:border-[var(--neon-cyan)] transition"
@@ -8396,7 +8396,7 @@ export default function AdminPortal({ initialTab }) {
                     </label>
                     <input
                       type="url"
-                      placeholder="https://cash.app/$ParadisePay"
+                      placeholder="https://cash.app/$RichRoomPay"
                       value={editGatewayModal.data.paymentUrl || ''}
                       onChange={(e) => setEditGatewayModal(prev => ({
                         ...prev,

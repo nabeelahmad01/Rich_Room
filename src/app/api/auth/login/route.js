@@ -63,7 +63,7 @@ export async function POST(req) {
           balanceSC: 50000.0,
           balanceGC: 10000000,
           kycStatus: 'approved',
-          vipTier: 'Paradise Legend',
+          vipTier: 'Rich Room VIP',
           isBanned: false,
           createdAt: new Date(),
           updatedAt: new Date(),

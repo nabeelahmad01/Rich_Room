@@ -255,7 +255,7 @@ function RegisterForm() {
         </Link>
         <h1 className="font-heading font-black text-2xl text-white">
           {step === 'details' ? (
-            <>JOIN <span className="text-[var(--neon-purple-light)]">PARADISE</span></>
+            <>JOIN <span className="text-[var(--neon-purple-light)]">RICH ROOM</span></>
           ) : (
             <>SECURITY <span className="text-[var(--neon-cyan)]">VERIFICATION</span></>
           )}

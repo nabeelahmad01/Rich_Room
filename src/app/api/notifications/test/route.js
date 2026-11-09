@@ -13,7 +13,7 @@ export async function GET(req) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notification Test Station | Players Paradise Hub</title>
+  <title>Notification Test Station | Rich Room</title>
   <link rel="icon" href="/logo.png">
   <style>
     body {
@@ -118,7 +118,7 @@ export async function GET(req) {
         <img src="/logo.png" style="width:28px; height:28px; border-radius:6px; border:1px solid #00f0ff;" />
         <div>
           <div style="font-weight:900; color:#00f0ff; font-size:13px;">🎰 VIP Flash Coin Drop Activated!</div>
-          <div style="color:#94a3b8; font-size:10px;">PLAYERS PARADISE HUB • NOW</div>
+          <div style="color:#94a3b8; font-size:10px;">RICH ROOM • NOW</div>
         </div>
       </div>
       <div style="font-size:12px; color:#ffffff; line-height:1.4;">
@@ -126,7 +126,7 @@ export async function GET(req) {
       </div>
     </div>
 
-    <a href="/" class="back">← Back to Players Paradise</a>
+    <a href="/" class="back">← Back to Rich Room</a>
   </div>
 
   <script>

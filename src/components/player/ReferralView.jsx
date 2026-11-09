@@ -104,8 +104,8 @@ export default function ReferralView({ user: propUser, onOpenAuth }) {
 
   const origin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
-    : (process.env.NEXT_PUBLIC_APP_URL || 'https://playersparadisehub.com');
-  const referralCode = stats?.referralCode || user?.referralCode || user?.username || 'PARADISE';
+    : (process.env.NEXT_PUBLIC_APP_URL || 'https://richroom.games');
+  const referralCode = stats?.referralCode || user?.referralCode || user?.username || 'RICHROOM';
   const referralUrl = `${origin}/register?ref=${referralCode}`;
 
   return (
@@ -116,7 +116,7 @@ export default function ReferralView({ user: propUser, onOpenAuth }) {
         <div className="relative z-10 max-w-2xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--neon-cyan)]/15 border border-[var(--neon-cyan)]/40 text-[var(--neon-cyan)] text-xs font-heading font-black tracking-wider uppercase">
             <Sparkles size={14} />
-            <span>PLAYERS PARADISE AFFILIATE SYSTEM</span>
+            <span>RICH ROOM AFFILIATE SYSTEM</span>
           </div>
           <h1 className="font-heading font-black text-2xl sm:text-4xl tracking-wide leading-tight text-white">
             INVITE PLAYERS. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)]">EARN UNLIMITED COMMISSIONS.</span>

@@ -314,7 +314,7 @@ export default function CyberNavbar({
             <Image src="/logo.png" alt="Logo" fill className="object-cover" />
           </div>
           <span className="font-heading font-black text-xs tracking-wider text-white hidden sm:inline">
-            PARADISE<span className="text-[var(--neon-cyan)]">HUB</span>
+            RICH<span className="text-[var(--neon-cyan)]">ROOM</span>
           </span>
         </div>
 

@@ -1,5 +1,5 @@
-// Players Paradise Hub Service Worker (Web Push & Chrome Native Notifications)
-const CACHE_NAME = 'players-paradise-cache-v1';
+// Rich Room Service Worker (Web Push & Chrome Native Notifications)
+const CACHE_NAME = 'rich-room-cache-v1';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

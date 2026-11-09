@@ -44,7 +44,7 @@
   
   <!-- Cabinet Top Dome -->
   <path d="M195,85 Q300,50 405,85 Z" fill="#3B0764" stroke="url(#neonGold)" stroke-width="2" />
-  <text x="300" y="78" font-family="sans-serif" font-weight="900" font-size="16" fill="url(#neonGold)" text-anchor="middle" letter-spacing="4">PARADISE HUB</text>
+  <text x="300" y="78" font-family="sans-serif" font-weight="900" font-size="16" fill="url(#neonGold)" text-anchor="middle" letter-spacing="4">RICH ROOM</text>
 
   <!-- Slot Screen Area -->
   <rect x="200" y="115" width="200" height="150" rx="14" fill="url(#screenGrad)" stroke="#6366F1" stroke-width="2" />

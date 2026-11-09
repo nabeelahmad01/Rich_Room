@@ -48,7 +48,7 @@ export default function TermsPage() {
             <section className="space-y-2">
               <h2 className="font-heading font-bold text-sm text-white">1. ACCEPTANCE OF TERMS</h2>
               <p>
-                By registering an account, accessing, or using the Players Paradise Hub platform, you agree to be bound by these Terms of Service. If you do not agree to all terms, do not access or use the platform.
+                By registering an account, accessing, or using the Rich Room platform, you agree to be bound by these Terms of Service. If you do not agree to all terms, do not access or use the platform.
               </p>
             </section>
 

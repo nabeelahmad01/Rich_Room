@@ -1,4 +1,4 @@
-# Players Paradise Hub 🎰🌐
+# Rich Room 🎰🌐
 
 Next-generation cyber gaming destination and official sweeps management hub. Built with Next.js, Tailwind CSS, MongoDB, Capacitor, and Firebase Cloud Messaging.
 
@@ -19,7 +19,7 @@ Next-generation cyber gaming destination and official sweeps management hub. Bui
 - **Push Notification Integration**:
   - Google Firebase Cloud Messaging (FCM) v14 service account integration for real-time mobile push notifications.
 - **Android Mobile App**:
-  - Capacitor Android integration ready for APK packaging (`com.playersparadise.app`).
+  - Capacitor Android integration ready for APK packaging (`com.richroom.app`).
 
 ---
 

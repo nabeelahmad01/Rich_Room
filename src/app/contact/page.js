@@ -56,7 +56,7 @@ export default function ContactPage() {
             <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-center">
               <Mail size={24} className="mx-auto text-[var(--neon-cyan)]" />
               <h3 className="font-heading font-bold text-sm text-white">Email Support</h3>
-              <p className="text-xs text-slate-400 font-mono">support@playersparadisehub.com</p>
+              <p className="text-xs text-slate-400 font-mono">support@richroom.games</p>
             </div>
 
             <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-center">

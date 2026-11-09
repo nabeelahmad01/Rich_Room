@@ -106,7 +106,7 @@ export async function PUT(req) {
 
     const updateFields = {
       updatedAt: new Date(),
-      processedBy: session.email || 'admin@playersparadisehub.com',
+      processedBy: session.email || 'admin@richroom.games',
     };
 
     if (status !== undefined) updateFields.status = status.toUpperCase();

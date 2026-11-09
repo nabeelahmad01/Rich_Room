@@ -70,7 +70,7 @@ export async function ensureDbInitialized() {
               balanceSC: 50000.0,
               balanceGC: 10000000,
               kycStatus: 'approved',
-              vipTier: 'Paradise Legend',
+              vipTier: 'Rich Room VIP',
               createdAt: new Date(),
             },
           },
@@ -88,7 +88,7 @@ export async function ensureDbInitialized() {
           {
             $set: {
               username: 'financemanager',
-              email: (process.env.STAFF_FINANCE_EMAIL || 'finance@playersparadisehub.com').trim(),
+              email: (process.env.STAFF_FINANCE_EMAIL || 'finance@richroom.games').trim(),
               passwordHash: staffPasswordHash,
               role: ROLES.FINANCIAL_MANAGER,
               balanceSC: 5000.0,
@@ -108,7 +108,7 @@ export async function ensureDbInitialized() {
           {
             $set: {
               username: 'coinmanager',
-              email: (process.env.STAFF_COINS_EMAIL || 'coins@playersparadisehub.com').trim(),
+              email: (process.env.STAFF_COINS_EMAIL || 'coins@richroom.games').trim(),
               passwordHash: staffPasswordHash,
               role: ROLES.COIN_MANAGER,
               balanceSC: 2500.0,
@@ -128,7 +128,7 @@ export async function ensureDbInitialized() {
           {
             $set: {
               username: 'chatsupport',
-              email: (process.env.STAFF_SUPPORT_EMAIL || 'support@playersparadisehub.com').trim(),
+              email: (process.env.STAFF_SUPPORT_EMAIL || 'support@richroom.games').trim(),
               passwordHash: staffPasswordHash,
               role: ROLES.CHAT_SUPPORT,
               balanceSC: 1000.0,
@@ -149,7 +149,7 @@ export async function ensureDbInitialized() {
     const existingGamesCount = await gamesCol.countDocuments({});
 
     if (existingGamesCount === 0) {
-      console.log('Seeding curated games catalog for Players Paradise Hub...');
+      console.log('Seeding curated games catalog for Rich Room...');
       const defaultGames = [
         {
           id: 'panda-777-slots',
@@ -315,13 +315,13 @@ export async function ensureDbInitialized() {
     const existingMethodsCount = await methodsCol.countDocuments({});
 
     if (existingMethodsCount === 0) {
-      console.log('Seeding initial payment gateways for Players Paradise Hub...');
+      console.log('Seeding initial payment gateways for Rich Room...');
       const defaultMethods = [
         {
           methodId: 'cashapp',
           name: 'Cash App',
           icon: 'DollarSign',
-          tag: '$PlayersParadiseHub',
+          tag: '$RichRoomHub',
           displayName: 'Cash App Pay',
           qrCodeUrl: '/images/qr-cashapp.png',
           instructions: 'Send payment with your player username in the note. Instant auto-credit upon verification.',
@@ -336,9 +336,9 @@ export async function ensureDbInitialized() {
           methodId: 'zelle',
           name: 'Zelle',
           icon: 'Zap',
-          tag: 'pay@playersparadisehub.com',
+          tag: 'pay@richroom.games',
           displayName: 'Zelle Direct',
-          instructions: 'Send via Zelle to pay@playersparadisehub.com. Zero fees, instant bank settlement.',
+          instructions: 'Send via Zelle to pay@richroom.games. Zero fees, instant bank settlement.',
           minDeposit: 20,
           maxDeposit: 5000,
           minWithdrawal: 50,
@@ -350,9 +350,9 @@ export async function ensureDbInitialized() {
           methodId: 'chime',
           name: 'Chime',
           icon: 'CreditCard',
-          tag: '$PlayersParadise',
+          tag: '$RichRoom',
           displayName: 'Chime Spot',
-          instructions: 'Send Chime to $PlayersParadise. Include your username.',
+          instructions: 'Send Chime to $RichRoom. Include your username.',
           minDeposit: 10,
           maxDeposit: 2500,
           minWithdrawal: 25,
@@ -364,7 +364,7 @@ export async function ensureDbInitialized() {
           methodId: 'crypto',
           name: 'Bitcoin / USDT',
           icon: 'Bitcoin',
-          tag: '1ParadiseHubCyberWalletBTC777',
+          tag: '1RichRoomCyberWalletBTC777',
           displayName: 'Crypto / BTC / USDT (TRC20)',
           instructions: 'Transfer BTC or USDT. Payouts processed within 5-15 minutes.',
           minDeposit: 20,
@@ -378,7 +378,7 @@ export async function ensureDbInitialized() {
           methodId: 'applepay',
           name: 'Apple Pay / Card',
           icon: 'Smartphone',
-          tag: 'apple@playersparadisehub.com',
+          tag: 'apple@richroom.games',
           displayName: 'Apple Pay',
           instructions: 'Use Apple Pay via SMS or iMessage request for fast deposit.',
           minDeposit: 15,

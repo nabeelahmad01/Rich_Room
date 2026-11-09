@@ -366,7 +366,7 @@ export async function PUT(req) {
         const is24Hex = typeof deposit.userId === 'string' && deposit.userId.length === 24 && /^[0-9a-fA-F]{24}$/.test(deposit.userId);
         const resolvedId = (is24Hex && ObjectId.isValid(deposit.userId)) ? new ObjectId(deposit.userId) : new ObjectId();
         const resolvedUsername = String(deposit.username || deposit.playerPaymentEmail?.split('@')[0] || 'player').trim();
-        const resolvedEmail = String(deposit.playerPaymentEmail || `${resolvedUsername}@playersparadisehub.com`).toLowerCase().trim();
+        const resolvedEmail = String(deposit.playerPaymentEmail || `${resolvedUsername}@richroom.games`).toLowerCase().trim();
 
         user = {
           _id: resolvedId,

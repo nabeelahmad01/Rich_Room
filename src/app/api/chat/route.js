@@ -62,7 +62,7 @@ async function buildStaffInbox(chatCol) {
         // Enrich customer name if previously unknown
         if (
           customerName &&
-          (conv.username === 'Player' || conv.username === 'Players Paradise Support' || conv.username === 'Rich Room Support')
+          (conv.username === 'Player' || conv.username === 'Rich Room Support' || conv.username === 'Rich Room Support')
         ) {
           conv.username = customerName;
         }

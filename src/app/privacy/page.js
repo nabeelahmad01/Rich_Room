@@ -62,7 +62,7 @@ export default function PrivacyPage() {
             <section className="space-y-2">
               <h2 className="font-heading font-bold text-sm text-white">3. RETENTION & RIGHTS</h2>
               <p>
-                You may request access to, correction of, or deletion of your profile data by submitting a formal request to privacy@playersparadisehub.com.
+                You may request access to, correction of, or deletion of your profile data by submitting a formal request to privacy@richroom.games.
               </p>
             </section>
           </div>

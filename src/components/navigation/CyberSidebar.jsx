@@ -150,7 +150,7 @@ export default function CyberSidebar({
             >
               <Image
                 src="/logo.png"
-                alt="Players Paradise Hub"
+                alt="Rich Room"
                 fill
                 className="object-cover"
                 priority
@@ -159,7 +159,7 @@ export default function CyberSidebar({
             {(!collapsed || mobileOpen) && (
               <div className="flex flex-col">
                 <span className="font-heading font-black text-sm tracking-wider leading-tight text-white group-hover:text-[var(--neon-cyan)] transition-colors">
-                  PLAYERS<span className="text-[var(--neon-cyan)]">PARADISE</span>
+                  RICH<span className="text-[var(--neon-cyan)]">ROOM</span>
                 </span>
                 <span className="text-[10px] tracking-widest text-slate-400 font-sub font-semibold">
                   CYBER GAMING HUB
@@ -291,7 +291,7 @@ export default function CyberSidebar({
               </Link>
             </div>
             <div className="text-[10px] text-center text-slate-500 font-mono">
-              PLAYERS PARADISE v1.0 • 2026
+              RICH ROOM v1.0 • 2026
             </div>
           </div>
         ) : (

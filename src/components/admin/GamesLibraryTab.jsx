@@ -30,7 +30,7 @@ export default function GamesLibraryTab({
   // New Game Form State
   const [newGame, setNewGame] = useState({
     title: '',
-    provider: 'Paradise Studio',
+    provider: 'Rich Room Studio',
     thumbnail: '/images/vegas-777.svg',
     badge: 'HOT',
     url: '',
@@ -82,7 +82,7 @@ export default function GamesLibraryTab({
       await onAddGame?.(newGame);
       setNewGame({
         title: '',
-        provider: 'Paradise Studio',
+        provider: 'Rich Room Studio',
         thumbnail: '/images/vegas-777.svg',
         badge: 'HOT',
         url: '',
@@ -319,7 +319,7 @@ export default function GamesLibraryTab({
                     </td>
                     <td className="p-3">
                       <div className="font-bold text-white text-sm">{g.title}</div>
-                      <div className="text-[11px] text-slate-400">{g.provider || 'Paradise Studio'}</div>
+                      <div className="text-[11px] text-slate-400">{g.provider || 'Rich Room Studio'}</div>
                     </td>
                     <td className="p-3">
                       {badgeUpper === 'HOT' && (
@@ -387,7 +387,7 @@ export default function GamesLibraryTab({
                             setEditingGame({
                               id: gameId,
                               title: g.title || '',
-                              provider: g.provider || 'Paradise Studio',
+                              provider: g.provider || 'Rich Room Studio',
                               thumbnail: g.thumbnail || g.image || '/images/vegas-777.svg',
                               badge: g.badge || 'HOT',
                               url: g.playUrl || g.url || '',

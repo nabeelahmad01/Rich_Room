@@ -623,7 +623,7 @@ export function AddGatewayModal({ isOpen, onClose, onComplete }) {
                 required
                 value={form.identifierTag}
                 onChange={(e) => setForm({ ...form, identifierTag: e.target.value })}
-                placeholder="$PlayerParadisePay"
+                placeholder="$RichRoomPay"
                 className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
@@ -763,7 +763,7 @@ export function AddStaffModal({ isOpen, onClose, onComplete }) {
               required
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="alex@playersparadisehub.com"
+              placeholder="alex@richroom.games"
               className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             />
           </div>
@@ -1020,7 +1020,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
 
   const handleGenerate = () => {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-    let p = 'Paradise';
+    let p = 'RichRoom';
     for (let i = 0; i < 4; i++) {
       p += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -1084,7 +1084,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onConfirm }) {
               type="text"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="e.g. Paradise2026!"
+              placeholder="e.g. RichRoom2026!"
               required
               className="w-full bg-[#060817] border border-white/10 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-amber-300 font-mono outline-none"
             />

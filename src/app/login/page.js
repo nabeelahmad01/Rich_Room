@@ -115,7 +115,7 @@ function LoginForm() {
           </div>
         </Link>
         <h1 className="font-heading font-black text-2xl text-white">
-          SIGN IN TO <span className="text-[var(--neon-cyan)]">PARADISE</span>
+          SIGN IN TO <span className="text-[var(--neon-cyan)]">RICH ROOM</span>
         </h1>
         <p className="text-xs text-slate-400">Access your game accounts, wallet, or admin portal</p>
       </div>

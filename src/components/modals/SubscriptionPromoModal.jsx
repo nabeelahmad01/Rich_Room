@@ -155,7 +155,7 @@ export default function SubscriptionPromoModal({
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <img
             src="/images/logo.png"
-            alt="Players Paradise"
+            alt="Rich Room"
             style={{
               height: '72px',
               width: 'auto',

@@ -42,16 +42,16 @@
     <polygon points="45,9 47,15 53,16 48,20 50,26 45,22 40,26 42,20 37,16 43,15" fill="#FFE259" />
   </g>
 
-  <!-- Players Paradise Wordmark -->
+  <!-- Rich Room Wordmark -->
   <g transform="translate(105, 30)">
-    <!-- PLAYERS -->
+    <!-- RICH -->
     <text x="0" y="42" font-family="'Outfit', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="34" letter-spacing="2" fill="#FFFFFF">
-      PLAYERS
+      RICH
     </text>
     
-    <!-- PARADISE with Neon Gradient -->
-    <text x="180" y="42" font-family="'Outfit', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="34" letter-spacing="2" fill="url(#goldGrad)" filter="url(#goldGlow)">
-      PARADISE
+    <!-- ROOM with Neon Gradient -->
+    <text x="100" y="42" font-family="'Outfit', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="34" letter-spacing="2" fill="url(#goldGrad)" filter="url(#goldGlow)">
+      ROOM
     </text>
 
     <!-- Subtitle -->

@@ -46,7 +46,7 @@ export default function HowToPlayView({ onSelectTab }) {
           <span>PLAYER ONBOARDING MANUAL</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-black font-heading text-white">
-          HOW TO PLAY AT <span className="text-[var(--neon-cyan)]">PLAYERS PARADISE</span>
+          HOW TO PLAY AT <span className="text-[var(--neon-cyan)]">RICH ROOM</span>
         </h1>
         <p className="text-xs md:text-sm text-slate-300 max-w-xl mx-auto">
           Follow our 4 simple steps to start spinning, fish hunting, and redeeming cash prizes today.
@@ -74,7 +74,7 @@ export default function HowToPlayView({ onSelectTab }) {
       </div>
 
       <div className="p-8 rounded-3xl bg-gradient-to-r from-purple-950/60 to-cyan-950/40 border border-[var(--neon-cyan)]/40 text-center space-y-4 shadow-[0_0_30px_rgba(0,240,255,0.15)]">
-        <h2 className="font-heading font-black text-xl text-white">READY TO JOIN THE PARADISE?</h2>
+        <h2 className="font-heading font-black text-xl text-white">READY TO JOIN RICH ROOM?</h2>
         <p className="text-xs text-slate-300 max-w-md mx-auto">
           Sign up today and get 100% deposit match bonus on your first Cash App or Crypto transfer.
         </p>

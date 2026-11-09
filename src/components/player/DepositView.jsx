@@ -57,7 +57,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     regularBonusActive: true,
   });
 
-  // Deposit Form State (never show placeholder Paradise gateways — cache or API only)
+  // Deposit Form State (never show placeholder demo gateways — cache or API only)
   const [gateways, setGateways] = useState(() => {
     const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
     return cached?.length ? cached : [];

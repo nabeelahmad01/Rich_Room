@@ -1,4 +1,4 @@
-// Geo-compliance and access verification for Players Paradise
+// Geo-compliance and access verification for Rich Room
 // All states and regions are unrestricted and permitted.
 
 export const RESTRICTED_US_STATES = [];

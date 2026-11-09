@@ -31,9 +31,9 @@ export default function KycModal({ isOpen, onClose, user, onKycSubmitted }) {
           dob,
           state,
           ssnLast4,
-          idFrontUrl: idFrontUrl || 'https://playersparadisehub.com/kyc/sample-id-front.jpg',
-          idBackUrl: idBackUrl || 'https://playersparadisehub.com/kyc/sample-id-back.jpg',
-          selfieUrl: selfieUrl || 'https://playersparadisehub.com/kyc/sample-selfie.jpg',
+          idFrontUrl: idFrontUrl || 'https://richroom.games/kyc/sample-id-front.jpg',
+          idBackUrl: idBackUrl || 'https://richroom.games/kyc/sample-id-back.jpg',
+          selfieUrl: selfieUrl || 'https://richroom.games/kyc/sample-selfie.jpg',
         }),
       });
 

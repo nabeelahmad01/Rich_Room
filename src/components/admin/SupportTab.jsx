@@ -36,7 +36,7 @@ export default function SupportTab({
 
   const currentMessages = groupedByPlayer[selectedUser] || [
     { sender: 'user', text: 'Hello! I just requested my Ultra Panda credentials. How long does it usually take?', timestamp: new Date(Date.now() - 3600000).toISOString() },
-    { sender: 'agent', text: 'Welcome to Players Paradise Hub! Our team reviews requests within minutes. You can check your Player Credentials Hub anytime!', timestamp: new Date(Date.now() - 1800000).toISOString() },
+    { sender: 'agent', text: 'Welcome to Rich Room! Our team reviews requests within minutes. You can check your Player Credentials Hub anytime!', timestamp: new Date(Date.now() - 1800000).toISOString() },
   ];
 
   const cannedResponses = [

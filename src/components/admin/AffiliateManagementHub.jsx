@@ -58,7 +58,7 @@ export default function AffiliateManagementHub({
 
   const handleCopyCode = (code) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://playersparadisehub.com';
+      const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://richroom.games';
       navigator.clipboard.writeText(`${origin}/ref/${code}`);
       setCopiedCode(code);
       setTimeout(() => setCopiedCode(null), 2000);

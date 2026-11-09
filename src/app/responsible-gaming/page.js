@@ -57,7 +57,7 @@ export default function ResponsibleGamingPage() {
             <section className="space-y-2">
               <h2 className="font-heading font-bold text-sm text-white">SELF-EXCLUSION & LIMITS</h2>
               <p>
-                Players Paradise Hub offers voluntary self-exclusion options ranging from 24-hour cool-offs to permanent account restrictions. Contact support@playersparadisehub.com or ping our 24/7 live chat desk to set custom daily deposit limits or request an immediate timeout.
+                Rich Room offers voluntary self-exclusion options ranging from 24-hour cool-offs to permanent account restrictions. Contact support@richroom.games or ping our 24/7 live chat desk to set custom daily deposit limits or request an immediate timeout.
               </p>
             </section>
 

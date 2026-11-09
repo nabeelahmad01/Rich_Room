@@ -17,12 +17,12 @@ export default function DownloadAppView() {
 
   const faqs = [
     {
-      q: 'Is the Players Paradise Hub Android APK safe to install?',
+      q: 'Is the Rich Room Android APK safe to install?',
       a: 'Yes, our official release APK is cryptographically signed and scanned for security. You can download and install it directly with zero bloatware or third-party ads.'
     },
     {
       q: 'How do I install the APK on Android?',
-      a: 'After clicking Download APK, open your notification drawer or Downloads folder, tap players-paradise.apk, and select "Allow from this source" if prompted by Android security settings.'
+      a: 'After clicking Download APK, open your notification drawer or Downloads folder, tap rich-room.apk, and select "Allow from this source" if prompted by Android security settings.'
     },
     {
       q: 'How do I add the app to my iPhone / iPad (iOS)?',
@@ -43,7 +43,7 @@ export default function DownloadAppView() {
           <span>OFFICIAL MOBILE EDITION 2026</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading text-white">
-          DOWNLOAD <span className="text-[var(--neon-cyan)]">PLAYERS PARADISE</span> APP
+          DOWNLOAD <span className="text-[var(--neon-cyan)]">RICH ROOM</span> APP
         </h1>
         <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
           Experience ultra-fast loading, full-screen gaming, and push notifications for deposits, cashouts, and new game platform credentials.
@@ -89,7 +89,7 @@ export default function DownloadAppView() {
           <div className="space-y-3">
             <a
               href="/download/players-paradise.apk"
-              download="players-paradise.apk"
+              download="rich-room.apk"
               className="w-full py-4 rounded-2xl cyber-btn-cyan font-heading font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,240,255,0.5)] cursor-pointer"
             >
               <Download size={18} />
