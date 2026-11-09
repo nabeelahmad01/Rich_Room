@@ -40,6 +40,7 @@ import {
 } from '@/lib/paymentMethodsCache';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
+import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
 
 export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -78,8 +79,10 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const [transactionId, setTransactionId] = useState('');
   const [proofImage, setProofImage] = useState('');
   const [proofFileName, setProofFileName] = useState('');
-  const [selectedGame, setSelectedGame] = useState('Panda Master');
+  const [selectedGame, setSelectedGame] = useState('');
   const [adminGames, setAdminGames] = useState(() => {
+    const fromCatalog = readInitialGamesCatalog('all', '');
+    if (fromCatalog?.length) return fromCatalog;
     if (typeof window !== 'undefined') {
       try {
         const cached = readSessionCache(CACHE_KEYS.GAMES_LIST);
@@ -251,7 +254,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     fetchGameAccounts();
     const cachedCatalog = readAdminGamesFromCache();
     if (cachedCatalog?.length) setAdminGames(cachedCatalog);
-    syncGamesCatalog(false);
+    syncGamesCatalog(true);
 
     // Live polling — history/accounts only (games catalog uses 5m cache)
     const pollInterval = setInterval(() => {
@@ -264,21 +267,37 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     }, 8000);
 
     const handleUserSync = (e) => {
-      if (e.detail) diffSet(setUser, e.detail);
+      if (e.detail) {
+        diffSet(setUser, e.detail);
+        fetchGateways(true);
+        fetchGameAccounts();
+        syncGamesCatalog(true);
+      } else {
+        setUser(null);
+      }
     };
 
     const handleFocus = () => {
       fetchHistory(true);
       fetchUserAndSettings(true);
-      syncGamesCatalog(false);
+      syncGamesCatalog(true);
+      fetchGateways(true);
+    };
+
+    const handleCashierRefresh = () => {
+      fetchGateways(true);
+      syncGamesCatalog(true);
+      fetchGameAccounts();
     };
 
     window.addEventListener('paradise-user-sync', handleUserSync);
+    window.addEventListener('paradise-cashier-refresh', handleCashierRefresh);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
       clearInterval(pollInterval);
+      window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
@@ -768,7 +787,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                   <div>
                     {(() => {
                       const displayGames = getAvailableGamePlatforms(adminGames, userGameAccounts);
-                      const currentSelected = selectedGame || (displayGames[0] || 'Panda Master');
+                      const currentSelected = selectedGame || displayGames[0] || '';
                       const linkedAcc = userGameAccounts.find(
                         (a) => (a.gameTitle || '').toLowerCase().trim() === currentSelected.toLowerCase().trim()
                       );

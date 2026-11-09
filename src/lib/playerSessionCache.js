@@ -2,6 +2,7 @@ import {
   getCachedUser,
   setCachedUser,
   fetchCurrentUser,
+  invalidateAuthCache,
 } from '@/lib/authClient';
 
 export { fetchCurrentUser };
@@ -25,6 +26,7 @@ export function getInitialPlayerUser() {
 
 /** Call on logout so every tab and navbar loses guest/login flash state. */
 export function broadcastPlayerLogout() {
+  invalidateAuthCache();
   clearCachedPlayer();
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));

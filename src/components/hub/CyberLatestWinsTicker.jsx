@@ -3,13 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy } from 'lucide-react';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
+
+const TICKER_TTL_MS = 90 * 1000;
 
 export default function CyberLatestWinsTicker() {
-  const [wins, setWins] = useState([]);
-  const [ready, setReady] = useState(false);
+  const [wins, setWins] = useState(() => {
+    const cached = readSessionCache(CACHE_KEYS.WINS_TICKER, '', TICKER_TTL_MS);
+    return Array.isArray(cached) ? cached : [];
+  });
+  const [ready, setReady] = useState(() => {
+    const cached = readSessionCache(CACHE_KEYS.WINS_TICKER, '', TICKER_TTL_MS);
+    return Array.isArray(cached) && cached.length > 0;
+  });
 
   useEffect(() => {
     let cancelled = false;
+  const load = () => {
     fetch('/api/games/activity', { credentials: 'include', cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -21,14 +31,19 @@ export default function CyberLatestWinsTicker() {
             gameTitle: cleanGameTitle(item.gameTitle || item.game || 'VIP Casino'),
           }));
           diffSet(setWins, sanitized);
+          writeSessionCache(CACHE_KEYS.WINS_TICKER, sanitized);
         }
       })
       .catch(() => {})
       .finally(() => {
         if (!cancelled) setReady(true);
       });
+  };
+    load();
+    const refresh = setInterval(load, 60000);
     return () => {
       cancelled = true;
+      clearInterval(refresh);
     };
   }, []);
 
@@ -37,13 +52,11 @@ export default function CyberLatestWinsTicker() {
 
   return (
     <div className="w-full my-6 overflow-hidden rounded-2xl border border-[var(--chrome-border)]/60 bg-gradient-to-r from-[#070918] via-[#0d122b] to-[#070918] py-2.5 px-3 flex items-center gap-3 shadow-lg min-h-[52px]">
-      {/* Ticker Lead Badge */}
       <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-heading font-black text-xs shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
         <Trophy size={14} />
         <span>LATEST WINS</span>
       </div>
 
-      {/* Marquee Track */}
       <div className="flex-1 overflow-hidden relative min-h-[36px] flex items-center">
         {!ready ? (
           <div className="flex gap-2 w-full animate-pulse">
@@ -62,7 +75,7 @@ export default function CyberLatestWinsTicker() {
               className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-700/60 shrink-0 text-xs shadow-sm hover:border-[var(--neon-cyan)] transition-colors"
             >
               <div className="w-5 h-5 rounded-full bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] flex items-center justify-center font-bold text-[10px]">
-                {item.username.charAt(0)}
+                {(item.username || '?').charAt(0)}
               </div>
               <span className="font-semibold text-slate-300">{item.username}</span>
               <span className="text-slate-500">•</span>

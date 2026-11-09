@@ -77,6 +77,10 @@ function LoginForm() {
       const username = data.user?.username || identifier;
       setSuccessMsg(`Welcome back, ${username}! Redirecting...`);
       writeCachedPlayer(data.user);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
+        window.dispatchEvent(new CustomEvent('paradise-cashier-refresh'));
+      }
 
       // Determine redirect destination
       const destination =

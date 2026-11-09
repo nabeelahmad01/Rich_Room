@@ -16,6 +16,8 @@ import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
 import { broadcastStaffNewRequest } from '@/lib/staffAlertsSync';
+import { fetchJsonWithTimeout } from '@/lib/fetchWithTimeout';
+import { getCachedUser } from '@/lib/authClient';
 
 function mapCatalogGames(list) {
   if (!Array.isArray(list)) return [];
@@ -83,25 +85,28 @@ export default function GameRequestModal({
 
   const loadGamesCatalog = useCallback(async () => {
     setLoadingGames(true);
-    const cached = readAdminGamesFromCache();
-    if (cached?.length) {
-      const mapped = mapCatalogGames(cached);
-      setAdminGames(mapped);
-      setSelectedGame((prev) => prev || pickDefaultGame(mapped, existingAccounts, pendingRequests));
+    try {
+      const cached = readAdminGamesFromCache();
+      if (cached?.length) {
+        const mapped = mapCatalogGames(cached);
+        setAdminGames(mapped);
+        setSelectedGame((prev) => prev || pickDefaultGame(mapped, existingAccounts, pendingRequests));
+      }
+      if (catalogGames?.length) {
+        const mapped = mapCatalogGames(catalogGames);
+        if (mapped.length) setAdminGames(mapped);
+      }
+      const fresh = mapCatalogGames(await refreshAdminGamesCatalog({ force: true }));
+      if (fresh.length) {
+        setAdminGames(fresh);
+        setSelectedGame((prev) => {
+          if (prev && fresh.some((g) => g.title === prev)) return prev;
+          return pickDefaultGame(fresh, existingAccounts, pendingRequests);
+        });
+      }
+    } finally {
+      setLoadingGames(false);
     }
-    if (catalogGames?.length) {
-      const mapped = mapCatalogGames(catalogGames);
-      if (mapped.length) setAdminGames(mapped);
-    }
-    const fresh = mapCatalogGames(await refreshAdminGamesCatalog({ force: false }));
-    if (fresh.length) {
-      setAdminGames(fresh);
-      setSelectedGame((prev) => {
-        if (prev && fresh.some((g) => g.title === prev)) return prev;
-        return pickDefaultGame(fresh, existingAccounts, pendingRequests);
-      });
-    }
-    setLoadingGames(false);
   }, [catalogGames, existingAccounts, pendingRequests, pickDefaultGame]);
 
   useEffect(() => {
@@ -170,7 +175,8 @@ export default function GameRequestModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) {
+    const activeUser = user || getCachedUser();
+    if (!activeUser?.email) {
       onClose();
       onOpenAuth('login');
       return;
@@ -200,20 +206,27 @@ export default function GameRequestModal({
     setStatus({ error: '', success: '' });
     setLoading(true);
 
+    const picked = adminGames.find((g) => g.title === selectedGame);
+    const gameId = picked?.gameId || picked?.id || picked?._id || '';
+
     try {
-      const res = await fetch('/api/account-requests', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameTitle: selectedGame,
-          requestType: 'ACCOUNT_CREATION',
-          transferAmount: 0,
-          userEmail: user.email,
-          userName: user.username,
-        }),
-      });
-      const data = await res.json();
+      const { res, data } = await fetchJsonWithTimeout(
+        '/api/account-requests',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameTitle: selectedGame,
+            gameId,
+            requestType: 'ACCOUNT_CREATION',
+            transferAmount: 0,
+            userEmail: activeUser.email,
+            userName: activeUser.username || activeUser.email.split('@')[0],
+          }),
+        },
+        28000
+      );
 
       if (!res.ok || !data.success) {
         throw new Error(data.message || 'Failed to submit account request.');
@@ -225,18 +238,18 @@ export default function GameRequestModal({
         requestId: data.requestId,
         request: data.request,
         gameTitle: selectedGame,
-        userName: user.username,
-        userEmail: user.email,
+        userName: activeUser.username || activeUser.email.split('@')[0],
+        userEmail: activeUser.email,
       });
 
       broadcastPlayerAccountsUpdated({ gameTitle: selectedGame, status: 'PENDING' });
+      setLoading(false);
       onClose();
       router.push(
         `/game-accounts/provisioning?requestId=${data.requestId || ''}&game=${encodeURIComponent(selectedGame)}`
       );
     } catch (err) {
-      setStatus({ error: err.message, success: '' });
-    } finally {
+      setStatus({ error: err?.message || 'Could not submit request.', success: '' });
       setLoading(false);
     }
   };

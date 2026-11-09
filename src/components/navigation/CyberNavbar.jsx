@@ -192,7 +192,7 @@ export default function CyberNavbar({
         const data = await fetchCurrentUser();
         if (isCancelled) return;
 
-        if (data.authenticated && data.user) {
+        if (data?.authenticated && data?.user) {
           const currentBal = Number(data.user.balance ?? data.user.balanceSC ?? 0);
           if (lastBalanceRef.current !== null && Math.abs(lastBalanceRef.current - currentBal) > 0.001) {
             setBalancePulse(true);
@@ -569,11 +569,18 @@ export default function CyberNavbar({
                     onClick={async () => {
                       setProfileOpen(false);
                       setLiveUser(null);
-                      if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
-                      }
+                      lastSyncedUserRef.current = null;
                       try {
-                        await fetch('/api/auth/logout', { method: 'POST' });
+                        const { broadcastPlayerLogout } = await import('@/lib/playerSessionCache');
+                        broadcastPlayerLogout();
+                      } catch {}
+                      try {
+                        await fetch('/api/auth/logout', {
+                          method: 'POST',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({}),
+                        });
                         if (typeof onLogout === 'function') {
                           await onLogout();
                         }

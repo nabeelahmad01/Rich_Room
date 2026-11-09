@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { readCachedPlayer } from '@/lib/playerSessionCache';
 import { fetchCurrentUser } from '@/lib/authClient';
 
 /**
@@ -15,14 +14,9 @@ export default function SessionBridge() {
   useEffect(() => {
     let cancelled = false;
 
-    const cached = readCachedPlayer();
-    if (cached && typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: cached }));
-    }
-
     const sync = async () => {
       try {
-        const data = await fetchCurrentUser();
+        const data = await fetchCurrentUser({ force: true });
         if (cancelled || typeof window === 'undefined') return;
         if (data?.authenticated && data?.user) {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
@@ -30,7 +24,7 @@ export default function SessionBridge() {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }
       } catch {
-        if (!cancelled && typeof window !== 'undefined' && !readCachedPlayer()) {
+        if (!cancelled && typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }
       }

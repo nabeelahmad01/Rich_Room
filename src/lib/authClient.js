@@ -23,6 +23,14 @@ export function getCachedUser() {
   }
 }
 
+/** Call on logout so polls do not resurrect the old session for minutes. */
+export function invalidateAuthCache() {
+  lastAuthResult = { authenticated: false, user: null };
+  lastAuthResponseTime = 0;
+  inFlightAuthPromise = null;
+  setCachedUser(null);
+}
+
 export function setCachedUser(user) {
   if (typeof window === 'undefined') return;
   try {

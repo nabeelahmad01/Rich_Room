@@ -128,6 +128,7 @@ export default function AuthModal({
         writeCachedPlayer(data.user);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
+          window.dispatchEvent(new CustomEvent('paradise-cashier-refresh'));
         }
         if (onAuthSuccess) onAuthSuccess(data.user);
         if (onSuccess) onSuccess(data.user);
@@ -280,6 +281,7 @@ export default function AuthModal({
         writeCachedPlayer(data.user);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
+          window.dispatchEvent(new CustomEvent('paradise-cashier-refresh'));
         }
         if (onAuthSuccess) onAuthSuccess(data.user);
         if (onSuccess) onSuccess(data.user);

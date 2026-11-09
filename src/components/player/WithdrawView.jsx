@@ -34,6 +34,7 @@ import { getCachedUser } from '@/lib/authClient';
 import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
+import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
 
 export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const router = useRouter();
@@ -57,6 +58,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const [qrCodeImage, setQrCodeImage] = useState('');
   const [qrCodeImageName, setQrCodeImageName] = useState('');
   const [adminGames, setAdminGames] = useState(() => {
+    const fromCatalog = readInitialGamesCatalog('all', '');
+    if (fromCatalog?.length) return fromCatalog;
     if (typeof window !== 'undefined') {
       try {
         const cached = readSessionCache(CACHE_KEYS.GAMES_LIST);
@@ -192,7 +195,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     fetchGameAccounts();
     const cachedCatalog = readAdminGamesFromCache();
     if (cachedCatalog?.length) setAdminGames(cachedCatalog);
-    syncGamesCatalog(false);
+    syncGamesCatalog(true);
     if (payoutMethods.length === 0) {
       const cachedPayout = readCashoutMethodsCache();
       if (cachedPayout?.length) {
@@ -213,13 +216,21 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     }, 10000);
 
     const handleUserSync = (e) => {
-      if (e.detail) diffSet(setUser, e.detail);
+      if (e.detail) {
+        diffSet(setUser, e.detail);
+        fetchCashoutMethods(true);
+        fetchGameAccounts(true);
+        syncGamesCatalog(true);
+      } else {
+        setUser(null);
+      }
     };
 
     const handleFocus = () => {
       fetchHistory(true);
       fetchUser(true);
-      syncGamesCatalog(false);
+      syncGamesCatalog(true);
+      fetchCashoutMethods(true);
     };
 
     // Instant cross-tab balance sync listener
@@ -239,7 +250,14 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       }
     };
 
+    const handleCashierRefresh = () => {
+      fetchCashoutMethods(true);
+      syncGamesCatalog(true);
+      fetchGameAccounts(true);
+    };
+
     window.addEventListener('paradise-user-sync', handleUserSync);
+    window.addEventListener('paradise-cashier-refresh', handleCashierRefresh);
     window.addEventListener('storage', handleStorageSync);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
@@ -247,6 +265,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     return () => {
       clearInterval(pollInterval);
       if (balanceChan) balanceChan.close();
+      window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('storage', handleStorageSync);
       window.removeEventListener('focus', handleFocus);
@@ -418,7 +437,14 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  const popularGames = getAvailableGamePlatforms(adminGames, userGameAccounts);
+  const popularGames = (() => {
+    const fromCatalog = getAvailableGamePlatforms(adminGames, userGameAccounts);
+    if (fromCatalog.length > 0) return fromCatalog;
+    const fromAccounts = (userGameAccounts || [])
+      .map((a) => (a.gameTitle || '').trim())
+      .filter(Boolean);
+    return [...new Set(fromAccounts)];
+  })();
 
   const selectedPayout = payoutMethods.find((m) => m.name === method);
 

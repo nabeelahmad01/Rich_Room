@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
 
+let tickerCache = null;
+let tickerCacheAt = 0;
+const TICKER_CACHE_MS = 45 * 1000;
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -40,6 +44,15 @@ export async function GET(req) {
     }
 
     // Ticker mode (Public)
+    const now = Date.now();
+    if (tickerCache && now - tickerCacheAt < TICKER_CACHE_MS) {
+      return NextResponse.json({
+        success: true,
+        ticker: tickerCache,
+        activity: tickerCache,
+      });
+    }
+
     const recentWins = await activityCol
       .find({ winAmount: { $gt: 0 } })
       .sort({ createdAt: -1 })
@@ -58,7 +71,10 @@ export async function GET(req) {
     } else {
       // Dynamically fetch active games from the database
       const gamesCol = db.collection('games');
-      const activeGames = await gamesCol.find({ active: { $ne: false } }).limit(10).toArray();
+      const activeGames = await gamesCol
+        .find({ $or: [{ isActive: { $ne: false } }, { active: { $ne: false } }] })
+        .limit(10)
+        .toArray();
       const mockUsers = ['raze77', 'nyx_pro', 'satoshi.j', 'halcyon_vip', 'crypto_ace', 'lucky_bella', 'drake99', 'matrix_neo'];
       const sampleAmounts = [340.5, 820.0, 450.0, 1250.0, 290.75, 620.0, 380.0, 750.25];
 
@@ -70,6 +86,9 @@ export async function GET(req) {
         currency: 'SC',
       }));
     }
+
+    tickerCache = displayWins;
+    tickerCacheAt = Date.now();
 
     return NextResponse.json({
       success: true,
