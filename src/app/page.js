@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Standalone Player Views for 0ms instant tab switching
@@ -137,23 +137,21 @@ export default function HomePage({ initialTab = 'lobby' }) {
   const [slotsOpen, setSlotsOpen] = useState(false);
   const [crashOpen, setCrashOpen] = useState(false);
 
-  // Games & Filter state with curated fallback (0ms SSR matching)
-  const [games, setGames] = useState(() => readInitialGamesCatalog('all', ''));
+  // Games — empty on SSR; hydrate from session cache after mount (avoids hydration mismatch)
+  const [games, setGames] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const category = 'all';
-  const [loadingGames, setLoadingGames] = useState(
-    () => readInitialGamesCatalog('all', '').length === 0
-  );
-  const [userGameAccounts, setUserGameAccounts] = useState(() => {
-    const email = getCachedUser()?.email;
-    if (!email) return [];
-    return readCachedGameAccountSeeds(email).active;
-  });
-  const [pendingAccountRequests, setPendingAccountRequests] = useState(() => {
-    const email = getCachedUser()?.email;
-    if (!email) return [];
-    return readCachedGameAccountSeeds(email).pending;
-  });
+  const [loadingGames, setLoadingGames] = useState(true);
+
+  useLayoutEffect(() => {
+    const cached = readInitialGamesCatalog('all', '');
+    if (cached.length > 0) {
+      setGames(cached);
+      setLoadingGames(false);
+    }
+  }, []);
+  const [userGameAccounts, setUserGameAccounts] = useState([]);
+  const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
   const [requestToast, setRequestToast] = useState(null);
   const userEmailRef = useRef(null);
   const accountsReadyInitRef = useRef(false);

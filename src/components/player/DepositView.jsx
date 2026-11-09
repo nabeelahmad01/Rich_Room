@@ -80,9 +80,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
   const [proofFileName, setProofFileName] = useState('');
   const [selectedGame, setSelectedGame] = useState(() => {
     if (seedReadyAccounts?.length) return cleanGameTitle(seedReadyAccounts[0].gameTitle);
-    const email = getCachedUser()?.email;
-    const cached = email ? readCachedGameAccountSeeds(email).active : [];
-    return cached.length ? cleanGameTitle(cached[0].gameTitle) : '';
+    return '';
   });
   const [adminGames, setAdminGames] = useState(() => {
     const fromCatalog = readInitialGamesCatalog('all', '');
@@ -95,11 +93,9 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
     }
     return [];
   });
-  const [userGameAccounts, setUserGameAccounts] = useState(() => {
-    if (seedReadyAccounts?.length) return seedReadyAccounts;
-    const email = getCachedUser()?.email;
-    return email ? readCachedGameAccountSeeds(email).active : [];
-  });
+  const [userGameAccounts, setUserGameAccounts] = useState(() =>
+    seedReadyAccounts?.length ? seedReadyAccounts : []
+  );
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
   const [copiedField, setCopiedField] = useState(null);

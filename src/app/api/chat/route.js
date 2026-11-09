@@ -17,14 +17,24 @@ export const dynamic = 'force-dynamic';
 /**
  * Helper to identify authorized staff roles
  */
+function normalizeStaffRole(role) {
+  const r = String(role || '').toLowerCase().trim();
+  if (r === 'superadmin') return ROLES.SUPER_ADMIN;
+  if (r === 'financial_admin') return ROLES.FINANCIAL_MANAGER;
+  if (r === 'coins_admin') return ROLES.COIN_MANAGER;
+  if (r === 'support_admin') return ROLES.CHAT_SUPPORT;
+  return role;
+}
+
 function isStaffRole(role) {
+  const normalized = normalizeStaffRole(role);
   return (
-    role === ROLES.SUPER_ADMIN ||
-    role === ROLES.CHAT_SUPPORT ||
-    role === ROLES.OPERATION_ADMIN ||
-    role === ROLES.ADMIN ||
-    role === ROLES.FINANCIAL_MANAGER ||
-    role === ROLES.COIN_MANAGER
+    normalized === ROLES.SUPER_ADMIN ||
+    normalized === ROLES.CHAT_SUPPORT ||
+    normalized === ROLES.OPERATION_ADMIN ||
+    normalized === ROLES.ADMIN ||
+    normalized === ROLES.FINANCIAL_MANAGER ||
+    normalized === ROLES.COIN_MANAGER
   );
 }
 
@@ -86,7 +96,8 @@ async function buildStaffInbox(chatCol) {
       const customerName =
         msg.customerUsername || (msg.senderRole === 'player' ? msg.username : null);
       const customerUid = msg.customerUserId || msg.userId || cid;
-      const isUnreadPlayerMsg = msg.read === false && msg.senderRole === 'player';
+      const isUnreadPlayerMsg =
+        (msg.senderRole || 'player') === 'player' && msg.read !== true;
 
       if (!convMap.has(cid)) {
         convMap.set(cid, {

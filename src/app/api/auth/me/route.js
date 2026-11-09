@@ -16,16 +16,19 @@ const STAFF_ROLES = new Set([
   'financial_admin',
   'coins_admin',
   'support_admin',
+  'superadmin',
 ]);
 
 function staffFromSession(session) {
-  const role = session?.role;
-  if (!role || !STAFF_ROLES.has(role)) return null;
+  const role = String(session?.role || '').toLowerCase().trim();
+  const normalized =
+    role === 'superadmin' ? ROLES.SUPER_ADMIN : role;
+  if (!normalized || !STAFF_ROLES.has(normalized)) return null;
   return {
     userId: session.userId,
     username: session.username,
     email: session.email,
-    role,
+    role: normalized,
     balanceSC: 0,
     balanceGC: 0,
     frozenBalance: 0,

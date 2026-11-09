@@ -91,81 +91,27 @@ import {
 } from '@/lib/mergeAdminLists';
 import { broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
 import { broadcastPlayerDepositResolved } from '@/lib/staffAlertsSync';
-import AdminBootShell from '@/components/admin/AdminBootShell';
 
-const ADMIN_CACHE_KEY = 'rr_admin_user';
-const STAFF_ROLES = new Set([
-  'super_admin',
-  'admin',
-  'operation_admin',
-  'financial_manager',
-  'coin_manager',
-  'chat_support',
-  'financial_admin',
-  'coins_admin',
-  'support_admin',
-]);
-
-function isStaffRole(role) {
-  return Boolean(role && STAFF_ROLES.has(String(role).toLowerCase()));
-}
-
-function readCachedAdminStaff() {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (isStaffRole(parsed?.role)) return parsed;
-  } catch {}
-  return null;
-}
-
-function writeCachedAdminStaff(user) {
-  if (typeof window === 'undefined') return;
-  try {
-    if (user && isStaffRole(user.role)) {
-      sessionStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify(user));
-    } else {
-      sessionStorage.removeItem(ADMIN_CACHE_KEY);
+/** Player + realtime + poll can append the same Mongo id twice — dedupe before render. */
+function dedupeChatMessagesById(msgs) {
+  if (!Array.isArray(msgs) || msgs.length === 0) return [];
+  const seen = new Set();
+  const out = [];
+  for (const m of msgs) {
+    const id = String(m?.id || m?._id || '').trim();
+    if (id) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push({ ...m, id });
+      continue;
     }
-  } catch {}
-}
-
-function clearCachedAdminStaff() {
-  writeCachedAdminStaff(null);
-}
-
-async function fetchAdminStaffSession({ timeoutMs = 6000 } = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch('/api/auth/me?admin=true', {
-      credentials: 'include',
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    const data = await res.json().catch(() => ({}));
-    if (data?.authenticated && data?.user && isStaffRole(data.user.role)) {
-      writeCachedAdminStaff(data.user);
-      return { authenticated: true, user: data.user };
-    }
-    clearCachedAdminStaff();
-    return { authenticated: false, user: null };
-  } catch {
-    const cached = readCachedAdminStaff();
-    if (cached) return { authenticated: true, user: cached, fromCache: true };
-    return { authenticated: false, user: null };
-  } finally {
-    clearTimeout(timer);
+    out.push(m);
   }
+  return out;
 }
 
 export default function AdminPortalView({ initialTab }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
   // Normalize initialTab
   const normalizeTab = (tab) => {
     if (!tab) return 'overview';
@@ -392,9 +338,96 @@ export default function AdminPortalView({ initialTab }) {
   const chatMessagesCacheRef = useRef(new Map());
   const chatFetchGenRef = useRef(0);
   const chatInboxRefreshTimerRef = useRef(null);
+  const activeChatConvRef = useRef(null);
+  const activeTabRef = useRef(activeTab);
+  const chatInboxAlertDedupRef = useRef(new Set());
   const [selectedChatImagePreview, setSelectedChatImagePreview] = useState(null);
   const [chatInboxError, setChatInboxError] = useState('');
   const [chatThreadLoading, setChatThreadLoading] = useState(false);
+
+  useEffect(() => {
+    activeChatConvRef.current = activeChatConv;
+  }, [activeChatConv]);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  const mergeChatInboxPreservingUnread = (local, remote, { exceptConvId = null } = {}) => {
+    const localMap = new Map((local || []).map((c) => [String(c._id), c]));
+    const remoteIds = new Set((remote || []).map((c) => String(c._id)));
+    const merged = (remote || []).map((c) => {
+      const id = String(c._id);
+      if (exceptConvId && id === String(exceptConvId)) {
+        return { ...c, unreadCount: 0, unreadStaff: false };
+      }
+      const loc = localMap.get(id);
+      if (!loc) return c;
+      const localUnread = Number(loc.unreadCount || 0);
+      const remoteUnread = Number(c.unreadCount || 0);
+      let unreadCount = Math.max(localUnread, remoteUnread);
+      if (remoteUnread > 0 && localUnread > remoteUnread) {
+        unreadCount = remoteUnread;
+      }
+      const locTs = new Date(loc.updatedAt || 0).getTime();
+      const remTs = new Date(c.updatedAt || 0).getTime();
+      return {
+        ...c,
+        unreadCount,
+        unreadStaff: unreadCount > 0,
+        lastMessage: locTs > remTs ? loc.lastMessage : c.lastMessage,
+        lastSenderRole: locTs > remTs ? loc.lastSenderRole : c.lastSenderRole,
+        updatedAt: locTs > remTs ? loc.updatedAt : c.updatedAt,
+        username: loc.username && loc.username !== 'Player' ? loc.username : c.username,
+      };
+    });
+    const orphanLocal = (local || []).filter((lc) => !remoteIds.has(String(lc._id)));
+    return [...orphanLocal, ...merged].sort(
+      (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    );
+  };
+
+  const claimChatInboxAlert = (dedupKey) => {
+    const set = chatInboxAlertDedupRef.current;
+    if (set.has(dedupKey)) return false;
+    set.add(dedupKey);
+    setTimeout(() => set.delete(dedupKey), 5000);
+    return true;
+  };
+
+  const applyInboundChatInboxBump = (payload) => {
+    const incomingCid = String(payload.conversationId || '').trim();
+    if (!incomingCid) return;
+    const snippet = String(
+      payload.text || payload.message?.text || (payload.message?.imageUrl ? '📷 [Image Attachment]' : 'New message')
+    ).slice(0, 160);
+    const uName = payload.username || payload.message?.username || payload.message?.customerUsername || 'Player';
+    const ts = payload.timestamp || payload.time || Date.now();
+    const openCid = String(activeChatConvRef.current?._id || '');
+    const viewingThread =
+      activeTabRef.current === 'chat' && openCid && openCid === incomingCid;
+
+    setChatConversations((prev) => {
+      const idx = prev.findIndex((c) => String(c._id) === incomingCid);
+      const next = {
+        ...(idx >= 0 ? prev[idx] : {}),
+        _id: incomingCid,
+        userId:
+          payload.userId ||
+          payload.message?.userId ||
+          payload.message?.customerUserId ||
+          (idx >= 0 ? prev[idx].userId : incomingCid),
+        username: uName,
+        lastMessage: snippet,
+        lastSenderRole: 'player',
+        updatedAt: new Date(ts).toISOString(),
+        unreadCount: viewingThread ? 0 : Number(idx >= 0 ? prev[idx].unreadCount || 0 : 0) + 1,
+        unreadStaff: !viewingThread,
+      };
+      const rest = idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
+      return [next, ...rest];
+    });
+  };
 
   const chatThreadFingerprint = (msgs) => {
     if (!Array.isArray(msgs) || msgs.length === 0) return '0';
@@ -413,12 +446,13 @@ export default function AdminPortalView({ initialTab }) {
         12000
       );
       if (!data?.success) return;
-      const next = data.messages || [];
+      const next = dedupeChatMessagesById(data.messages || []);
       chatMessagesCacheRef.current.set(convId, next);
       if (lastChatConvIdRef.current === convId) {
-        setChatMessages((prev) =>
-          chatThreadFingerprint(prev) === chatThreadFingerprint(next) ? prev : next
-        );
+        setChatMessages((prev) => {
+          const dedupedPrev = dedupeChatMessagesById(prev);
+          return chatThreadFingerprint(dedupedPrev) === chatThreadFingerprint(next) ? dedupedPrev : next;
+        });
       }
     } catch {
       /* keep cache */
@@ -433,7 +467,9 @@ export default function AdminPortalView({ initialTab }) {
     const convObj = typeof conv === 'object' && conv?._id ? conv : { _id: convId };
     fetchJsonQuick(buildStaffChatThreadUrl(convObj), { credentials: 'include', cache: 'no-store' }, 12000)
       .then(({ data }) => {
-        if (data?.success) chatMessagesCacheRef.current.set(convId, data.messages || []);
+        if (data?.success) {
+          chatMessagesCacheRef.current.set(convId, dedupeChatMessagesById(data.messages || []));
+        }
       })
       .catch(() => {});
   };
@@ -450,18 +486,16 @@ export default function AdminPortalView({ initialTab }) {
   const scheduleChatInboxRefresh = () => {
     if (chatInboxRefreshTimerRef.current) clearTimeout(chatInboxRefreshTimerRef.current);
     chatInboxRefreshTimerRef.current = setTimeout(() => {
-      const activeId = lastChatConvIdRef.current;
+      const viewingOpen =
+        activeTabRef.current === 'chat' ? lastChatConvIdRef.current : null;
       fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' })
         .then((r) => r.json())
         .then((d) => {
           if (!d.success) return;
-          let convs = d.conversations || [];
-          if (activeId) {
-            convs = convs.map((c) =>
-              c._id === activeId ? { ...c, unreadCount: 0, unreadStaff: false } : c
-            );
-          }
-          diffSet(setChatConversations, convs);
+          const convs = d.conversations || [];
+          setChatConversations((prev) =>
+            mergeChatInboxPreservingUnread(prev, convs, { exceptConvId: viewingOpen })
+          );
           setChatInboxError('');
         })
         .catch(() => {});
@@ -473,9 +507,17 @@ export default function AdminPortalView({ initialTab }) {
       const r = await fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' });
       const d = await r.json();
       if (d.success && Array.isArray(d.conversations)) {
-        diffSet(setChatConversations, d.conversations);
+        const viewingOpen =
+          activeTabRef.current === 'chat' ? lastChatConvIdRef.current : null;
+        let next = [];
+        setChatConversations((prev) => {
+          next = mergeChatInboxPreservingUnread(prev, d.conversations, {
+            exceptConvId: viewingOpen,
+          });
+          return next;
+        });
         setChatInboxError('');
-        return d.conversations;
+        return next;
       }
       setChatInboxError(d.error || 'Support inbox unavailable — log in again at /admin.');
       return [];
@@ -1040,22 +1082,6 @@ export default function AdminPortalView({ initialTab }) {
     }
   };
 
-  const fetchSession = async () => {
-    const hadCached = Boolean(readCachedAdminStaff());
-    try {
-      const data = await fetchAdminStaffSession();
-      if (data.authenticated && data.user) {
-        applyStaffUser(data.user);
-      } else if (!hadCached) {
-        setUser(null);
-      }
-    } catch {
-      if (!readCachedAdminStaff()) setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Browser Desktop & Chrome Push Notification State
   const [desktopNotifPerm, setDesktopNotifPerm] = useState(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
@@ -1076,13 +1102,6 @@ export default function AdminPortalView({ initialTab }) {
   };
 
   useEffect(() => {
-    const cached = readCachedAdminStaff();
-    if (cached) {
-      setUser(cached);
-      setLoading(false);
-    }
-    setMounted(true);
-    fetchSession();
     if (typeof window !== 'undefined') {
       if ('Notification' in window) {
         setDesktopNotifPerm(Notification.permission);
@@ -1152,10 +1171,16 @@ export default function AdminPortalView({ initialTab }) {
         diffSet(setCoinLoadRequests, loads);
       }
       if (chatData.success && Array.isArray(chatData.conversations)) {
-        diffSet(setChatConversations, chatData.conversations);
+        const viewingOpen =
+          activeTabRef.current === 'chat' ? lastChatConvIdRef.current : null;
+        setChatConversations((prev) =>
+          mergeChatInboxPreservingUnread(prev, chatData.conversations, {
+            exceptConvId: viewingOpen,
+          })
+        );
         setChatInboxError('');
       } else if (chatRes.status === 'fulfilled' && chatData && !chatData.success) {
-        setChatInboxError(chatData.error || 'Support inbox blocked');
+        setChatInboxError(chatData.error || 'Support inbox blocked — use staff login at /admin');
       }
 
       const pendingDeps = (depData.deposits || []).filter((d) => d.status === 'pending');
@@ -1612,8 +1637,16 @@ export default function AdminPortalView({ initialTab }) {
           })
           .catch(() => {});
       } else if (payload.type === 'NEW_CHAT_MESSAGE') {
-        const uName = payload.username || 'Player';
         const incomingCidEarly = String(payload.conversationId || '').trim();
+        const msgIdEarly = String(payload.message?.id || payload.message?._id || '').trim();
+        const tsNum = Number(payload.timestamp || payload.time || Date.now());
+        const inboundDedup = msgIdEarly
+          ? `inbound:${incomingCidEarly}:${msgIdEarly}`
+          : `inbound:${incomingCidEarly}:${Math.floor(tsNum / 3000)}`;
+        if (claimChatInboxAlert(inboundDedup)) {
+          applyInboundChatInboxBump(payload);
+        }
+        const uName = payload.username || 'Player';
         playAdminChimeDeduped(`chat:${incomingCidEarly || uName}`);
         const msgSnippet = (payload.text || 'New message attachment').slice(0, 80);
         const alertTitle = `💬 Support Message: ${uName}`;
@@ -1630,7 +1663,8 @@ export default function AdminPortalView({ initialTab }) {
         });
 
         const incomingCid = String(payload.conversationId || '').trim();
-        if (incomingCid) {
+        const openCid = String(activeChatConvRef.current?._id || '');
+        if (incomingCid && openCid === incomingCid) {
           const incomingMsg = payload.message;
           if (incomingMsg && payload.senderRole === 'player') {
             const msgId = String(incomingMsg.id || incomingMsg._id || `rt_${payload.timestamp || Date.now()}`);
@@ -1640,8 +1674,8 @@ export default function AdminPortalView({ initialTab }) {
                 ? `/api/chat/attachment?id=${msgId}`
                 : rawImg || null;
             setChatMessages((prev) => {
-              if (prev.some((m) => String(m.id) === msgId)) return prev;
-              return [
+              if (prev.some((m) => String(m.id || m._id) === msgId)) return dedupeChatMessagesById(prev);
+              return dedupeChatMessagesById([
                 ...prev,
                 {
                   id: msgId,
@@ -1653,30 +1687,14 @@ export default function AdminPortalView({ initialTab }) {
                   read: true,
                   createdAt: incomingMsg.createdAt || new Date().toISOString(),
                 },
-              ];
+              ]);
             });
-          }
-          setActiveTab('chat');
-          setActiveChatConv((prev) =>
-            prev?._id === incomingCid
-              ? prev
-              : { _id: incomingCid, username: uName, userId: incomingCid }
-          );
-          if (!incomingMsg) {
-            loadChatThread(
-              { _id: incomingCid, userId: incomingCid, username: uName },
-              { silent: true }
-            );
+          } else {
+            loadChatThread(activeChatConvRef.current, { silent: true });
           }
         }
 
         scheduleChatInboxRefresh();
-        fetch('/api/chat?inbox=true', { credentials: 'include', cache: 'no-store' })
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) diffSet(setChatConversations, d.conversations || []);
-          })
-          .catch(() => {});
       }
     };
 
@@ -1705,6 +1723,11 @@ export default function AdminPortalView({ initialTab }) {
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('paradise_staff_event_local', onStaffLocal);
     };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    void refreshChatInbox();
   }, [user]);
 
   // Full desk sync (deposits, chat, badges) — BroadcastChannel gives 0ms for same-browser player tab
@@ -1778,7 +1801,12 @@ export default function AdminPortalView({ initialTab }) {
           .then(r => r.json())
           .then(d => {
             if (d.success) {
-              diffSet(setChatConversations, d.conversations || []);
+              const viewingOpen = lastChatConvIdRef.current;
+              setChatConversations((prev) =>
+                mergeChatInboxPreservingUnread(prev, d.conversations || [], {
+                  exceptConvId: viewingOpen,
+                })
+              );
               if (typeof window !== 'undefined') {
                 const sp = new URLSearchParams(window.location.search);
                 const cid = sp.get('cid');
@@ -1843,8 +1871,13 @@ export default function AdminPortalView({ initialTab }) {
 
   // Load chat messages when active conversation selected (Players Paradise pattern)
   useEffect(() => {
-    if (!activeChatConv || activeTab !== 'chat') {
-      if (!activeChatConv) setChatMessages([]);
+    if (activeTab !== 'chat') {
+      lastChatConvIdRef.current = null;
+      return;
+    }
+    if (!activeChatConv) {
+      setChatMessages([]);
+      lastChatConvIdRef.current = null;
       return;
     }
 
@@ -1854,7 +1887,7 @@ export default function AdminPortalView({ initialTab }) {
     if (isConvSwitch) {
       lastChatMsgCountRef.current = 0;
       const cached = chatMessagesCacheRef.current.get(convId);
-      setChatMessages(cached || []);
+      setChatMessages(dedupeChatMessagesById(cached || []));
       setChatThreadLoading(!cached?.length);
       markAdminChatConvRead(convId);
     }
@@ -1887,8 +1920,8 @@ export default function AdminPortalView({ initialTab }) {
         const imageUrl =
           rawImg && rawImg.length > 256 ? `/api/chat/attachment?id=${msgId}` : rawImg || null;
         setChatMessages((prev) => {
-          if (prev.some((x) => String(x.id) === msgId)) return prev;
-          return [
+          if (prev.some((x) => String(x.id || x._id) === msgId)) return dedupeChatMessagesById(prev);
+          return dedupeChatMessagesById([
             ...prev,
             {
               id: msgId,
@@ -1901,14 +1934,17 @@ export default function AdminPortalView({ initialTab }) {
               read: true,
               createdAt: m.createdAt || new Date().toISOString(),
             },
-          ];
+          ]);
         });
         markAdminChatConvRead(cid);
         scheduleChatInboxRefresh();
         return;
       }
-      if (cid === openCid) loadChatThread(activeChatConv, { silent: true });
-      else scheduleChatInboxRefresh();
+      if (cid === openCid) {
+        loadChatThread(activeChatConv, { silent: true });
+      } else {
+        scheduleChatInboxRefresh();
+      }
     };
     window.addEventListener('richroom-realtime', onRealtimeChat);
 
@@ -1945,11 +1981,9 @@ export default function AdminPortalView({ initialTab }) {
       });
       const data = await res.json();
       if (data.success && data.user.role !== 'player') {
-        setUser(data.user);
-        setLoading(false);
-        writeCachedAdminStaff(data.user);
-        fetchAccountRequests(true);
-        syncRequestsAndAlerts();
+        applyStaffUser(data.user);
+        void fetchAccountRequests(true);
+        void syncRequestsAndAlerts();
       } else {
         setLoginError(data.error || 'Access Denied: Not authorized for administration.');
       }
@@ -1965,7 +1999,6 @@ export default function AdminPortalView({ initialTab }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isAdminLogout: true }),
     });
-    clearCachedAdminStaff();
     setUser(null);
   };
 
@@ -1999,14 +2032,6 @@ export default function AdminPortalView({ initialTab }) {
 
     return false;
   };
-
-  if (!mounted || loading) {
-    return (
-      <AdminBootShell
-        label={!mounted ? 'Loading Rich Room Staff Portal…' : 'Verifying staff session…'}
-      />
-    );
-  }
 
   // Not Logged In as Staff Form
   if (!user) {
@@ -4530,7 +4555,7 @@ export default function AdminPortalView({ initialTab }) {
                 createdAt: new Date().toISOString(),
               };
               setChatMessages((prev) => {
-                const next = [...prev, optimisticMsg];
+                const next = dedupeChatMessagesById([...prev, optimisticMsg]);
                 chatMessagesCacheRef.current.set(activeChatConv._id, next);
                 return next;
               });
@@ -4562,8 +4587,14 @@ export default function AdminPortalView({ initialTab }) {
                 }
 
                 if (postData.message) {
+                  const confirmed = {
+                    ...postData.message,
+                    id: String(postData.message.id || postData.message._id || tempId),
+                  };
                   setChatMessages((prev) => {
-                    const next = prev.map((m) => (m.id === tempId ? postData.message : m));
+                    const next = dedupeChatMessagesById(
+                      prev.map((m) => (m.id === tempId ? confirmed : m))
+                    );
                     chatMessagesCacheRef.current.set(convId, next);
                     return next;
                   });
@@ -4756,7 +4787,7 @@ export default function AdminPortalView({ initialTab }) {
                               onClick={() => {
                                 markAdminChatConvRead(c._id);
                                 const cached = chatMessagesCacheRef.current.get(c._id);
-                                if (cached?.length) setChatMessages(cached);
+                                if (cached?.length) setChatMessages(dedupeChatMessagesById(cached));
                                 setChatThreadLoading(!cached?.length);
                                 setActiveChatConv(c);
                               }}
@@ -4930,11 +4961,12 @@ export default function AdminPortalView({ initialTab }) {
                               </p>
                             </div>
                           ) : (
-                            chatMessages.map((m) => {
+                            dedupeChatMessagesById(chatMessages).map((m) => {
                               const isStaff = m.senderRole === 'staff';
+                              const msgKey = String(m.id || m._id || `${m.createdAt}-${m.text?.slice(0, 12)}`);
                               return (
                                 <div
-                                  key={m.id}
+                                  key={msgKey}
                                   className={`flex flex-col ${isStaff ? 'items-end' : 'items-start'}`}
                                 >
                                   <div className={`flex items-start gap-2 max-w-[85%] sm:max-w-[75%] ${isStaff ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -9702,10 +9734,19 @@ export default function AdminPortalView({ initialTab }) {
                 if (alert.targetTab === 'finance') setFinanceSubTab(alert.targetSubTab);
                 if (alert.targetTab === 'coins_allotment') setCoinsAllotmentSection(alert.targetSubTab);
               }
+              if (alert.type === 'chat' || alert.cid) {
+                setActiveTab('chat');
+              }
               if (alert.cid) {
                 const found = (chatConversations || []).find((c) => c._id === alert.cid);
                 if (found) setActiveChatConv(found);
-                else setActiveChatConv({ _id: alert.cid, username: 'Player', userId: alert.cid });
+                else {
+                  setActiveChatConv({
+                    _id: alert.cid,
+                    username: alert.username || 'Player',
+                    userId: alert.cid,
+                  });
+                }
               }
             }}
           />

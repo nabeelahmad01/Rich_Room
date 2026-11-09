@@ -21,10 +21,15 @@ const STAFF_ROLES = new Set([
   'financial_admin',
   'coins_admin',
   'support_admin',
+  'superadmin',
 ]);
 
 function isStaff(session) {
-  return Boolean(session?.role && STAFF_ROLES.has(session.role));
+  const role = session?.role;
+  if (!role) return false;
+  if (STAFF_ROLES.has(role)) return true;
+  const r = String(role).toLowerCase();
+  return r === 'superadmin' || r === 'super_admin';
 }
 
 function safeGuestId(raw) {

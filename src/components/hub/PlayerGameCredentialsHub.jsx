@@ -57,31 +57,15 @@ export default function PlayerGameAccountsHub({
   seedPendingRequests = null,
 }) {
   const router = useRouter();
-  const resolvedEmail = user?.email || readCachedPlayer()?.email || '';
-
-  const initialFromCache = resolvedEmail ? readGameAccountsCache(resolvedEmail) : null;
   const initialActive =
-    seedReadyAccounts?.length > 0
-      ? mapSeedAccounts(seedReadyAccounts)
-      : initialFromCache?.active?.length
-        ? initialFromCache.active
-        : [];
-  const initialPending =
-    seedPendingRequests?.length > 0
-      ? seedPendingRequests
-      : initialFromCache?.pending?.length
-        ? initialFromCache.pending
-        : [];
+    seedReadyAccounts?.length > 0 ? mapSeedAccounts(seedReadyAccounts) : [];
+  const initialPending = seedPendingRequests?.length > 0 ? seedPendingRequests : [];
 
   const [activeAccounts, setActiveAccounts] = useState(initialActive);
   const [pendingRequests, setPendingRequests] = useState(initialPending);
-  const [rejectedRequests, setRejectedRequests] = useState(
-    () => initialFromCache?.rejected || []
-  );
+  const [rejectedRequests, setRejectedRequests] = useState([]);
   const [loadCoinsModal, setLoadCoinsModal] = useState({ open: false, game: null });
-  const [loading, setLoading] = useState(
-    () => Boolean(resolvedEmail) && initialActive.length === 0 && initialPending.length === 0
-  );
+  const [loading, setLoading] = useState(() => Boolean(user?.email));
   const [hasFetchedOnce, setHasFetchedOnce] = useState(
     () => initialActive.length > 0 || initialPending.length > 0
   );
@@ -111,13 +95,14 @@ export default function PlayerGameAccountsHub({
   );
 
   const fetchAccountsAndRequests = async (isSilent = false) => {
-    if (!user?.email) return;
+    const email = user?.email || readCachedPlayer()?.email;
+    if (!email) return;
 
     if (!isSilent) setLoading(true);
     try {
       const [credRes, reqRes] = await Promise.all([
-        fetch(`/api/game-accounts?email=${encodeURIComponent(user.email)}`, { credentials: 'include', cache: 'no-store' }),
-        fetch(`/api/account-requests?email=${encodeURIComponent(user.email)}&lightweight=true`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`/api/game-accounts?email=${encodeURIComponent(email)}`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`/api/account-requests?email=${encodeURIComponent(email)}&lightweight=true`, { credentials: 'include', cache: 'no-store' }),
       ]);
 
       if (!credRes.ok && !reqRes.ok) return;
@@ -203,8 +188,8 @@ export default function PlayerGameAccountsHub({
       diffSet(setActiveAccounts, readyList);
       diffSet(setPendingRequests, pendingList);
       diffSet(setRejectedRequests, rejectedList);
-      if (user?.email) {
-        writeGameAccountsCache(user.email, {
+      if (email) {
+        writeGameAccountsCache(email, {
           active: readyList,
           pending: pendingList,
           rejected: rejectedList,
@@ -458,23 +443,6 @@ export default function PlayerGameAccountsHub({
         </div>
 
         {!user ? (
-          readCachedPlayer() ? (
-            <div
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--chrome-border)',
-                borderRadius: '18px',
-                padding: '28px 20px',
-                textAlign: 'center',
-              }}
-            >
-              <RefreshCw size={28} color="var(--neon-cyan)" style={{ margin: '0 auto 10px auto', opacity: 0.85 }} className="animate-spin" />
-              <p style={{ margin: 0, fontSize: '12px', color: '#8E849E', fontFamily: 'Lexend, sans-serif' }}>
-                Restoring your session…
-              </p>
-            </div>
-          ) : (
-            /* Guest Lock Card */
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(20, 14, 51, 0.7) 0%, rgba(10, 6, 26, 0.7) 100%)',
@@ -510,7 +478,6 @@ export default function PlayerGameAccountsHub({
                 SIGN IN / REGISTER
               </button>
             </div>
-          )
         ) : loading && activeAccounts.length === 0 ? (
           <div
             style={{

@@ -442,22 +442,6 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       payload.guestName = senderName;
     }
 
-    const staffAlert = {
-      type: 'NEW_CHAT_MESSAGE',
-      username: senderName,
-      text: currentText || (currentAttachment ? '📷 [Image Attachment]' : 'New inquiry'),
-      conversationId: convId,
-      time: Date.now(),
-    };
-    try {
-      const ch = new BroadcastChannel('paradise_staff_alerts');
-      ch.postMessage(staffAlert);
-      ch.close();
-    } catch {}
-    try {
-      localStorage.setItem('paradise_staff_event', JSON.stringify(staffAlert));
-    } catch {}
-
     (async () => {
       try {
         const data = await postChatMessage(payload, {
