@@ -197,10 +197,19 @@ export function applyRealtimeEvent(event) {
               amount: event.amount,
               username: event.username,
               methodName: event.methodName,
+              totalSC: event.totalSC,
+              bonusSC: event.bonusSC,
+              gameTitle: event.gameTitle,
+              playerTagName: event.playerTagName,
+              txHash: event.txHash,
+              hasProof: event.hasProof !== false,
               timestamp: event.t,
             },
           })
         );
+      }
+      if (event.action === 'approve' || event.action === 'reject' || event.status === 'approved' || event.status === 'rejected') {
+        window.dispatchEvent(new CustomEvent('paradise-deposit-updated', { detail: event }));
       }
       break;
     }

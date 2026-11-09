@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { fetchCurrentUser } from '@/lib/authClient';
+import { fetchCurrentUser, getCachedUser, mergePlayerUser } from '@/lib/authClient';
 import { fetchPublicSettings, prefetchPublicSettings } from '@/lib/publicSettingsClient';
 import { prefetchWinsTicker } from '@/lib/winsTickerClient';
 import { prefetchPaymentMethods } from '@/lib/paymentMethodsClient';
@@ -43,14 +43,23 @@ export default function SessionBridge() {
         const data = await fetchCurrentUser();
         if (cancelled || typeof window === 'undefined') return;
         if (data?.authenticated && data?.user) {
-          window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
+          const merged = mergePlayerUser(data.user);
+          window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: merged }));
           window.dispatchEvent(new CustomEvent('pp-player-session-ready'));
         } else {
-          window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
+          const cached = getCachedUser();
+          if (cached) {
+            window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: cached }));
+          } else {
+            window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
+          }
         }
       } catch {
         if (!cancelled && typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
+          const cached = getCachedUser();
+          if (cached) {
+            window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: cached }));
+          }
         }
       }
     };

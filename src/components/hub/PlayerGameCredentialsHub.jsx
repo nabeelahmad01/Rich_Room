@@ -778,7 +778,19 @@ export default function PlayerGameAccountsHub({
 
                     <button
                       type="button"
-                      onClick={() => setLoadCoinsModal({ open: true, game: matchedGame || { title: acc.gameTitle, gameId: acc.gameId } })}
+                      onClick={() =>
+                        setLoadCoinsModal({
+                          open: true,
+                          game: {
+                            ...(matchedGame || {}),
+                            title: acc.gameTitle || matchedGame?.title,
+                            name: acc.gameTitle || matchedGame?.name,
+                            gameId: acc.gameId || matchedGame?.gameId || matchedGame?.id,
+                            username: acc.username,
+                            gameAccountUsername: acc.username,
+                          },
+                        })
+                      }
                       style={{
                         backgroundColor: 'var(--bg-surface)',
                         border: '1px solid var(--chrome-border)',

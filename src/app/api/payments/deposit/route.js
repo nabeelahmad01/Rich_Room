@@ -9,6 +9,7 @@ import {
   publishAccountRequestCreated,
 } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
+import { runDepositApproveSideEffects } from '@/lib/depositApproveSideEffects';
 
 // GET: List Deposits (Admin / Financial Manager) or Player's own
 export async function GET(req) {
@@ -170,7 +171,8 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Your payment tag name / handle is required.' }, { status: 400 });
     }
 
-    if (!proofImage) {
+    const proofDeferred = Boolean(body.proofDeferred);
+    if (!proofImage && !proofDeferred) {
       return NextResponse.json({ success: false, error: 'Payment proof screenshot is required.' }, { status: 400 });
     }
 
@@ -185,13 +187,16 @@ export async function POST(req) {
     ]);
 
     // Check whether player is claiming Welcome Bonus (first deposit) or Regular Bonus (repeat reload)
-    const approvedDepositsCount = await depositsCol.countDocuments({
-      userId: session.userId,
-      status: 'approved',
-    });
-    const hasClaimedWelcome = Boolean(
-      approvedDepositsCount > 0 || user?.welcomeBonusClaimed || (user?.totalDeposited && user.totalDeposited > 0)
+    let hasClaimedWelcome = Boolean(
+      user?.welcomeBonusClaimed || (user?.totalDeposited && user.totalDeposited > 0)
     );
+    if (!hasClaimedWelcome) {
+      const approvedDepositsCount = await depositsCol.countDocuments({
+        userId: session.userId,
+        status: 'approved',
+      });
+      hasClaimedWelcome = approvedDepositsCount > 0;
+    }
 
     const bonusType = hasClaimedWelcome ? 'regular' : 'welcome';
     const isBonusActive = hasClaimedWelcome
@@ -214,22 +219,9 @@ export async function POST(req) {
     const resolvedUserId = (user && user._id) ? user._id.toString() : (session.userId || 'custom');
 
     const requestedGame = String(gameTitle || body.game || '').trim();
-    let resolvedGameUsername = String(body.gameAccountUsername || '').trim();
-
-    if (requestedGame && !resolvedGameUsername) {
-      const accCheck = await findUserGameAccount(
-        db,
-        {
-          userId: user?._id || session.userId,
-          userEmail: user?.email || session.email,
-          username: user?.username || session.username,
-        },
-        requestedGame
-      );
-      if (accCheck.exists) {
-        resolvedGameUsername = accCheck.username;
-      }
-    }
+    const resolvedGameUsername = String(body.gameAccountUsername || '').trim();
+    const proofPayload = proofImage || null;
+    const deferGameUsernameLookup = Boolean(requestedGame && !resolvedGameUsername);
 
     const newDeposit = {
       userId: resolvedUserId,
@@ -241,7 +233,8 @@ export async function POST(req) {
       playerTagName: tagName,
       playerPaymentEmail: (playerPaymentEmail || user?.email || '').trim(),
       senderNote: tagName,
-      proofImage: proofImage || null,
+      proofImage: null,
+      proofPending: Boolean(proofDeferred),
       txHash: resolvedTxHash,
       gameTitle: requestedGame || null,
       gameId: gameId || (requestedGame ? requestedGame.toLowerCase().replace(/\s+/g, '-') : null),
@@ -259,29 +252,74 @@ export async function POST(req) {
     };
 
     const res = await depositsCol.insertOne(newDeposit);
-
-    // Notify staff desk immediately (Never sent to players)
-    notifyStaff({
-      title: '💵 New Deposit Submitted',
-      message: `@${user?.username || session.username} submitted a deposit of $${depositAmount.toFixed(2)} via ${resolvedMethodName}.`,
-      type: 'deposit_submitted',
-      data: {
-        depositId: res.insertedId.toString(),
-        url: '/admin?tab=finance',
-      },
-    });
+    const depositIdStr = res.insertedId.toString();
 
     publishFinanceDeposit({
       action: 'created',
       status: 'pending',
       userEmail: user?.email || session.email,
       userId: resolvedUserId,
-      depositId: res.insertedId.toString(),
+      depositId: depositIdStr,
+      amount: depositAmount,
+      username: user?.username || session.username,
+      methodName: resolvedMethodName,
+      totalSC,
+      bonusSC,
+      gameTitle: requestedGame || '',
+      playerTagName: tagName,
+      txHash: resolvedTxHash,
+      hasProof: Boolean(proofPayload),
     });
+
+    const insertedId = res.insertedId;
+    void (async () => {
+      try {
+        if (proofPayload) {
+          await depositsCol.updateOne(
+            { _id: insertedId },
+            { $set: { proofImage: proofPayload, updatedAt: new Date() } }
+          );
+        }
+        if (deferGameUsernameLookup) {
+          const accCheck = await findUserGameAccount(
+            db,
+            {
+              userId: user?._id || session.userId,
+              userEmail: user?.email || session.email,
+              username: user?.username || session.username,
+            },
+            requestedGame
+          );
+          if (accCheck.exists && accCheck.username) {
+            await depositsCol.updateOne(
+              { _id: insertedId },
+              {
+                $set: {
+                  gameAccountUsername: accCheck.username,
+                  hasGameAccount: true,
+                  updatedAt: new Date(),
+                },
+              }
+            );
+          }
+        }
+        notifyStaff({
+          title: '💵 New Deposit Submitted',
+          message: `@${user?.username || session.username} submitted a deposit of $${depositAmount.toFixed(2)} via ${resolvedMethodName}.`,
+          type: 'deposit_submitted',
+          data: {
+            depositId: depositIdStr,
+            url: '/admin?tab=finance',
+          },
+        });
+      } catch {
+        /* background */
+      }
+    })();
 
     return NextResponse.json({
       success: true,
-      depositId: res.insertedId.toString(),
+      depositId: depositIdStr,
       calculatedCoins: {
         totalSC,
         bonusSC,
@@ -443,183 +481,15 @@ export async function PUT(req) {
         }
       );
 
-      // 3. Write Immutable Ledger
-      const baseDepositAmount = Number(deposit.amount || 0);
-      const bonusAmount = Number(deposit.bonusSC || 0);
-      const bonusTypeLabel = (deposit.bonusType || 'Welcome').trim();
-
-      if (bonusAmount > 0) {
-        const intermediateSC = Number((oldSC + baseDepositAmount).toFixed(2));
-        // 3a. Base Deposit Record
-        await ledgerCol.insertOne({
-          userId: user._id.toString(),
-          username: user.username,
-          type: 'deposit',
-          currency: 'SC',
-          amount: baseDepositAmount,
-          balanceBefore: oldSC,
-          balanceAfter: intermediateSC,
-          performedBy: session.username,
-          staffRole: session.role,
-          referenceId: depositId,
-          notes: `Deposit $${baseDepositAmount.toFixed(2)} approved via ${deposit.methodName}. TXID: ${deposit.txHash || 'N/A'}`,
-          createdAt: new Date(),
-        });
-
-        // 3b. Bonus Record
-        await ledgerCol.insertOne({
-          userId: user._id.toString(),
-          username: user.username,
-          type: bonusTypeLabel.toLowerCase().includes('welcome') ? 'welcome_bonus' : 'deposit_bonus',
-          currency: 'SC',
-          amount: bonusAmount,
-          balanceBefore: intermediateSC,
-          balanceAfter: newSC,
-          performedBy: session.username,
-          staffRole: session.role,
-          referenceId: depositId,
-          notes: `${bonusTypeLabel} Bonus: +$${bonusAmount.toFixed(2)} SC credited on deposit ($${baseDepositAmount.toFixed(2)})`,
-          createdAt: new Date(Date.now() + 500),
-        });
-      } else {
-        // Standard single deposit without bonus
-        await ledgerCol.insertOne({
-          userId: user._id.toString(),
-          username: user.username,
-          type: 'deposit',
-          currency: 'SC',
-          amount: creditedSC,
-          balanceBefore: oldSC,
-          balanceAfter: newSC,
-          performedBy: session.username,
-          staffRole: session.role,
-          referenceId: depositId,
-          notes: `Deposit $${deposit.amount} approved via ${deposit.methodName}. TXID: ${deposit.txHash || 'N/A'}`,
-          createdAt: new Date(),
-        });
-      }
-
-      // 4. Dynamic Referral Bonus Engine: Trigger on Referred Friend's First Approved Deposit
-      const approvedCount = await depositsCol.countDocuments({
-        userId: deposit.userId,
+      publishFinanceDeposit({
+        action: 'approve',
         status: 'approved',
+        userEmail: user.email,
+        userId: user._id.toString(),
+        depositId: deposit._id.toString(),
+        creditedSC,
       });
 
-      const isFirstDeposit = approvedCount <= 1 && !user.referralRewardPaid;
-
-      if (user.referredBy && isFirstDeposit) {
-        const refIdentifier = String(user.referredBy).trim();
-        const referrer = await usersCol.findOne({
-          $or: [
-            { username: refIdentifier.toLowerCase() },
-            { username: refIdentifier },
-            { referralCode: refIdentifier.toUpperCase() },
-            { referralCode: refIdentifier },
-          ],
-        });
-
-        if (referrer) {
-          const settingsCol = db.collection('system_settings');
-          const sysSettings = await settingsCol.findOne({ key: 'general' });
-          const isReferralActive = sysSettings?.referralBonusActive !== false;
-          const referralPercent = isReferralActive ? Number(sysSettings?.referralBonusPercent ?? 20) : 0;
-          const bonusSC = Number(((deposit.amount * referralPercent) / 100).toFixed(2));
-
-          if (bonusSC > 0) {
-            const refOldSC = Number(referrer.balanceSC || 0);
-            const refNewSC = Number((refOldSC + bonusSC).toFixed(2));
-
-            // A. Credit Referrer Wallet Directly
-            await usersCol.updateOne(
-              { _id: referrer._id },
-              {
-                $inc: {
-                  balanceSC: bonusSC,
-                  totalReferralRewards: bonusSC,
-                  affiliateCommissionsEarned: bonusSC,
-                },
-              }
-            );
-
-            // B. Record in Ledger
-            await ledgerCol.insertOne({
-              userId: referrer._id.toString(),
-              username: referrer.username,
-              type: 'referral_bonus',
-              currency: 'SC',
-              amount: bonusSC,
-              balanceBefore: refOldSC,
-              balanceAfter: refNewSC,
-              performedBy: session.username,
-              staffRole: session.role,
-              referenceId: deposit._id.toString(),
-              notes: `Referral Bonus: ${referralPercent}% bonus ($${bonusSC.toFixed(2)} SC) credited to wallet from @${user.username}'s first deposit ($${deposit.amount}).`,
-              createdAt: new Date(),
-            });
-
-            // C. In-App & Push Notification to Referrer (Strictly to referrer only!)
-            const notifTitle = `🎁 Referral Bonus: +$${bonusSC.toFixed(2)} SC!`;
-            const notifMessage = `Congratulations! Your referred friend @${user.username} made their first deposit ($${deposit.amount}). You received a ${referralPercent}% referral bonus of $${bonusSC.toFixed(2)} SC directly into your wallet!`;
-
-            notifyPlayer({
-              userId: referrer._id.toString(),
-              userEmail: referrer.email,
-              username: referrer.username,
-              title: notifTitle,
-              message: notifMessage,
-              type: 'bonus',
-              data: { amount: String(bonusSC), url: '/wallet' },
-            });
-
-            // D. Email Notification to Referrer
-            if (referrer.email) {
-              const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://richroom.games';
-              sendEmail({
-                to: referrer.email,
-                subject: `🎁 $${bonusSC.toFixed(2)} SC Referral Bonus Added to Your Rich Room Wallet!`,
-                html: `
-                  <div style="background-color: #070514; color: #FFFFFF; padding: 32px 20px; font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 500px; margin: auto; border-radius: 16px; border: 1px solid rgba(255, 215, 0, 0.4); text-align: center;">
-                    <img src="${appUrl}/logo.png" alt="Rich Room" style="height: 48px; margin-bottom: 12px;" />
-                    <h1 style="color: #FFD700; margin: 0; font-size: 20px; font-weight: 900;">RICH ROOM</h1>
-                    <p style="color: #00F0FF; font-size: 11px; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 2px;">Referral Reward Earned</p>
-                    <div style="background: #0E0A24; border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; padding: 20px; text-align: left; margin: 20px 0;">
-                      <h2 style="font-size: 16px; margin: 0 0 10px 0; color: #10B981;">+$${bonusSC.toFixed(2)} SC Credited to Your Wallet</h2>
-                      <p style="font-size: 13px; color: #CBD5E1; line-height: 1.6; margin: 0;">
-                        Your referred friend <b>@${user.username}</b> made their first deposit of <b>$${deposit.amount}</b>. Based on our <b>${referralPercent}%</b> referral rate, your bonus has been credited straight into your wallet!
-                      </p>
-                    </div>
-                    <a href="${appUrl}/wallet" style="display: inline-block; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #070514; font-weight: 900; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-size: 13px;">
-                      VIEW WALLET &amp; PLAY
-                    </a>
-                  </div>
-                `,
-              }).catch(() => {});
-            }
-
-            // E. Mark Player So Bonus Cannot Be Claimed Multiple Times
-            await usersCol.updateOne(
-              { _id: user._id },
-              {
-                $set: {
-                  referralRewardPaid: true,
-                  referralRewardAmount: bonusSC,
-                  referralRewardPaidAt: new Date(),
-                  referredByUserId: referrer._id.toString(),
-                },
-              }
-            );
-          }
-        }
-      }
-
-      // Send confirmation email
-      sendEmail({
-        to: user.email,
-        subject: `Deposit Confirmed: ${creditedSC} SC credited to your Rich Room wallet!`,
-        html: `<p>Hi ${user.username}, your deposit of $${deposit.amount} via ${deposit.methodName} was verified and ${creditedSC} SC (+ ${creditedGC.toLocaleString()} GC) was credited to your account. Best of luck at the tables!</p>`,
-      }).catch(() => {});
-
-      // Instant In-App and Push Notification
       notifyPlayer({
         userId: user._id,
         userEmail: user.email,
@@ -630,82 +500,27 @@ export async function PUT(req) {
         data: { amount: String(creditedSC) },
       });
 
-      publishFinanceDeposit({
-        action: 'approve',
-        status: 'approved',
-        userEmail: user.email,
-        userId: user._id.toString(),
-        depositId: deposit._id.toString(),
+      void runDepositApproveSideEffects({
+        db,
+        depositsCol,
+        usersCol,
+        ledgerCol,
+        deposit,
+        user,
+        session,
+        depositId,
         creditedSC,
+        creditedGC,
+        oldSC,
+        newSC,
+      }).catch((err) => console.warn('[deposit approve side effects]', err?.message || err));
+
+      return NextResponse.json({
+        success: true,
+        creditedSC,
+        message: `Deposit approved! Credited ${creditedSC} SC to ${user.username}.`,
       });
 
-      // 5. Automatic Game Account Request Creation if Player Deposited without an Existing Account
-      let autoAccountRequestCreated = false;
-      if (deposit.gameTitle) {
-        const cleanEmail = (user.email || deposit.playerPaymentEmail || '').toLowerCase().trim();
-        const cleanGameTitle = deposit.gameTitle.trim();
-
-        const accCheck = await findUserGameAccount(
-          db,
-          {
-            userId: user._id,
-            userEmail: cleanEmail,
-            username: user.username,
-          },
-          cleanGameTitle
-        );
-
-        if (!accCheck.exists) {
-          // Check if an account request is already pending
-          const existingPending = await db.collection('accountRequests').findOne({
-            userEmail: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
-            gameTitle: { $regex: new RegExp(`^${cleanGameTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
-            status: 'PENDING',
-            requestType: { $ne: 'COIN_LOAD' },
-          });
-
-          if (!existingPending) {
-            autoAccountRequestCreated = true;
-            await db.collection('accountRequests').insertOne({
-              userEmail: cleanEmail,
-              userName: user.username,
-              gameTitle: cleanGameTitle,
-              gameId: deposit.gameId || cleanGameTitle.toLowerCase().replace(/\s+/g, '-'),
-              requestType: 'ACCOUNT_CREATION',
-              transferAmount: 0,
-              status: 'PENDING',
-              sourceDepositId: deposit._id.toString(),
-              depositAmount: deposit.amount,
-              notes: `Auto-generated from approved deposit of $${deposit.amount.toFixed(2)} via ${deposit.methodName || 'Payment'}`,
-              createdAt: new Date(),
-            });
-
-            // Instant notification to player informing them their account request is now queued for staff
-            notifyPlayer({
-              userId: user._id,
-              userEmail: cleanEmail,
-              username: user.username,
-              title: `Game Account Request Queued: ${cleanGameTitle}! 🎮`,
-              message: `Deposit approved! Since you don't have a ${cleanGameTitle} account yet, an account creation request has been automatically sent to staff. Your login credentials will appear under My Game IDs shortly.`,
-              type: 'account_request_created',
-              data: { gameTitle: cleanGameTitle, depositId: deposit._id.toString() },
-            });
-
-            publishAccountRequestCreated({
-              request: {
-                userEmail: cleanEmail,
-                userName: user.username,
-                gameTitle: cleanGameTitle,
-                status: 'PENDING',
-              },
-              userEmail: cleanEmail,
-              userId: user._id.toString(),
-            });
-          }
-        }
-      }
-
-      return NextResponse.json({ success: true, message: `Deposit approved! Credited ${creditedSC} SC to ${user.username}.` });
     } else if (action === 'reject') {
       const finalRejectReason = rejectReason || 'Payment receipt unverified';
       await depositsCol.updateOne(
@@ -720,8 +535,15 @@ export async function PUT(req) {
         }
       );
 
-      // Instant In-App and Push Notification for player
       if (user) {
+        publishFinanceDeposit({
+          action: 'reject',
+          status: 'rejected',
+          userEmail: user.email,
+          userId: user._id.toString(),
+          depositId: deposit._id.toString(),
+        });
+
         notifyPlayer({
           userId: user._id,
           userEmail: user.email,
@@ -729,14 +551,6 @@ export async function PUT(req) {
           title: 'Deposit Update ⚠️',
           message: `Your deposit request ($${deposit.amount}) could not be approved: ${finalRejectReason}`,
           type: 'deposit_rejected',
-        });
-
-        publishFinanceDeposit({
-          action: 'reject',
-          status: 'rejected',
-          userEmail: user.email,
-          userId: user._id.toString(),
-          depositId: deposit._id.toString(),
         });
       }
 

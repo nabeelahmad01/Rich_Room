@@ -799,15 +799,7 @@ export default function FinanceUnifiedDesk({
                           <td style={{ padding: '14px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                               <button
-                                onClick={async () => {
-                                  setApprovingId(depositId);
-                                  try {
-                                    await onApproveDeposit(depositId, scToCredit);
-                                  } finally {
-                                    setApprovingId(null);
-                                  }
-                                }}
-                                disabled={approvingId === depositId}
+                                onClick={() => onApproveDeposit(depositId, scToCredit)}
                                 style={{
                                   padding: '7px 14px',
                                   borderRadius: '10px',
@@ -823,11 +815,7 @@ export default function FinanceUnifiedDesk({
                                   boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                                 }}
                               >
-                                {approvingId === depositId ? (
-                                  <RefreshCw size={12} className="animate-spin" />
-                                ) : (
-                                  <Check size={13} strokeWidth={3} />
-                                )}
+                                <Check size={13} strokeWidth={3} />
                                 <span>Approve ({scToCredit} SC)</span>
                               </button>
 

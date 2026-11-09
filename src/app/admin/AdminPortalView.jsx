@@ -90,6 +90,7 @@ import {
   getEntityId,
 } from '@/lib/mergeAdminLists';
 import { broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
+import { broadcastPlayerDepositResolved } from '@/lib/staffAlertsSync';
 import AdminBootShell from '@/components/admin/AdminBootShell';
 
 const ADMIN_CACHE_KEY = 'rr_admin_user';
@@ -1468,24 +1469,35 @@ export default function AdminPortalView({ initialTab }) {
         fetchAccountRequests(true);
       } else if (payload.type === 'NEW_DEPOSIT') {
         const depId = payload.depositId || `dep_${Date.now()}`;
+        const replaceId = payload.replacesDepositId;
         seenDepositIdsRef.current.add(depId);
         playAdminChimeDeduped(`deposit:${depId}`);
         const amount = Number(payload.amount || 0);
         const uName = payload.username || 'Player';
+        const hasProof = payload.hasProof !== false;
         const optimisticDep = {
           id: depId,
           _id: depId,
           status: 'pending',
           amount,
+          totalSC: payload.totalSC != null ? Number(payload.totalSC) : amount,
+          bonusSC: payload.bonusSC != null ? Number(payload.bonusSC) : undefined,
           username: uName,
           methodName: payload.methodName || 'Payment',
-          hasProof: true,
+          gameTitle: payload.gameTitle || null,
+          playerTagName: payload.playerTagName || '',
+          txHash: payload.txHash || '',
+          proofImage: hasProof ? `/api/payments/deposit/proof?id=${depId}` : null,
+          hasProof,
           createdAt: new Date().toISOString(),
         };
-        setDeposits((prev) => [
-          optimisticDep,
-          ...(prev || []).filter((d) => getEntityId(d) !== depId),
-        ]);
+        setDeposits((prev) => {
+          const strip = new Set([depId, replaceId].filter(Boolean));
+          return [
+            optimisticDep,
+            ...(prev || []).filter((d) => !strip.has(getEntityId(d))),
+          ];
+        });
         setActiveAlertToast({
           type: 'deposit',
           title: '💰 New Deposit Request!',
@@ -1494,17 +1506,24 @@ export default function AdminPortalView({ initialTab }) {
           targetTab: 'finance',
           targetSubTab: 'deposits',
         });
-        fetch('/api/payments/deposit?status=pending&lightweight=true', {
-          credentials: 'include',
-          cache: 'no-store',
-        })
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) {
-              diffSet(setDeposits, (prev) => mergeDepositsOptimistic(prev, d.deposits || []));
-            }
+        const enrichLater = () => {
+          fetch('/api/payments/deposit?status=pending&lightweight=true', {
+            credentials: 'include',
+            cache: 'no-store',
           })
-          .catch(() => {});
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.success) {
+                diffSet(setDeposits, (prev) => mergeDepositsOptimistic(prev, d.deposits || []));
+              }
+            })
+            .catch(() => {});
+        };
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(enrichLater, { timeout: 3000 });
+        } else {
+          setTimeout(enrichLater, 400);
+        }
       } else if (payload.type === 'NEW_COIN_LOAD') {
         const reqId = payload.requestId || payload.request?.id || `load_${Date.now()}`;
         seenCoinLoadIdsRef.current.add(reqId);
@@ -1519,7 +1538,8 @@ export default function AdminPortalView({ initialTab }) {
           userName: payload.username || req.userName || 'Player',
           userEmail: req.userEmail || '',
           gameTitle: payload.gameTitle || req.gameTitle || 'Game',
-          freeplayScreenshot: `/api/account-requests/proof?id=${reqId}`,
+          isFreeplay: Boolean(req.isFreeplay || req.freeplayPending),
+          freeplayPending: Boolean(req.isFreeplay || req.freeplayPending),
           createdAt: new Date().toISOString(),
         };
         setCoinLoadRequests((prev) => [
@@ -1714,7 +1734,14 @@ export default function AdminPortalView({ initialTab }) {
   // SSE desk sync — sub-second refresh when player requests / chat / finance events fire
   useEffect(() => {
     if (!user) return;
-    const onDeskSync = () => {
+    const onDeskSync = (e) => {
+      const ev = e?.detail;
+      if (
+        ev?.type === 'FINANCE_DEPOSIT' &&
+        (ev?.action === 'created' || ev?.status === 'pending')
+      ) {
+        return;
+      }
       fetchAccountRequests(true);
       syncRequestsAndAlerts();
     };
@@ -4223,31 +4250,48 @@ export default function AdminPortalView({ initialTab }) {
                 setRefreshingFinance(true);
                 syncRequestsAndAlerts().finally(() => setRefreshingFinance(false));
               }}
-              onApproveDeposit={async (depositId, scToCredit) => {
+              onApproveDeposit={(depositId, scToCredit) => {
                 setActiveAlertToast((curr) => (curr?.type === 'deposit' ? null : curr));
                 markAdminMutated(depositId, { status: 'approved', creditedSC: Number(scToCredit) });
                 setDeposits((prev) =>
                   (prev || []).filter((item) => getEntityId(item) !== String(depositId))
                 );
 
-                try {
-                  const res = await fetch('/api/payments/deposit', {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ depositId, action: 'approve', customSC: Number(scToCredit) }),
-                  });
-                  const data = await res.json();
-                  if (!data.success) {
-                    alert(data.error || 'Failed to approve deposit');
-                    syncRequestsAndAlerts();
-                  } else {
+                const dep = (deposits || []).find((d) => getEntityId(d) === String(depositId));
+                broadcastPlayerDepositResolved({
+                  depositId,
+                  action: 'approve',
+                  creditedSC: Number(scToCredit),
+                  amount: dep?.amount,
+                  username: dep?.username,
+                });
+
+                void (async () => {
+                  try {
+                    const { res, data } = await fetchJsonQuick(
+                      '/api/payments/deposit',
+                      {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          depositId,
+                          action: 'approve',
+                          customSC: Number(scToCredit),
+                        }),
+                      },
+                      45000
+                    );
+                    if (!res.ok || !data.success) {
+                      alert(data.error || 'Failed to approve deposit');
+                      syncRequestsAndAlerts();
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    alert(e?.message || 'Failed to approve deposit');
                     syncRequestsAndAlerts();
                   }
-                } catch (e) {
-                  console.error(e);
-                  syncRequestsAndAlerts();
-                }
+                })();
               }}
               onRejectDeposit={async (depositId, reason) => {
                 setActiveAlertToast((curr) => (curr?.type === 'deposit' ? null : curr));

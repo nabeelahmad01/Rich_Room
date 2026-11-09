@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import NotificationsModal from '@/components/modals/NotificationsModal';
 import { areEqual } from '@/lib/fastDiff';
-import { fetchCurrentUser, getCachedUser } from '@/lib/authClient';
+import { fetchCurrentUser, getCachedUser, mergePlayerUser } from '@/lib/authClient';
 import { refreshPlayerNotifications } from '@/lib/notificationsClient';
 import { updateFaviconBadge } from '@/lib/soundAlerts';
 
@@ -48,6 +48,7 @@ export default function CyberNavbar({
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadNotifsCount);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [balancePulse, setBalancePulse] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const lastBalanceRef = useRef(user ? (user.balance ?? user.balanceSC ?? 0) : null);
   const lastSyncedUserRef = useRef(user || null);
   const profileRef = useRef(null);
@@ -145,30 +146,46 @@ export default function CyberNavbar({
     return () => window.removeEventListener('paradise-open-notifications', handleOpenNotifsEvent);
   }, []);
 
-  // Keep liveUser aligned when prop changes or hydrate from cache on mount
   useEffect(() => {
-    if (user) {
-      setLiveUser(user);
-      lastBalanceRef.current = Number(user.balance ?? user.balanceSC ?? 0);
-    } else {
+    setMounted(true);
+    if (!user) {
       const cached = getCachedUser();
       if (cached) {
         setLiveUser(cached);
         lastBalanceRef.current = Number(cached.balance ?? cached.balanceSC ?? 0);
-      } else {
-        setLiveUser(null);
-        lastBalanceRef.current = null;
       }
+    }
+  }, []);
+
+  // Keep liveUser aligned when prop changes or hydrate from cache on mount
+  useEffect(() => {
+    if (user) {
+      setLiveUser((prev) => {
+        const merged = mergePlayerUser(user, prev);
+        lastBalanceRef.current = Number(merged.balance ?? merged.balanceSC ?? 0);
+        return merged;
+      });
     }
   }, [user]);
 
   // Listen to global paradise-user-sync event from anywhere in the app
   useEffect(() => {
     const handleSync = (e) => {
-      setLiveUser(e.detail || null);
       if (!e.detail) {
+        const cached = getCachedUser();
+        if (cached) {
+          setLiveUser(cached);
+          return;
+        }
+        setLiveUser(null);
         setLiveUnreadCount(0);
+        return;
       }
+      setLiveUser((prev) => {
+        const merged = mergePlayerUser(e.detail, prev);
+        lastBalanceRef.current = Number(merged.balance ?? merged.balanceSC ?? 0);
+        return merged;
+      });
     };
     window.addEventListener('paradise-user-sync', handleSync);
     return () => window.removeEventListener('paradise-user-sync', handleSync);
@@ -218,10 +235,15 @@ export default function CyberNavbar({
             refreshPlayerNotifications().catch(() => {});
           }
         } else {
-          setLiveUser(null);
-          setLiveUnreadCount(0);
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('pp_user_email');
+          const cached = getCachedUser();
+          if (cached) {
+            setLiveUser(cached);
+          } else {
+            setLiveUser(null);
+            setLiveUnreadCount(0);
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('pp_user_email');
+            }
           }
         }
       } catch {
@@ -280,6 +302,16 @@ export default function CyberNavbar({
   }, []);
 
   const activeUser = liveUser || user;
+
+  const rawBalance = Number(activeUser?.balanceSC ?? activeUser?.balance ?? 0);
+  const displayBalance =
+    mounted &&
+    rawBalance === 0 &&
+    lastBalanceRef.current != null &&
+    lastBalanceRef.current > 0 &&
+    activeUser
+      ? lastBalanceRef.current
+      : rawBalance;
 
   return (
     <>
@@ -363,7 +395,7 @@ export default function CyberNavbar({
               <span className={`font-mono font-bold text-xs sm:text-sm transition-colors ${
                 balancePulse ? 'text-white' : 'text-emerald-400 group-hover:text-emerald-300'
               }`}>
-                ${Number(activeUser.balance ?? activeUser.balanceSC ?? 0).toFixed(2)}
+                ${displayBalance.toFixed(2)}
               </span>
             </Link>
 

@@ -6,6 +6,7 @@ import { notifyPlayer, notifyStaff } from '@/lib/notify';
 import {
   publishAccountRequestCreated,
   publishAccountRequestUpdated,
+  publishWallet,
 } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
 
@@ -86,33 +87,65 @@ export async function GET(req) {
       ];
     }
 
-    const projection = lightweight
-      ? {
-          userEmail: 1,
-          userName: 1,
-          gameTitle: 1,
-          gameId: 1,
-          requestType: 1,
-          status: 1,
-          gameAccountUsername: 1,
-          gameAccountPassword: 1,
-          transferAmount: 1,
-          isFreeplay: 1,
-          freeplayPending: 1,
-          freeplayAmount: 1,
-          freeplayTaskId: 1,
-          rejectionReason: 1,
-          rejectReason: 1,
-          createdAt: 1,
-        }
-      : undefined;
-
-    const requests = await db
-      .collection('accountRequests')
-      .find(query, projection ? { projection } : undefined)
-      .sort({ createdAt: -1 })
-      .limit(200)
-      .toArray();
+    let requests;
+    if (lightweight) {
+      requests = await db
+        .collection('accountRequests')
+        .aggregate([
+          { $match: query },
+          { $sort: { createdAt: -1 } },
+          { $limit: 200 },
+          {
+            $addFields: {
+              hasFreeplayScreenshot: {
+                $or: [
+                  {
+                    $and: [
+                      { $ne: [{ $ifNull: ['$freeplayScreenshot', ''] }, ''] },
+                      { $ne: ['$freeplayScreenshot', null] },
+                    ],
+                  },
+                  {
+                    $and: [
+                      { $ne: [{ $ifNull: ['$screenshot', ''] }, ''] },
+                      { $ne: ['$screenshot', null] },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              userEmail: 1,
+              userName: 1,
+              gameTitle: 1,
+              gameId: 1,
+              requestType: 1,
+              status: 1,
+              gameAccountUsername: 1,
+              gameAccountPassword: 1,
+              transferAmount: 1,
+              isFreeplay: 1,
+              freeplayPending: 1,
+              freeplayAmount: 1,
+              freeplayTaskId: 1,
+              rejectionReason: 1,
+              rejectReason: 1,
+              createdAt: 1,
+              hasFreeplayScreenshot: 1,
+            },
+          },
+        ])
+        .toArray();
+    } else {
+      requests = await db
+        .collection('accountRequests')
+        .find(query)
+        .sort({ createdAt: -1 })
+        .limit(200)
+        .toArray();
+    }
 
     return NextResponse.json({
       success: true,
@@ -120,10 +153,18 @@ export async function GET(req) {
         const isFp = Boolean(r.isFreeplay || r.freeplayPending);
         const fpAmt = Number(r.freeplayAmount || r.transferAmount || 0);
         const id = r._id.toString();
-        const isLoad = isFp || Number(r.transferAmount || 0) > 0 || r.requestType === 'COIN_LOAD';
-        let freeplayScreenshot = r.freeplayScreenshot || r.screenshot || '';
-        if (lightweight && isLoad) {
-          freeplayScreenshot = `/api/account-requests/proof?id=${id}`;
+        let freeplayScreenshot = '';
+        if (isFp) {
+          if (lightweight && r.hasFreeplayScreenshot) {
+            freeplayScreenshot = `/api/account-requests/proof?id=${id}`;
+          } else if (!lightweight) {
+            const raw = r.freeplayScreenshot || r.screenshot || '';
+            if (raw) {
+              freeplayScreenshot = raw.startsWith('data:image')
+                ? `/api/account-requests/proof?id=${id}`
+                : raw;
+            }
+          }
         }
         return {
           id,
@@ -293,15 +334,16 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
+    let nextSC = currentSC;
     // 1. DEDUCT coins immediately from player wallet (balanceSC) if this is a COIN_LOAD
     if (requestType === 'COIN_LOAD' && transferAmount > 0) {
-      const nextSC = Math.max(0, Number((currentSC - transferAmount).toFixed(2)));
+      nextSC = Math.max(0, Number((currentSC - transferAmount).toFixed(2)));
       await usersCol.updateOne(
         { _id: user._id },
         { $set: { balanceSC: nextSC, updatedAt: new Date() } }
       );
 
-      await ledgerCol.insertOne({
+      const ledgerEntry = {
         userId: user._id.toString(),
         username: user.username,
         type: 'game_transfer',
@@ -313,12 +355,26 @@ export async function POST(req) {
         referenceId: gameTitle,
         notes: `Deducted $${transferAmount.toFixed(2)} SC from wallet for loading into ${gameTitle}`,
         createdAt: new Date(),
+      };
+      void ledgerCol.insertOne(ledgerEntry).catch(() => {});
+
+      publishWallet({
+        userEmail: user.email || userEmail,
+        userId: user._id.toString(),
+        balanceSC: nextSC,
+        action: 'coin_load_deduct',
+        transferAmount,
+        gameTitle,
       });
     }
 
-    // 2. Resolve Game Account Username if existing for this player and game
-    let resolvedGameUsername = String(body.gameAccountUsername || '').trim();
-    if (!resolvedGameUsername && gameTitle) {
+    // 2. Resolve Game Account Username — skip DB lookup on coin load when client sent ID
+    let resolvedGameUsername = String(
+      body.gameAccountUsername || body.username || ''
+    ).trim();
+    const deferUsernameLookup =
+      requestType === 'COIN_LOAD' && !resolvedGameUsername && Boolean(gameTitle);
+    if (!resolvedGameUsername && gameTitle && !deferUsernameLookup) {
       const accCheck = await findUserGameAccount(
         db,
         {
@@ -380,6 +436,31 @@ export async function POST(req) {
       userEmail,
       userId: user._id?.toString?.() || session?.userId,
     });
+
+    if (deferUsernameLookup) {
+      const insertedId = res.insertedId;
+      void (async () => {
+        try {
+          const accCheck = await findUserGameAccount(
+            db,
+            {
+              userId: user?._id || session?.userId,
+              userEmail,
+              username: userName,
+            },
+            gameTitle
+          );
+          if (accCheck.exists && accCheck.username) {
+            await requestsCol.updateOne(
+              { _id: insertedId },
+              { $set: { gameAccountUsername: accCheck.username } }
+            );
+          }
+        } catch {
+          /* non-blocking */
+        }
+      })();
+    }
 
     return NextResponse.json({
       success: true,

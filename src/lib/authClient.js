@@ -57,6 +57,46 @@ export function setCachedUser(user) {
   } catch {}
 }
 
+/** Merge partial user patches without zeroing balance during optimistic updates. */
+export function mergePlayerUser(patch, prev = null) {
+  if (!patch) {
+    const cached = getCachedUser();
+    return prev || cached || null;
+  }
+  const base = { ...(prev || getCachedUser() || {}) };
+  const nextBal =
+    patch.balanceSC != null
+      ? Number(patch.balanceSC)
+      : patch.balance != null
+        ? Number(patch.balance)
+        : base.balanceSC != null
+          ? Number(base.balanceSC)
+          : Number(base.balance || 0);
+
+  const merged = {
+    ...base,
+    ...patch,
+    balanceSC: Number.isFinite(nextBal) ? nextBal : 0,
+    balance:
+      patch.balance != null && Number.isFinite(Number(patch.balance))
+        ? Number(patch.balance)
+        : Number.isFinite(nextBal)
+          ? nextBal
+          : 0,
+  };
+  setCachedUser(merged);
+  lastAuthResult = { authenticated: true, user: merged };
+  lastAuthResponseTime = Date.now();
+  return merged;
+}
+
+export function readCachedBalance() {
+  const u = getCachedUser();
+  if (!u) return null;
+  const sc = u.balanceSC ?? u.balance;
+  return sc != null && Number.isFinite(Number(sc)) ? Number(sc) : null;
+}
+
 export async function fetchCurrentUser({ force = false } = {}) {
   const now = Date.now();
 
@@ -75,8 +115,17 @@ export async function fetchCurrentUser({ force = false } = {}) {
         cache: 'no-store',
       });
       if (!res.ok) {
-        setCachedUser(null);
-        lastAuthResult = { authenticated: false, user: null };
+        if (res.status === 401 || res.status === 403) {
+          setCachedUser(null);
+          lastAuthResult = { authenticated: false, user: null };
+        } else {
+          const cached = getCachedUser();
+          if (cached) {
+            lastAuthResult = { authenticated: true, user: cached };
+          } else {
+            lastAuthResult = { authenticated: false, user: null };
+          }
+        }
         lastAuthResponseTime = Date.now();
         return lastAuthResult;
       }
@@ -86,12 +135,23 @@ export async function fetchCurrentUser({ force = false } = {}) {
         setCachedUser(data.user);
         lastAuthResult = data;
       } else {
-        setCachedUser(null);
-        lastAuthResult = { authenticated: false, user: null };
+        const cached = getCachedUser();
+        if (cached) {
+          lastAuthResult = { authenticated: true, user: cached };
+        } else {
+          setCachedUser(null);
+          lastAuthResult = { authenticated: false, user: null };
+        }
       }
       lastAuthResponseTime = Date.now();
       return lastAuthResult;
     } catch {
+      const cached = getCachedUser();
+      if (cached) {
+        lastAuthResult = { authenticated: true, user: cached };
+        lastAuthResponseTime = Date.now();
+        return lastAuthResult;
+      }
       return { authenticated: false, user: null };
     } finally {
       inFlightAuthPromise = null;

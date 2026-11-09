@@ -845,7 +845,7 @@ export default function CoinOperationsDesk({
                           </span>
                         </div>
 
-                        {item.freeplayScreenshot && (
+                        {(item.isFreeplay || item.freeplayPending) && item.freeplayScreenshot && (
                           <button
                             type="button"
                             onClick={() =>
@@ -1049,7 +1049,7 @@ export default function CoinOperationsDesk({
                                     </span>
                                   )}
                                 </div>
-                                {item.freeplayScreenshot && (
+                                {(item.isFreeplay || item.freeplayPending) && item.freeplayScreenshot && (
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -1318,7 +1318,7 @@ export default function CoinOperationsDesk({
                               <XCircle size={11} /> REJECTED {item.rejectionReason ? `· "${item.rejectionReason}"` : ''}
                             </span>
                           )}
-                          {item.freeplayScreenshot && (
+                          {(item.isFreeplay || item.freeplayPending) && item.freeplayScreenshot && (
                             <button
                               type="button"
                               onClick={() =>
@@ -1403,7 +1403,7 @@ export default function CoinOperationsDesk({
                             </td>
                             <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '12.5px', color: 'var(--neon-cyan)', fontWeight: 800, fontFamily: 'monospace' }}>
                               <div>${Number(item.transferAmount || 0).toFixed(2)} SC</div>
-                              {item.freeplayScreenshot && (
+                              {(item.isFreeplay || item.freeplayPending) && item.freeplayScreenshot && (
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -2360,7 +2360,8 @@ export default function CoinOperationsDesk({
               </div>
             </div>
 
-            {approveLoadModal.item?.freeplayScreenshot && (
+            {(approveLoadModal.item?.isFreeplay || approveLoadModal.item?.freeplayPending) &&
+              approveLoadModal.item?.freeplayScreenshot && (
               <div
                 className="rounded-xl p-2.5 flex items-center justify-between gap-3"
                 style={{
@@ -2375,7 +2376,7 @@ export default function CoinOperationsDesk({
                     className="w-12 h-10 rounded-lg object-cover bg-black border border-white/15 shrink-0"
                   />
                   <div className="truncate">
-                    <div className="text-xs font-black text-amber-300 truncate">Inbox Screenshot Proof Attached</div>
+                    <div className="text-xs font-black text-amber-300 truncate">Freeplay Inbox Screenshot Proof</div>
                     {approveLoadModal.item.freeplayTaskId && (
                       <div className="text-[10px] font-mono text-gray-400">Ref: #{approveLoadModal.item.freeplayTaskId}</div>
                     )}

@@ -12,6 +12,8 @@ import {
   Gamepad2,
   Sparkles
 } from 'lucide-react';
+import { fetchJsonWithTimeout } from '@/lib/fetchWithTimeout';
+import { mergePlayerUser } from '@/lib/authClient';
 
 export default function LoadCoinsModal({
   isOpen,
@@ -67,27 +69,36 @@ export default function LoadCoinsModal({
     }
 
     setLoading(true);
+    const priorBalance = Number(user?.balanceSC || 0);
+    const optimisticBalance = Math.max(0, Number((priorBalance - amt).toFixed(2)));
+    if (user) {
+      const merged = mergePlayerUser({ balanceSC: optimisticBalance, balance: optimisticBalance }, user);
+      window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: merged }));
+    }
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+
     try {
-      const res = await fetch('/api/account-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameTitle,
-          gameId,
-          gameAccountUsername: game.username || game.gameAccountUsername || '',
-          requestType: 'COIN_LOAD',
-          transferAmount: amt,
-          userEmail: user.email,
-          userName: user.username,
-        }),
-      });
+      const { res, data } = await fetchJsonWithTimeout(
+        '/api/account-requests',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameTitle,
+            gameId,
+            gameAccountUsername: game.username || game.gameAccountUsername || '',
+            requestType: 'COIN_LOAD',
+            transferAmount: amt,
+            userEmail: user?.email,
+            userName: user?.username,
+          }),
+        },
+        45000
+      );
 
-      const data = await res.json();
-      setLoading(false);
-
-      if (data.success) {
+      if (res.ok && data.success) {
         setSuccessMsg(`🎉 $${amt.toFixed(2)} SC deducted from your wallet and submitted to Coin Desk for ${gameTitle}!`);
-        window.dispatchEvent(new CustomEvent('balanceUpdated'));
         try {
           const bChan = new BroadcastChannel('paradise_balance_sync');
           bChan.postMessage({ type: 'BALANCE_UPDATED', time: Date.now() });
@@ -96,16 +107,26 @@ export default function LoadCoinsModal({
         try {
           localStorage.setItem('paradise_user_balance_sync', String(Date.now()));
         } catch {}
+        window.dispatchEvent(new CustomEvent('balanceUpdated'));
         if (onSuccess) onSuccess(data);
         setTimeout(() => {
           onClose();
-        }, 1800);
+        }, 1200);
       } else {
-        setErrorMsg(data.message || 'Failed to submit load request.');
+        if (user) {
+          const merged = mergePlayerUser({ balanceSC: priorBalance, balance: priorBalance }, user);
+          window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: merged }));
+        }
+        setErrorMsg(data.message || data.error || 'Failed to submit load request.');
       }
-    } catch {
+    } catch (err) {
+      if (user) {
+        const merged = mergePlayerUser({ balanceSC: priorBalance, balance: priorBalance }, user);
+        window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: merged }));
+      }
+      setErrorMsg(err?.message || 'Network error. Could not submit load request.');
+    } finally {
       setLoading(false);
-      setErrorMsg('Network error. Could not submit load request.');
     }
   };
 

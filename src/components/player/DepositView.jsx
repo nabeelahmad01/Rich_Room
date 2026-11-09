@@ -37,7 +37,7 @@ import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { compressImageFile } from '@/lib/imageCompress';
-import { getCachedUser } from '@/lib/authClient';
+import { getCachedUser, mergePlayerUser } from '@/lib/authClient';
 import { writePaymentMethodsCache } from '@/lib/paymentMethodsCache';
 import {
   readPaymentMethodsInstant,
@@ -46,6 +46,9 @@ import {
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
+import { fetchJsonQuick, fetchJsonWithTimeout } from '@/lib/fetchWithTimeout';
+import { REALTIME_TYPES } from '@/lib/realtimePublish';
+import { broadcastStaffNewDeposit } from '@/lib/staffAlertsSync';
 
 export default function DepositView({ isEmbedded = false, onSelectTab, seedReadyAccounts = [] }) {
   const router = useRouter();
@@ -283,12 +286,14 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
 
     const handleUserSync = (e) => {
       if (e.detail) {
-        diffSet(setUser, e.detail);
+        diffSet(setUser, (prev) => mergePlayerUser(e.detail, prev));
         fetchGateways(true);
         fetchGameAccounts();
         syncGamesCatalog(true);
       } else {
-        setUser(null);
+        const cached = getCachedUser();
+        if (cached) diffSet(setUser, cached);
+        else setUser(null);
       }
     };
 
@@ -303,9 +308,42 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
     const unsubscribeAccounts = subscribePlayerAccountsSync(() => fetchGameAccounts());
 
     const handleCashierRefresh = () => {
+      fetchHistory(true);
+      fetchUserAndSettings(true);
       fetchGateways(true);
       syncGamesCatalog(true);
       fetchGameAccounts();
+    };
+
+    const handleDepositUpdated = (e) => {
+      const ev = e.detail || {};
+      if (ev.type && ev.type !== REALTIME_TYPES.FINANCE_DEPOSIT) return;
+      fetchHistory(true);
+      fetchUserAndSettings(true);
+      if (ev.action === 'approve' || ev.status === 'approved') {
+        const credited = ev.creditedSC != null ? Number(ev.creditedSC) : null;
+        if (credited != null && !Number.isNaN(credited)) {
+          diffSet(setUser, (prev) => {
+            const base = prev || getCachedUser() || {};
+            const nextBal = Number((Number(base.balanceSC || base.balance || 0) + credited).toFixed(2));
+            return mergePlayerUser({ balanceSC: nextBal, balance: nextBal }, base);
+          });
+        }
+        setStatusMessage({
+          type: 'success',
+          text:
+            credited != null && !Number.isNaN(credited)
+              ? `Deposit approved! ${credited.toFixed(2)} SC added to your wallet.`
+              : 'Deposit approved! Your wallet balance has been updated.',
+        });
+      }
+    };
+
+    const handleInstantSync = (e) => {
+      const ev = e.detail;
+      if (ev?.type === REALTIME_TYPES.FINANCE_DEPOSIT) {
+        handleDepositUpdated(e);
+      }
     };
 
     const handlePaymentMethodsEvent = (e) => {
@@ -315,6 +353,8 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
 
     window.addEventListener('paradise-user-sync', handleUserSync);
     window.addEventListener('paradise-cashier-refresh', handleCashierRefresh);
+    window.addEventListener('paradise-deposit-updated', handleDepositUpdated);
+    window.addEventListener('paradise-instant-sync', handleInstantSync);
     window.addEventListener('paradise-payment-methods', handlePaymentMethodsEvent);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
@@ -323,6 +363,8 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
       unsubscribeAccounts();
       clearInterval(pollInterval);
       window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
+      window.removeEventListener('paradise-deposit-updated', handleDepositUpdated);
+      window.removeEventListener('paradise-instant-sync', handleInstantSync);
       window.removeEventListener('paradise-payment-methods', handlePaymentMethodsEvent);
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('focus', handleFocus);
@@ -424,7 +466,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
     }
 
     setSubmitting(true);
-    setStatusMessage(null);
+    setStatusMessage({
+      type: 'info',
+      text: 'Sending your deposit request to the desk…',
+    });
+
+    let tempId;
 
     try {
       const chosenMethodName = activeGateway.name || 'Payment';
@@ -432,6 +479,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
 
       const linkedAccount = findAccountForGame(userGameAccounts, selectedGame, adminGames);
 
+      const proofPayload = proofImage;
       const payload = {
         amount: finalAmount,
         method: chosenMethodName,
@@ -442,15 +490,15 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
         senderNote: senderAccount.trim(),
         transactionId: transactionId.trim(),
         txHash: transactionId.trim(),
-        proofImage,
         gameTitle: selectedGame,
         gameAccountUsername: linkedAccount ? linkedAccount.username : '',
         bonusType,
         bonusPercent,
+        proofDeferred: true,
       };
 
       // 0ms Optimistic UI update: Instantly show pending deposit in history table
-      const tempId = 'temp_' + Date.now();
+      tempId = 'temp_' + Date.now();
       const optimisticDeposit = {
         id: tempId,
         _id: tempId,
@@ -467,15 +515,64 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
       };
       setDepositHistory((prev) => [optimisticDeposit, ...prev]);
 
-      const res = await fetch('/api/payments/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      broadcastStaffNewDeposit({
+        depositId: tempId,
+        amount: finalAmount,
+        username: user?.username || 'Player',
+        methodName: chosenMethodName,
+        totalSC,
+        bonusSC,
+        gameTitle: selectedGame || '',
+        playerTagName: senderAccount.trim(),
+        txHash: transactionId.trim(),
+        hasProof: Boolean(proofImage),
       });
 
-      const data = await res.json();
+      const { res, data } = await fetchJsonQuick(
+        '/api/payments/deposit',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+        20000
+      );
+
+      setSubmitting(false);
 
       if (res.ok && data.success) {
+        const realId = data.depositId;
+        if (realId) {
+          setDepositHistory((prev) =>
+            prev.map((d) =>
+              d.id === tempId ? { ...d, id: realId, _id: realId } : d
+            )
+          );
+          broadcastStaffNewDeposit({
+            depositId: realId,
+            replacesDepositId: tempId,
+            amount: finalAmount,
+            username: user?.username || 'Player',
+            methodName: chosenMethodName,
+            totalSC,
+            bonusSC,
+            gameTitle: selectedGame || '',
+            playerTagName: senderAccount.trim(),
+            txHash: transactionId.trim(),
+            hasProof: Boolean(proofPayload),
+          });
+          void fetchJsonWithTimeout(
+            '/api/payments/deposit/proof',
+            {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ depositId: realId, proofImage: proofPayload }),
+            },
+            120000
+          ).catch(() => {});
+        }
         setStatusMessage({
           type: 'success',
           text: `Deposit request for $${finalAmount.toFixed(2)} submitted! Total ${totalSC.toFixed(2)} SC (${bonusPercent}% bonus included) will be credited upon desk verification.`,
