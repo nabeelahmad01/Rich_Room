@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Check,
@@ -137,9 +138,40 @@ export default function Player360ProfileModal({
     }
   };
 
+  const [portalReady, setPortalReady] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => setIsNarrow(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   useEffect(() => {
     fetchProfile();
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [userId]);
+
+  const scrollBodyStyle = {
+    flex: 1,
+    minHeight: 0,
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    WebkitOverflowScrolling: 'touch',
+    touchAction: 'pan-y',
+    overscrollBehavior: 'contain',
+  };
 
   const copyText = (text, field) => {
     if (!text) return;
@@ -257,9 +289,9 @@ export default function Player360ProfileModal({
     }
   };
 
-  if (!userId) return null;
+  if (!userId || !portalReady) return null;
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: 'fixed',
@@ -269,25 +301,27 @@ export default function Player360ProfileModal({
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isNarrow ? 'stretch' : 'center',
         justifyContent: 'center',
-        padding: '16px',
-        overflowY: 'auto',
+        padding: isNarrow ? 0 : '16px',
+        overflow: 'hidden',
       }}
       onClick={onClose}
     >
       <div
         style={{
           width: '100%',
-          maxWidth: '1040px',
-          maxHeight: '92vh',
+          maxWidth: isNarrow ? '100%' : '1040px',
+          height: isNarrow ? '100dvh' : undefined,
+          maxHeight: isNarrow ? '100dvh' : '92vh',
           backgroundColor: '#0c081e',
           border: '1px solid rgba(255, 215, 0, 0.35)',
-          borderRadius: '24px',
+          borderRadius: isNarrow ? 0 : '24px',
           boxShadow: '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(255, 215, 0, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          minHeight: 0,
           color: '#FFFFFF',
           fontFamily: 'Lexend, sans-serif',
         }}
@@ -444,11 +478,12 @@ export default function Player360ProfileModal({
           </div>
         </div>
 
+        <div style={scrollBodyStyle} onClick={(e) => e.stopPropagation()}>
         {/* 2. HERO BALANCE & ADJUSTMENT CONSOLE (CLEAN DARK PALETTE) */}
         {data?.user && (
           <div
             style={{
-              padding: '20px 24px',
+              padding: isNarrow ? '12px 14px' : '20px 24px',
               backgroundColor: '#110c29',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'grid',
@@ -669,13 +704,17 @@ export default function Player360ProfileModal({
         {/* 3. NAVIGATION SUB-TABS */}
         <div
           style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 5,
             backgroundColor: 'var(--bg-deep)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            padding: '0 24px',
+            padding: '0 16px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           {[
@@ -732,8 +771,8 @@ export default function Player360ProfileModal({
           })}
         </div>
 
-        {/* 4. MAIN SCROLLABLE CONTENT */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#0A071B' }}>
+        {/* 4. MAIN TAB CONTENT */}
+        <div style={{ padding: isNarrow ? '14px' : '24px', backgroundColor: '#0A071B' }}>
           {loading ? (
             <div style={{ padding: '60px', textAlign: 'center', color: '#9A91A8' }}>
               <div
@@ -1264,11 +1303,12 @@ export default function Player360ProfileModal({
             </>
           )}
         </div>
+        </div>
 
         {/* 5. FOOTER */}
         <div
           style={{
-            padding: '16px 24px',
+            padding: isNarrow ? '12px 14px' : '16px 24px',
             backgroundColor: 'var(--bg-deep)',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
@@ -1276,6 +1316,7 @@ export default function Player360ProfileModal({
             justifyContent: 'space-between',
             fontSize: '12px',
             color: '#9A91A8',
+            flexShrink: 0,
           }}
         >
           <div>
@@ -1643,4 +1684,6 @@ export default function Player360ProfileModal({
       )}
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
