@@ -581,9 +581,17 @@ export default function HomePage({ initialTab = 'lobby' }) {
         {/* Page Inner Container */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
           {activeTab === 'deposit' ? (
-            <DepositView isEmbedded={true} onSelectTab={handleSelectTab} />
+            <DepositView
+              isEmbedded={true}
+              onSelectTab={handleSelectTab}
+              seedReadyAccounts={userGameAccounts}
+            />
           ) : activeTab === 'withdraw' ? (
-            <WithdrawView isEmbedded={true} onSelectTab={handleSelectTab} />
+            <WithdrawView
+              isEmbedded={true}
+              onSelectTab={handleSelectTab}
+              seedReadyAccounts={userGameAccounts}
+            />
           ) : activeTab === 'spin-wheel' ? (
             <SpinWheelView user={user} onSelectTab={handleSelectTab} />
           ) : activeTab === 'referral' ? (

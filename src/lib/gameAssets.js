@@ -1,3 +1,6 @@
+import { cleanGameTitle } from '@/lib/fastDiff';
+import { findAccountForGame, gameTitleKey, titlesMatch } from '@/lib/gameAccountMatch';
+
 /**
  * Instant static thumbnail lookup table for all games.
  * Avoids any delay or waiting for database/network queries.
@@ -144,22 +147,24 @@ export const ALL_PLATFORM_GAMES = [
 export function getAvailableGamePlatforms(adminGames = [], userAccounts = []) {
   const map = new Map();
 
-  // 1. First add admin games
   (adminGames || []).forEach((g) => {
     const title = (typeof g === 'string' ? g : g?.title || g?.name || '').trim();
-    if (title) map.set(title.toLowerCase(), title);
+    if (title) map.set(gameTitleKey(title), title);
+  });
+
+  (userAccounts || []).forEach((acc) => {
+    const title = cleanGameTitle(acc.gameTitle);
+    if (!title) return;
+    const key = gameTitleKey(title);
+    const existing = [...map.entries()].find(([k]) => titlesMatch(k, key));
+    if (!existing) map.set(key, title);
   });
 
   const list = Array.from(map.values());
 
-  // Sort: User's linked active accounts first, then alphabetical
   list.sort((a, b) => {
-    const aHas = (userAccounts || []).some(
-      (acc) => (acc.gameTitle || '').toLowerCase().trim() === a.toLowerCase().trim()
-    );
-    const bHas = (userAccounts || []).some(
-      (acc) => (acc.gameTitle || '').toLowerCase().trim() === b.toLowerCase().trim()
-    );
+    const aHas = !!findAccountForGame(userAccounts, a, adminGames);
+    const bHas = !!findAccountForGame(userAccounts, b, adminGames);
     if (aHas && !bHas) return -1;
     if (!aHas && bHas) return 1;
     return a.localeCompare(b);

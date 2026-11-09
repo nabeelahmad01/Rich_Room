@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import { getSessionUser } from '@/lib/auth';
+import { getPlayerSessionUser } from '@/lib/auth';
 import { cleanGameTitle } from '@/lib/fastDiff';
 
 /** Build lookups so player "My Game IDs" cards get the same thumbnail as admin catalog (by id or title). */
@@ -44,7 +44,7 @@ function resolveThumbnailFromLookup(lookup, gameTitle, gameId) {
 // GET game credentials (by player email)
 export async function GET(req) {
   try {
-    const session = await getSessionUser();
+    const session = await getPlayerSessionUser();
     const { searchParams } = new URL(req.url);
     const email = searchParams.get('email') || session?.email;
 

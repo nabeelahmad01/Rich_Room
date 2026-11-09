@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -28,8 +28,12 @@ import {
 import CyberNavbar from '@/components/navigation/CyberNavbar';
 import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
-import { diffSet } from '@/lib/fastDiff';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { getAvailableGamePlatforms } from '@/lib/gameAssets';
+import { findAccountForGame } from '@/lib/gameAccountMatch';
+import { readCachedGameAccountSeeds } from '@/lib/gameAccountsClientCache';
+import { loadPlayerGameAccountsForEmail } from '@/lib/playerGameAccountsClient';
+import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { compressImageFile } from '@/lib/imageCompress';
@@ -42,7 +46,7 @@ import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDat
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
 
-export default function DepositView({ isEmbedded = false, onSelectTab }) {
+export default function DepositView({ isEmbedded = false, onSelectTab, seedReadyAccounts = [] }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -79,7 +83,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
   const [transactionId, setTransactionId] = useState('');
   const [proofImage, setProofImage] = useState('');
   const [proofFileName, setProofFileName] = useState('');
-  const [selectedGame, setSelectedGame] = useState('');
+  const [selectedGame, setSelectedGame] = useState(() => {
+    if (seedReadyAccounts?.length) return cleanGameTitle(seedReadyAccounts[0].gameTitle);
+    const email = getCachedUser()?.email;
+    const cached = email ? readCachedGameAccountSeeds(email).active : [];
+    return cached.length ? cleanGameTitle(cached[0].gameTitle) : '';
+  });
   const [adminGames, setAdminGames] = useState(() => {
     const fromCatalog = readInitialGamesCatalog('all', '');
     if (fromCatalog?.length) return fromCatalog;
@@ -91,7 +100,11 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     }
     return [];
   });
-  const [userGameAccounts, setUserGameAccounts] = useState([]);
+  const [userGameAccounts, setUserGameAccounts] = useState(() => {
+    if (seedReadyAccounts?.length) return seedReadyAccounts;
+    const email = getCachedUser()?.email;
+    return email ? readCachedGameAccountSeeds(email).active : [];
+  });
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
   const [copiedField, setCopiedField] = useState(null);
@@ -123,6 +136,14 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
         diffSet(setUser, uData.user);
         if (uData.user.email) {
           setPlayerPaymentEmail((prev) => prev || uData.user.email);
+          loadPlayerGameAccountsForEmail(uData.user.email).then(({ active }) => {
+            if (!active.length) return;
+            diffSet(setUserGameAccounts, active);
+            setSelectedGame((prev) => {
+              if (findAccountForGame(active, prev, adminGames)) return cleanGameTitle(prev);
+              return cleanGameTitle(active[0].gameTitle);
+            });
+          });
         }
       } else if (!isSilent) {
         router.push('/login?redirect=/deposit');
@@ -190,39 +211,35 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  // 4. Fetch player active game accounts
-  const fetchGameAccounts = async () => {
+  const fetchGameAccounts = useCallback(async () => {
+    const email = user?.email || getCachedUser()?.email;
+    if (!email) return;
     try {
-      const res = await fetch('/api/game-accounts', { cache: 'no-store' });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.gameAccounts)) {
-        diffSet(setUserGameAccounts, data.gameAccounts);
-        if (data.gameAccounts.length > 0) {
-          setSelectedGame((prev) => {
-            const hasPrev = data.gameAccounts.some(
-              (a) => (a.gameTitle || '').toLowerCase().trim() === (prev || '').toLowerCase().trim()
-            );
-            return hasPrev ? prev : (data.gameAccounts[0].gameTitle || prev);
-          });
-        }
-      }
+      const { active } = await loadPlayerGameAccountsForEmail(email);
+      if (!active.length) return;
+      diffSet(setUserGameAccounts, active);
+      setSelectedGame((prev) => {
+        if (findAccountForGame(active, prev, adminGames)) return cleanGameTitle(prev);
+        return cleanGameTitle(active[0].gameTitle);
+      });
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [user?.email, adminGames]);
 
   const syncGamesCatalog = async (force = false) => {
     const games = await refreshAdminGamesCatalog({ force });
-    if (games?.length) {
-      setAdminGames(games);
-      setSelectedGame((prev) => {
-        if (prev && games.some((g) => (g.title || '').toLowerCase().trim() === (prev || '').toLowerCase().trim())) {
-          return prev;
-        }
-        return games[0]?.title || prev || '';
-      });
-    }
+    if (games?.length) setAdminGames(games);
   };
+
+  useEffect(() => {
+    if (!seedReadyAccounts?.length) return;
+    diffSet(setUserGameAccounts, seedReadyAccounts);
+    setSelectedGame((prev) => {
+      if (findAccountForGame(seedReadyAccounts, prev, adminGames)) return cleanGameTitle(prev);
+      return cleanGameTitle(seedReadyAccounts[0].gameTitle);
+    });
+  }, [seedReadyAccounts, adminGames]);
 
   useEffect(() => {
     // 0ms instant hydrate client cache
@@ -280,9 +297,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     const handleFocus = () => {
       fetchHistory(true);
       fetchUserAndSettings(true);
+      fetchGameAccounts();
       syncGamesCatalog(true);
       fetchGateways(true);
     };
+
+    const unsubscribeAccounts = subscribePlayerAccountsSync(() => fetchGameAccounts());
 
     const handleCashierRefresh = () => {
       fetchGateways(true);
@@ -296,13 +316,14 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
+      unsubscribeAccounts();
       clearInterval(pollInterval);
       window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
     };
-  }, []);
+  }, [fetchGameAccounts]);
 
   const handleCopy = (text, fieldName) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -404,9 +425,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
       const chosenMethodName = activeGateway.name || 'Payment';
       const chosenMethodId = activeGateway.id;
 
-      const linkedAccount = userGameAccounts.find(
-        (a) => (a.gameTitle || '').toLowerCase().trim() === selectedGame.toLowerCase().trim()
-      );
+      const linkedAccount = findAccountForGame(userGameAccounts, selectedGame, adminGames);
 
       const payload = {
         amount: finalAmount,
@@ -788,9 +807,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                     {(() => {
                       const displayGames = getAvailableGamePlatforms(adminGames, userGameAccounts);
                       const currentSelected = selectedGame || displayGames[0] || '';
-                      const linkedAcc = userGameAccounts.find(
-                        (a) => (a.gameTitle || '').toLowerCase().trim() === currentSelected.toLowerCase().trim()
-                      );
+                      const linkedAcc = findAccountForGame(userGameAccounts, currentSelected, adminGames);
 
                       return (
                         <>
@@ -818,9 +835,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab }) {
                             className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-heading font-bold text-sm focus:outline-none focus:border-cyan-400"
                           >
                             {displayGames.map((g) => {
-                              const match = userGameAccounts.find(
-                                (a) => (a.gameTitle || '').toLowerCase().trim() === g.toLowerCase().trim()
-                              );
+                              const match = findAccountForGame(userGameAccounts, g, adminGames);
                               return (
                                 <option key={g} value={g} className="bg-slate-900 text-white">
                                   {g} {match ? `— (Username: @${match.username})` : '— (No account yet)'}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -26,8 +26,12 @@ import CyberSidebar from '@/components/navigation/CyberSidebar';
 import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
-import { diffSet } from '@/lib/fastDiff';
+import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { getAvailableGamePlatforms } from '@/lib/gameAssets';
+import { findAccountForGame, listRedeemableGameTitles } from '@/lib/gameAccountMatch';
+import { readCachedGameAccountSeeds } from '@/lib/gameAccountsClientCache';
+import { loadPlayerGameAccountsForEmail } from '@/lib/playerGameAccountsClient';
+import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 import { readCashoutMethodsCache, writeCashoutMethodsCache } from '@/lib/paymentMethodsCache';
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
@@ -36,7 +40,7 @@ import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDat
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
 
-export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
+export default function WithdrawView({ isEmbedded = false, onSelectTab, seedReadyAccounts = [] }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -49,8 +53,17 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const [customAmount, setCustomAmount] = useState('50');
   const [method, setMethod] = useState('Cash App');
   const [recipientTag, setRecipientTag] = useState('');
-  const [selectedGame, setSelectedGame] = useState('');
-  const [userGameAccounts, setUserGameAccounts] = useState([]);
+  const [selectedGame, setSelectedGame] = useState(() => {
+    if (seedReadyAccounts?.length) return cleanGameTitle(seedReadyAccounts[0].gameTitle);
+    const email = getCachedUser()?.email;
+    const cached = email ? readCachedGameAccountSeeds(email).active : [];
+    return cached.length ? cleanGameTitle(cached[0].gameTitle) : '';
+  });
+  const [userGameAccounts, setUserGameAccounts] = useState(() => {
+    if (seedReadyAccounts?.length) return seedReadyAccounts;
+    const email = getCachedUser()?.email;
+    return email ? readCachedGameAccountSeeds(email).active : [];
+  });
 
   // Proof uploads (Required by rules)
   const [gameScreenshot, setGameScreenshot] = useState('');
@@ -89,9 +102,11 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
   const [loadingHistory, setLoadingHistory] = useState(
     () => !readSessionCache(CACHE_KEYS.WITHDRAW_HISTORY)?.length
   );
-  const [loadingAccounts, setLoadingAccounts] = useState(
-    () => !readSessionCache(CACHE_KEYS.GAMES_LIST)?.length
-  );
+  const [loadingAccounts, setLoadingAccounts] = useState(() => {
+    if (seedReadyAccounts?.length) return false;
+    const email = getCachedUser()?.email;
+    return !(email && readCachedGameAccountSeeds(email).active.length);
+  });
 
   // 1. Fetch current user
   const fetchUser = async (isSilent = false) => {
@@ -130,15 +145,17 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
 
   // 3. Fetch user active game credentials
   const fetchGameAccounts = async (isSilent = false) => {
+    const email = user?.email || getCachedUser()?.email;
+    if (!email) return;
     if (!isSilent && userGameAccounts.length === 0) setLoadingAccounts(true);
     try {
-      const res = await fetch('/api/game-accounts', { credentials: 'include', cache: 'no-store' });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.gameAccounts)) {
-        diffSet(setUserGameAccounts, data.gameAccounts);
-        if (data.gameAccounts.length > 0 && !data.gameAccounts.some(a => a.gameTitle?.toLowerCase().trim() === selectedGame.toLowerCase().trim())) {
-          setSelectedGame(data.gameAccounts[0].gameTitle || selectedGame);
-        }
+      const { active } = await loadPlayerGameAccountsForEmail(email);
+      if (active.length) {
+        diffSet(setUserGameAccounts, active);
+        setSelectedGame((prev) => {
+          if (findAccountForGame(active, prev, adminGames)) return cleanGameTitle(prev);
+          return cleanGameTitle(active[0].gameTitle);
+        });
       }
     } catch (err) {
       console.error(err);
@@ -149,16 +166,25 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
 
   const syncGamesCatalog = async (force = false) => {
     const games = await refreshAdminGamesCatalog({ force });
-    if (games?.length) {
-      setAdminGames(games);
-      setSelectedGame((prev) => {
-        if (prev && games.some((g) => (g.title || '').toLowerCase().trim() === prev.toLowerCase().trim())) {
-          return prev;
-        }
-        return games[0]?.title || prev || '';
-      });
-    }
+    if (games?.length) setAdminGames(games);
   };
+
+  const goToGameIds = useCallback(() => {
+    if (typeof onSelectTab === 'function') {
+      onSelectTab('my-game-ids', '/my-game-ids');
+      return;
+    }
+    router.push('/my-game-ids');
+  }, [onSelectTab, router]);
+
+  useEffect(() => {
+    if (!seedReadyAccounts?.length) return;
+    diffSet(setUserGameAccounts, seedReadyAccounts);
+    setSelectedGame((prev) => {
+      if (findAccountForGame(seedReadyAccounts, prev, adminGames)) return cleanGameTitle(prev);
+      return cleanGameTitle(seedReadyAccounts[0].gameTitle);
+    });
+  }, [seedReadyAccounts, adminGames]);
 
   const fetchCashoutMethods = async (silent = false) => {
     if (!silent && payoutMethods.length === 0) setLoadingPayoutMethods(true);
@@ -211,9 +237,12 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       if (!document.hidden) {
         fetchHistory(true);
         fetchUser(true);
+        fetchGameAccounts(true);
         fetchCashoutMethods(true);
       }
     }, 10000);
+
+    const unsubscribeAccounts = subscribePlayerAccountsSync(() => fetchGameAccounts(true));
 
     const handleUserSync = (e) => {
       if (e.detail) {
@@ -229,6 +258,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     const handleFocus = () => {
       fetchHistory(true);
       fetchUser(true);
+      fetchGameAccounts(true);
       syncGamesCatalog(true);
       fetchCashoutMethods(true);
     };
@@ -263,6 +293,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
+      unsubscribeAccounts();
       clearInterval(pollInterval);
       if (balanceChan) balanceChan.close();
       window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
@@ -339,9 +370,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
       return;
     }
 
-    const linkedAccount = userGameAccounts.find(
-      (a) => (a.gameTitle || '').toLowerCase().trim() === selectedGame.toLowerCase().trim()
-    );
+    const linkedAccount = findAccountForGame(userGameAccounts, selectedGame, adminGames);
 
     if (!linkedAccount) {
       setStatusMessage({
@@ -437,14 +466,11 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
     }
   };
 
-  const popularGames = (() => {
-    const fromCatalog = getAvailableGamePlatforms(adminGames, userGameAccounts);
-    if (fromCatalog.length > 0) return fromCatalog;
-    const fromAccounts = (userGameAccounts || [])
-      .map((a) => (a.gameTitle || '').trim())
-      .filter(Boolean);
-    return [...new Set(fromAccounts)];
-  })();
+  const cashoutGameOptions = useMemo(() => {
+    const owned = listRedeemableGameTitles(userGameAccounts);
+    if (owned.length) return owned;
+    return getAvailableGamePlatforms(adminGames, userGameAccounts);
+  }, [userGameAccounts, adminGames]);
 
   const selectedPayout = payoutMethods.find((m) => m.name === method);
 
@@ -502,9 +528,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                 {/* Game Select & Account Detection */}
                 <div>
                   {(() => {
-                    const linkedAcc = userGameAccounts.find(
-                      (a) => (a.gameTitle || '').toLowerCase().trim() === selectedGame.toLowerCase().trim()
-                    );
+                    const linkedAcc = findAccountForGame(userGameAccounts, selectedGame, adminGames);
 
                     return (
                       <>
@@ -529,22 +553,25 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                         <select
                           value={selectedGame}
                           onChange={(e) => setSelectedGame(e.target.value)}
+                          disabled={cashoutGameOptions.length === 0}
                           className={`w-full px-4 py-3 rounded-xl bg-slate-900 border text-white font-heading font-bold text-sm focus:outline-none transition-colors ${
                             linkedAcc
                               ? 'border-slate-700 focus:border-[var(--neon-cyan)]'
                               : 'border-red-500/80 focus:border-red-400'
                           }`}
                         >
-                          {popularGames.map((g) => {
-                            const acc = userGameAccounts.find(
-                              (a) => (a.gameTitle || '').toLowerCase().trim() === g.toLowerCase().trim()
-                            );
-                            return (
-                              <option key={g} value={g} className="bg-slate-900 text-white">
-                                {g} {acc ? `— (Username: @${acc.username})` : '— (No account)'}
-                              </option>
-                            );
-                          })}
+                          {cashoutGameOptions.length === 0 ? (
+                            <option value="">No game IDs yet</option>
+                          ) : (
+                            cashoutGameOptions.map((g) => {
+                              const acc = findAccountForGame(userGameAccounts, g, adminGames);
+                              return (
+                                <option key={g} value={g} className="bg-slate-900 text-white">
+                                  {g} {acc ? `— @${acc.username}` : ''}
+                                </option>
+                              );
+                            })
+                          )}
                         </select>
 
                         {linkedAcc ? (
@@ -566,7 +593,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab }) {
                               </p>
                               <button
                                 type="button"
-                                onClick={() => router.push('/games')}
+                                onClick={goToGameIds}
                                 className="text-[11px] font-bold text-cyan-300 underline hover:text-cyan-200 mt-1 cursor-pointer block"
                               >
                                 Request a {selectedGame} Account Under Games Hub ➔
