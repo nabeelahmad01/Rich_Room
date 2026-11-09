@@ -77,3 +77,19 @@ export function mergeAccountRequestsOptimistic(prev, incoming) {
     return inc;
   });
 }
+
+/** Admin UI: show a new row before the next API poll (cross-tab or optimistic). */
+export function prependAccountRequestIfNew(prev, row) {
+  if (!row) return prev || [];
+  const id = getEntityId(row);
+  const list = Array.isArray(prev) ? prev : [];
+  if (!id) {
+    const key = `${(row.userEmail || '').toLowerCase()}|${(row.gameTitle || '').toLowerCase()}`;
+    if (list.some((r) => accountReqNeedsAction(r) && `${(r.userEmail || '').toLowerCase()}|${(r.gameTitle || '').toLowerCase()}` === key)) {
+      return list;
+    }
+    return [row, ...list];
+  }
+  if (list.some((r) => getEntityId(r) === id)) return list;
+  return [row, ...list];
+}

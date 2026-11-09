@@ -27,6 +27,7 @@ import CyberMobileBottomNav from '@/components/navigation/CyberMobileBottomNav';
 import CyberFooter from '@/components/common/CyberFooter';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer, readCachedPlayer } from '@/lib/playerSessionCache';
+import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 
 function ProvisioningContent() {
   const router = useRouter();
@@ -221,10 +222,12 @@ function ProvisioningContent() {
     }
 
     pollStatus();
+    const unsubscribe = subscribePlayerAccountsSync(() => pollStatus());
     // Fast 1.5-second polling interval for real-time unlock
     const pollInterval = setInterval(pollStatus, 1500);
     return () => {
       isMounted = false;
+      unsubscribe();
       clearInterval(pollInterval);
     };
   }, [user, requestId, gameParam, isApproved]);

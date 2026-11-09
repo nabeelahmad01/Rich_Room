@@ -326,9 +326,23 @@ export async function POST(req) {
       },
     });
 
+    const requestId = res.insertedId.toString();
     return NextResponse.json({
       success: true,
-      requestId: res.insertedId.toString(),
+      requestId,
+      request: {
+        id: requestId,
+        _id: requestId,
+        userEmail,
+        userName,
+        gameTitle,
+        gameId,
+        gameAccountUsername: resolvedGameUsername || '',
+        requestType,
+        transferAmount,
+        status: 'PENDING',
+        createdAt: newRequest.createdAt,
+      },
       message: requestType === 'COIN_LOAD'
         ? `Load request for ${gameTitle} submitted! $${transferAmount.toFixed(2)} SC has been deducted from your wallet.`
         : `Account request for ${gameTitle} submitted! Staff will issue your credentials shortly.`,

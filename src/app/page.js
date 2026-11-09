@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Standalone Player Views for 0ms instant tab switching
@@ -37,6 +37,8 @@ import KycModal from '@/components/modals/KycModal';
 import { diffSet, areEqual, cleanGameTitle } from '@/lib/fastDiff';
 import { gamesCacheKey, readGamesFromSession, writeGamesToSession } from '@/lib/gamesClientCache';
 import { broadcastPlayerLogout } from '@/lib/playerSessionCache';
+import { subscribePlayerAccountsSync, broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
+import { broadcastStaffNewRequest } from '@/lib/staffAlertsSync';
 import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
@@ -129,16 +131,24 @@ export default function HomePage({ initialTab = 'lobby' }) {
 
   // Games & Filter state with curated fallback (0ms SSR matching)
   const [games, setGames] = useState(DEFAULT_FALLBACK_GAMES);
-  const [category, setCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const category = 'all';
   const [loadingGames, setLoadingGames] = useState(false);
   const [userGameAccounts, setUserGameAccounts] = useState([]);
   const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
+  const [requestToast, setRequestToast] = useState(null);
+  const userEmailRef = useRef(null);
+  const accountsReadyInitRef = useRef(false);
+  const prevPendingTitlesRef = useRef(new Set());
 
-  const loadUserGameAccounts = async (userEmail) => {
+  const titleKey = (t) => cleanGameTitle(t || '').toLowerCase().trim();
+
+  const loadUserGameAccounts = useCallback(async (userEmail) => {
     if (!userEmail) {
       setUserGameAccounts([]);
       setPendingAccountRequests([]);
+      prevPendingTitlesRef.current = new Set();
+      accountsReadyInitRef.current = false;
       return;
     }
     try {
@@ -153,11 +163,33 @@ export default function HomePage({ initialTab = 'lobby' }) {
           ...r,
           gameTitle: cleanGameTitle(r.gameTitle),
         }));
+
+        const pendingTitles = new Set(cleanRequests.map((r) => titleKey(r.gameTitle)));
+        if (accountsReadyInitRef.current) {
+          for (const key of prevPendingTitlesRef.current) {
+            if (!pendingTitles.has(key)) {
+              const acc = cleanAccounts.find((a) => titleKey(a.gameTitle) === key);
+              if (acc) {
+                playTune('bell', 0.65);
+                setRequestToast({
+                  type: 'success',
+                  title: 'Game ID Ready! 🎮',
+                  message: `Your ${acc.gameTitle} credentials are ready. Username: ${acc.username}`,
+                });
+                setTimeout(() => setRequestToast(null), 8000);
+              }
+            }
+          }
+        } else {
+          accountsReadyInitRef.current = true;
+        }
+        prevPendingTitlesRef.current = pendingTitles;
+
         diffSet(setUserGameAccounts, cleanAccounts);
         diffSet(setPendingAccountRequests, cleanRequests);
       }
     } catch {}
-  };
+  }, []);
 
   // Load User Session (Deduplicated via authClient)
   const loadUser = async () => {
@@ -252,8 +284,17 @@ export default function HomePage({ initialTab = 'lobby' }) {
     };
 
     const handleAccountSync = () => {
-      loadUser();
+      const email = userEmailRef.current;
+      if (email) loadUserGameAccounts(email);
+      else loadUser();
     };
+
+    const unsubscribeAccounts = subscribePlayerAccountsSync((detail) => {
+      handleAccountSync();
+      if (detail?.status === 'READY' && detail?.gameTitle) {
+        playTune('bell', 0.5);
+      }
+    });
 
     const handleFocus = () => {
       if (!document.hidden) {
@@ -285,6 +326,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
+      unsubscribeAccounts();
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('accountRequestUpdated', handleAccountSync);
       window.removeEventListener('focus', handleFocus);
@@ -294,19 +336,22 @@ export default function HomePage({ initialTab = 'lobby' }) {
         try { bc.close(); } catch {}
       }
     };
-  }, []);
+  }, [loadUserGameAccounts]);
+
+  useEffect(() => {
+    userEmailRef.current = user?.email || null;
+  }, [user?.email]);
 
   useEffect(() => {
     if (user?.email) {
       loadUserGameAccounts(user.email);
+      const pollMs = pendingAccountRequests.length > 0 ? 2500 : 10000;
       const interval = setInterval(() => {
-        if (!document.hidden) {
-          loadUserGameAccounts(user.email);
-        }
-      }, 10000);
+        if (!document.hidden) loadUserGameAccounts(user.email);
+      }, pollMs);
       return () => clearInterval(interval);
     }
-  }, [user?.email]);
+  }, [user?.email, pendingAccountRequests.length, loadUserGameAccounts]);
 
   useEffect(() => {
     loadGames();
@@ -317,6 +362,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
     setUser(null);
     setUserGameAccounts([]);
     setPendingAccountRequests([]);
+    prevPendingTitlesRef.current = new Set();
+    accountsReadyInitRef.current = false;
     broadcastPlayerLogout();
   };
 
@@ -334,8 +381,6 @@ export default function HomePage({ initialTab = 'lobby' }) {
       setActiveExternalGame(game);
     }
   };
-
-  const [requestToast, setRequestToast] = useState(null);
 
   const handleRequestGame = async (game = null) => {
     if (!user) {
@@ -393,6 +438,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
       ...prev.filter((p) => (p.gameTitle || '').toLowerCase().trim() !== cleanTitle),
       { gameTitle, status: 'PENDING', createdAt: new Date() },
     ]);
+    prevPendingTitlesRef.current.add(titleKey(gameTitle));
+    accountsReadyInitRef.current = true;
 
     // 0ms Optimistic UI update: Instantly show success toast and play audio
     playTune('bell', 0.6);
@@ -420,38 +467,16 @@ export default function HomePage({ initialTab = 'lobby' }) {
 
       if (res.ok && data.success) {
 
-        // Instant cross-tab broadcast so admin tab receives alert in 0ms!
-        try {
-          const ch = new BroadcastChannel('paradise_staff_alerts');
-          ch.postMessage({
-            type: 'NEW_REQUEST',
-            category: 'ACCOUNT_CREATION',
-            requestId: data.requestId,
-            request: data.request,
-            gameTitle,
-            userName: user.username,
-            userEmail: user.email,
-            timestamp: Date.now(),
-          });
-          ch.close();
-        } catch {}
-        try {
-          localStorage.setItem('paradise_staff_event', JSON.stringify({
-            type: 'NEW_REQUEST',
-            category: 'ACCOUNT_CREATION',
-            requestId: data.requestId,
-            request: data.request,
-            gameTitle,
-            userName: user.username,
-            userEmail: user.email,
-            time: Date.now(),
-          }));
-        } catch {}
+        broadcastStaffNewRequest({
+          requestId: data.requestId,
+          request: data.request,
+          gameTitle,
+          userName: user.username,
+          userEmail: user.email,
+        });
 
         loadUserGameAccounts(user.email);
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('accountRequestUpdated'));
-        }
+        broadcastPlayerAccountsUpdated({ gameTitle, status: 'PENDING' });
       } else {
         if (data.alreadyHasAccount) {
           loadUserGameAccounts(user.email);
@@ -482,15 +507,6 @@ export default function HomePage({ initialTab = 'lobby' }) {
       setRequestToast((curr) => (curr ? null : curr));
     }, 6000);
   };
-
-  const categories = [
-    { id: 'all', label: 'All Games', icon: '🌟' },
-    { id: 'sweeps', label: 'Web Sweeps', icon: '🎰' },
-    { id: 'fish', label: 'Fish Arcade', icon: '🐟' },
-    { id: 'slots', label: 'Cyber Slots', icon: '⚡' },
-    { id: 'crash', label: 'Crash Matrix', icon: '🚀' },
-    { id: 'table', label: 'Table Games', icon: '🃏' },
-  ];
 
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] text-white flex flex-col">
@@ -609,26 +625,12 @@ export default function HomePage({ initialTab = 'lobby' }) {
                 </div>
               </div>
 
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                {categories.map((cat) => {
-                  const isSelected = category === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setCategory(cat.id)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-[var(--neon-cyan)] to-blue-500 text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]'
-                          : 'bg-slate-900/80 border border-slate-800 text-slate-300 hover:border-slate-700'
-                      }`}
-                    >
-                      <span>{cat.icon}</span>
-                      <span>{cat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="text-sm font-heading font-bold text-white">
+                All Available Games
+                {!loadingGames && games.length > 0 && (
+                  <span className="text-slate-500 font-mono font-normal text-xs ml-1.5">({games.length})</span>
+                )}
+              </p>
 
               {/* Games Grid */}
               {loadingGames && games.length === 0 ? (
@@ -649,7 +651,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
                 <div className="py-16 text-center space-y-2 text-slate-400">
                   <Gamepad2 size={36} className="mx-auto text-slate-600" />
                   <p className="font-heading text-sm text-white">No games matched your search.</p>
-                  <p className="text-xs">Try selecting a different category or clearing the search query.</p>
+                  <p className="text-xs">Clear the search box to see every game again.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
@@ -733,26 +735,12 @@ export default function HomePage({ initialTab = 'lobby' }) {
                   </div>
                 </div>
 
-                {/* Category Filter Pills */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                  {categories.map((cat) => {
-                    const isSelected = category === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setCategory(cat.id)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-[var(--neon-cyan)] to-blue-500 text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]'
-                            : 'bg-slate-900/80 border border-slate-800 text-slate-300 hover:border-slate-700'
-                        }`}
-                      >
-                        <span>{cat.icon}</span>
-                        <span>{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="text-sm font-heading font-bold text-white">
+                  All Available Games
+                  {!loadingGames && games.length > 0 && (
+                    <span className="text-slate-500 font-mono font-normal text-xs ml-1.5">({games.length})</span>
+                  )}
+                </p>
 
                 {/* Games Grid */}
                 {loadingGames && games.length === 0 ? (
@@ -773,7 +761,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
                   <div className="py-16 text-center space-y-2 text-slate-400">
                     <Gamepad2 size={36} className="mx-auto text-slate-600" />
                     <p className="font-heading text-sm text-white">No games matched your search.</p>
-                    <p className="text-xs">Try selecting a different category or clearing the search query.</p>
+                    <p className="text-xs">Clear the search box to see every game again.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
@@ -894,6 +882,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
         isOpen={gameRequestModal.open}
         onClose={() => setGameRequestModal({ open: false, initialGame: null })}
         initialGame={gameRequestModal.initialGame}
+        catalogGames={games}
         user={user}
         onRequestCreated={loadUser}
         onOpenAuth={(tab) => setAuthModal({ open: true, tab })}

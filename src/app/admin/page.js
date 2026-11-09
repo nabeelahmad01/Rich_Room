@@ -85,7 +85,9 @@ import {
   mergeDepositsOptimistic,
   mergeRedemptionsOptimistic,
   mergeAccountRequestsOptimistic,
+  prependAccountRequestIfNew,
 } from '@/lib/mergeAdminLists';
+import { broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
 
 export default function AdminPortal({ initialTab }) {
   const [user, setUser] = useState(null);
@@ -581,7 +583,7 @@ export default function AdminPortal({ initialTab }) {
   const [coinLoadRequests, setCoinLoadRequests] = useState([]);
 
   const fetchAccountRequests = () => {
-    fetch(`/api/account-requests?type=ACCOUNT_CREATION&status=${accountReqFilter}`, { credentials: 'include' })
+    fetch(`/api/account-requests?type=ACCOUNT_CREATION&status=${accountReqFilter}`, { credentials: 'include', cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
         if (d.success) {
@@ -589,6 +591,17 @@ export default function AdminPortal({ initialTab }) {
         }
       })
       .catch(() => { });
+  };
+
+  const pullLiveAccountRequests = () => {
+    fetch('/api/account-requests?type=ACCOUNT_CREATION&status=all', { credentials: 'include', cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) {
+          setAccountRequests((prev) => mergeAccountRequestsOptimistic(prev, d.accountRequests || []));
+        }
+      })
+      .catch(() => {});
   };
 
   const handleOpenApproveModal = (req) => {
@@ -642,6 +655,11 @@ export default function AdminPortal({ initialTab }) {
         fetchAccountRequests();
       } else {
         syncRequestsAndAlerts();
+        broadcastPlayerAccountsUpdated({
+          gameTitle: targetReq.gameTitle,
+          userEmail: targetReq.userEmail || targetReq.email,
+          status: 'READY',
+        });
       }
     } catch (e) {
       console.error(e);
@@ -1145,8 +1163,24 @@ export default function AdminPortal({ initialTab }) {
       if (payload.type === 'NEW_REQUEST') {
         unlockAudioContext();
         playAdminChime();
-        const gTitle = payload.gameTitle || 'Game';
-        const uName = payload.userName || 'Player';
+        const gTitle = payload.gameTitle || payload.request?.gameTitle || 'Game';
+        const uName = payload.userName || payload.request?.userName || 'Player';
+        const optimistic =
+          payload.request ||
+          {
+            id: payload.requestId || `opt-${payload.timestamp || Date.now()}`,
+            userEmail: payload.userEmail || payload.request?.userEmail,
+            userName: uName,
+            gameTitle: gTitle,
+            requestType: payload.category || 'ACCOUNT_CREATION',
+            status: 'PENDING',
+            transferAmount: 0,
+            createdAt: new Date(payload.timestamp || Date.now()),
+          };
+        setAccountRequests((prev) => prependAccountRequestIfNew(prev, optimistic));
+        if (optimistic.id && !String(optimistic.id).startsWith('opt-')) {
+          seenRequestIdsRef.current.add(optimistic.id);
+        }
         setActiveAlertToast({
           type: 'account',
           title: '🎯 New Game ID Request!',
@@ -1154,6 +1188,7 @@ export default function AdminPortal({ initialTab }) {
           subtext: 'Tap to review & issue credentials',
           targetTab: 'account_requests',
         });
+        pullLiveAccountRequests();
         syncRequestsAndAlerts();
       } else if (payload.type === 'NEW_FINANCE_REDEMPTION') {
         unlockAudioContext();
@@ -1245,7 +1280,17 @@ export default function AdminPortal({ initialTab }) {
     };
   }, [user]);
 
-  // Run persistent poller every 3.5 seconds (BroadcastChannel handles instant cross-tab alerts)
+  // Game ID queue: lightweight poll (~0.8s) so cross-device requests appear without manual refresh
+  useEffect(() => {
+    if (!user) return;
+    pullLiveAccountRequests();
+    const fast = setInterval(() => {
+      if (!document.hidden) pullLiveAccountRequests();
+    }, 600);
+    return () => clearInterval(fast);
+  }, [user]);
+
+  // Full desk sync (deposits, chat, badges) — BroadcastChannel gives 0ms for same-browser player tab
   useEffect(() => {
     if (!user) return;
     syncRequestsAndAlerts();
@@ -1253,7 +1298,7 @@ export default function AdminPortal({ initialTab }) {
       if (!document.hidden) {
         syncRequestsAndAlerts();
       }
-    }, 3500);
+    }, 2000);
 
     const handleFocus = () => {
       syncRequestsAndAlerts();

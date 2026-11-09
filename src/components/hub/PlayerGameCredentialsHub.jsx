@@ -29,6 +29,8 @@ import {
   readGameAccountsCache,
   writeGameAccountsCache,
 } from '@/lib/gameAccountsClientCache';
+import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
+import { broadcastStaffNewRequest } from '@/lib/staffAlertsSync';
 
 const DEFAULT_GAME_THUMB = '/images/vegas-777.svg';
 
@@ -224,17 +226,20 @@ export default function PlayerGameAccountsHub({
         setLoading(true);
       }
       fetchAccountsAndRequests(activeAccounts.length > 0 || pendingRequests.length > 0);
+      const pollMs = pendingRequests.length > 0 ? 2500 : 5000;
       const interval = setInterval(() => {
         if (!document.hidden) fetchAccountsAndRequests(true);
-      }, 4000);
+      }, pollMs);
 
       const handleFocus = () => fetchAccountsAndRequests(true);
       window.addEventListener('focus', handleFocus);
       document.addEventListener('visibilitychange', handleFocus);
       window.addEventListener('accountRequestUpdated', handleFocus);
+      const unsubscribe = subscribePlayerAccountsSync(() => handleFocus());
 
       return () => {
         clearInterval(interval);
+        unsubscribe();
         window.removeEventListener('focus', handleFocus);
         document.removeEventListener('visibilitychange', handleFocus);
         window.removeEventListener('accountRequestUpdated', handleFocus);
@@ -246,7 +251,7 @@ export default function PlayerGameAccountsHub({
       setLoading(false);
       setHasFetchedOnce(false);
     }
-  }, [user?.email]);
+  }, [user?.email, pendingRequests.length]);
 
   const handleCopy = (text, key) => {
     navigator.clipboard?.writeText(text);
@@ -324,28 +329,13 @@ export default function PlayerGameAccountsHub({
       setRequestingGameId(null);
 
       if (data.success) {
-        // Instant cross-tab broadcast so admin tab receives alert in 0ms!
-        try {
-          const ch = new BroadcastChannel('paradise_staff_alerts');
-          ch.postMessage({
-            type: 'NEW_REQUEST',
-            category: 'ACCOUNT_CREATION',
-            gameTitle,
-            userName: user.username,
-            userEmail: user.email,
-            timestamp: Date.now(),
-          });
-          ch.close();
-        } catch {}
-        try {
-          localStorage.setItem('paradise_staff_event', JSON.stringify({
-            type: 'NEW_REQUEST',
-            category: 'ACCOUNT_CREATION',
-            gameTitle,
-            userName: user.username,
-            time: Date.now(),
-          }));
-        } catch {}
+        broadcastStaffNewRequest({
+          requestId: data.requestId,
+          request: data.request,
+          gameTitle,
+          userName: user.username,
+          userEmail: user.email,
+        });
 
         router.push(`/game-accounts/provisioning?requestId=${data.requestId || ''}&game=${encodeURIComponent(gameTitle)}`);
       } else {
