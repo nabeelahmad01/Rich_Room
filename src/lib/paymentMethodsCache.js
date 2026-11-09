@@ -1,27 +1,32 @@
+import { readPaymentMethodsInstant } from '@/lib/paymentMethodsClient';
+import { normalizeActiveCashoutMethods } from '@/lib/cashoutMethodsNormalize';
 import {
-  CACHE_KEYS,
-  readLocalCache,
+  writeSessionCache,
   writeLocalCache,
+  readLocalCache,
+  CACHE_KEYS,
 } from '@/lib/playerDataCache';
 
 const TTL_MS = 30 * 60 * 1000;
 
 export function readPaymentMethodsCache() {
-  const methods = readLocalCache(CACHE_KEYS.PAYMENT_METHODS, '', TTL_MS);
-  return Array.isArray(methods) && methods.length > 0 ? methods : null;
+  return readPaymentMethodsInstant();
 }
 
 export function writePaymentMethodsCache(methods) {
   if (!Array.isArray(methods) || methods.length === 0) return;
-  writeLocalCache(CACHE_KEYS.PAYMENT_METHODS, methods, '', TTL_MS);
+  writeSessionCache(CACHE_KEYS.PAYMENT_METHODS, methods);
+  writeLocalCache(CACHE_KEYS.PAYMENT_METHODS, methods);
 }
 
 export function readCashoutMethodsCache() {
   const methods = readLocalCache(CACHE_KEYS.CASHOUT_METHODS, '', TTL_MS);
-  return Array.isArray(methods) && methods.length > 0 ? methods : null;
+  if (!Array.isArray(methods) || methods.length === 0) return null;
+  return normalizeActiveCashoutMethods(methods);
 }
 
 export function writeCashoutMethodsCache(methods) {
-  if (!Array.isArray(methods) || methods.length === 0) return;
-  writeLocalCache(CACHE_KEYS.CASHOUT_METHODS, methods, '', TTL_MS);
+  const normalized = normalizeActiveCashoutMethods(methods);
+  if (!normalized.length) return;
+  writeLocalCache(CACHE_KEYS.CASHOUT_METHODS, normalized, '', TTL_MS);
 }

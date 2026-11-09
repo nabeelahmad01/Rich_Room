@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
+import { publishCoinDesk } from '@/lib/realtimePublish';
 import { getSessionUser, ROLES, safeIdFilter } from '@/lib/auth';
 
 // GET Coins Allotment Tasks Queue
@@ -115,6 +116,8 @@ export async function PUT(req) {
 
     await col.updateOne(filter, { $set: updateFields });
 
+    publishCoinDesk({ action: 'update', status, id });
+
     return NextResponse.json({ success: true, message: `Task updated to ${status || 'updated'}` });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -143,6 +146,11 @@ export async function POST(req) {
     };
 
     const res = await col.insertOne(newDoc);
+    publishCoinDesk({
+      action: 'create',
+      userEmail: newDoc.userEmail,
+      id: res.insertedId.toString(),
+    });
     return NextResponse.json({ success: true, id: res.insertedId.toString() });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

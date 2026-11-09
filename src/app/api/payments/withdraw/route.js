@@ -4,6 +4,7 @@ import { getSessionUser, ROLES, getUserFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { sendEmail } from '@/lib/email';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
+import { publishFinanceWithdraw } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
 import { resolveMinCashoutFromSettings } from '@/lib/cashoutPolicy';
 
@@ -305,6 +306,14 @@ export async function POST(req) {
       },
     });
 
+    publishFinanceWithdraw({
+      action: 'created',
+      status: 'pending',
+      userEmail: user.email,
+      userId: user._id.toString(),
+      redemptionId: insertRes.insertedId.toString(),
+    });
+
     return NextResponse.json({
       success: true,
       message: `Cashout request for $${redeemAmount.toFixed(2)} submitted! It has been routed to Coin Allotment for game screenshot verification.`,
@@ -390,6 +399,14 @@ export async function PUT(req) {
         type: 'withdraw_coin_approved',
       });
 
+      publishFinanceWithdraw({
+        action: 'coin_approve',
+        status: 'pending',
+        userEmail: user?.email,
+        userId: redemption.userId,
+        redemptionId,
+      });
+
       return NextResponse.json({
         success: true,
         message: 'Game score verified! Cashout passed to Finance Cashier for payout dispatch.',
@@ -439,6 +456,14 @@ export async function PUT(req) {
         title: 'Cashout Rejected by Coin Desk ⚠️',
         message: `Your cashout request ($${redemption.amount} SC) was not approved by Coin Operations: ${reason}.`,
         type: 'withdraw_rejected_by_coin',
+      });
+
+      publishFinanceWithdraw({
+        action: 'coin_reject',
+        status: 'rejected_by_coin',
+        userEmail: user?.email,
+        userId: redemption.userId,
+        redemptionId,
       });
 
       return NextResponse.json({
@@ -507,6 +532,14 @@ export async function PUT(req) {
         data: { amount: String(withdrawAmount), newBalance: String(currentSC) },
       });
 
+      publishFinanceWithdraw({
+        action: 'approve',
+        status: 'approved',
+        userEmail: user?.email,
+        userId: redemption.userId,
+        redemptionId,
+      });
+
       return NextResponse.json({
         success: true,
         newBalance: currentSC,
@@ -558,6 +591,14 @@ export async function PUT(req) {
         title: 'Cashout Update ⚠️',
         message: `Your cashout request ($${redemption.amount} SC) could not be processed: ${reason}.`,
         type: 'withdraw_rejected',
+      });
+
+      publishFinanceWithdraw({
+        action: 'reject',
+        status: 'rejected',
+        userEmail: user?.email,
+        userId: redemption.userId,
+        redemptionId,
       });
 
       return NextResponse.json({

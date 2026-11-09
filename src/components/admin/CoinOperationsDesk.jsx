@@ -23,9 +23,19 @@ import {
 import { diffSet } from '@/lib/fastDiff';
 import { mergeAccountRequestsOptimistic, mergeRedemptionsOptimistic } from '@/lib/mergeAdminLists';
 
-export default function CoinOperationsDesk({ sessionUser }) {
+export default function CoinOperationsDesk({
+  sessionUser,
+  navigateSection = null,
+  onNavigateSectionApplied,
+}) {
   const [activeSection, setActiveSection] = useState('loads'); // 'loads' | 'cashouts'
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (navigateSection !== 'loads' && navigateSection !== 'cashouts') return;
+    setActiveSection(navigateSection);
+    onNavigateSectionApplied?.();
+  }, [navigateSection, onNavigateSectionApplied]);
 
   // Load Requests State (from /api/account-requests)
   const [loadRequests, setLoadRequests] = useState([]);
@@ -57,8 +67,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
     try {
       const fetchOpts = { credentials: 'include', cache: 'no-store' };
       const [loadsRes, cashoutsRes] = await Promise.all([
-        fetch('/api/account-requests?type=COIN_LOAD&status=all', fetchOpts),
-        fetch('/api/payments/withdraw?status=all', fetchOpts),
+        fetch('/api/account-requests?type=COIN_LOAD&status=all&lightweight=true', fetchOpts),
+        fetch('/api/payments/withdraw?status=all&lightweight=true', fetchOpts),
       ]);
 
       const loadsData = await loadsRes.json();
@@ -82,7 +92,10 @@ export default function CoinOperationsDesk({ sessionUser }) {
     // Silent background polling (4s) for live desk operations
     const interval = setInterval(() => {
       if (!document.hidden) fetchData(true);
-    }, 4000);
+    }, 2000);
+
+    const onDesk = () => fetchData(true);
+    window.addEventListener('paradise-admin-desk-sync', onDesk);
 
     // Cross-tab broadcast listener for instant (0ms) cashout detection
     let channel = null;
@@ -109,6 +122,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('paradise-admin-desk-sync', onDesk);
       if (channel) channel.close();
       window.removeEventListener('storage', handleStorage);
     };
@@ -192,10 +206,8 @@ export default function CoinOperationsDesk({ sessionUser }) {
     const p = approveLoadModal.password.trim() || 'VegasWin777!';
     const amt = Number(approveLoadModal.transferAmount);
 
-    // 1. Optimistic state update (0ms)
-    setLoadRequests((prev) =>
-      prev.map((r) => (r.id === targetItem.id ? { ...r, status: 'READY', gameAccountUsername: u } : r))
-    );
+    // 1. Optimistic — drop from pending queue instantly
+    setLoadRequests((prev) => prev.filter((r) => r.id !== targetItem.id));
     // 2. Dismiss modal immediately (0ms)
     setApproveLoadModal({ open: false, item: null, username: '', password: '', transferAmount: 0 });
     showAlert('success', 'Game load approved!');
@@ -247,10 +259,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
     const targetItem = rejectLoadModal.item;
     const reason = rejectLoadModal.reason.trim();
 
-    // 1. Optimistic state update (0ms)
-    setLoadRequests((prev) =>
-      prev.map((r) => (r.id === targetItem.id ? { ...r, status: 'REJECTED', rejectionReason: reason } : r))
-    );
+    setLoadRequests((prev) => prev.filter((r) => r.id !== targetItem.id));
     // 2. Dismiss modal immediately (0ms)
     setRejectLoadModal({ open: false, item: null, reason: '' });
     showAlert('success', 'Game load request rejected.');
@@ -291,10 +300,7 @@ export default function CoinOperationsDesk({ sessionUser }) {
   const handleApproveCashout = async (redemptionId) => {
     const targetItem = cashoutRequests.find((c) => c.id === redemptionId);
 
-    // 1. Optimistic state update (0ms)
-    setCashoutRequests((prev) =>
-      prev.map((c) => (c.id === redemptionId ? { ...c, stage: 'finance_payout', coinApprovedBy: 'Coin Desk' } : c))
-    );
+    setCashoutRequests((prev) => prev.filter((c) => c.id !== redemptionId));
     showAlert('success', '🏆 Game screenshot verified! Request forwarded to Finance Ledger for payout.');
 
     try {

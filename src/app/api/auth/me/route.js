@@ -6,6 +6,41 @@ import { getDb } from '@/lib/mongodb';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const STAFF_ROLES = new Set([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.OPERATION_ADMIN,
+  ROLES.FINANCIAL_MANAGER,
+  ROLES.COIN_MANAGER,
+  ROLES.CHAT_SUPPORT,
+  'financial_admin',
+  'coins_admin',
+  'support_admin',
+]);
+
+function staffFromSession(session) {
+  const role = session?.role;
+  if (!role || !STAFF_ROLES.has(role)) return null;
+  return {
+    userId: session.userId,
+    username: session.username,
+    email: session.email,
+    role,
+    balanceSC: 0,
+    balanceGC: 0,
+    frozenBalance: 0,
+    availableSC: 0,
+    balance: 0,
+    kycStatus: 'approved',
+    referralCode: '',
+    referredBy: null,
+    totalDeposited: 0,
+    welcomeBonusClaimed: false,
+    affiliateCommissionsUnpaid: 0,
+    affiliateCommissionsEarned: 0,
+  };
+}
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -15,6 +50,11 @@ export async function GET(req) {
     const session = await getSessionUser(isAdminQuery ? 'admin' : 'player');
     if (!session || !session.userId) {
       return NextResponse.json({ authenticated: false, user: null });
+    }
+
+    const staffFast = isAdminQuery ? staffFromSession(session) : null;
+    if (staffFast) {
+      return NextResponse.json({ authenticated: true, user: staffFast });
     }
 
     const db = await getDb();

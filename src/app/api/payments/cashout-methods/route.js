@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
+import { publishGatewaysUpdated } from '@/lib/realtimePublish';
+import { normalizeActiveCashoutMethods } from '@/lib/cashoutMethodsNormalize';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -9,27 +11,6 @@ export const revalidate = 0;
 let cachedCashout = null;
 let cacheTime = 0;
 const CACHE_TTL_MS = 0; // Always fresh so admin payout toggles apply immediately
-
-const DEFAULT_CASHOUT_METHODS = [
-  { methodId: 'cashapp', name: 'Cash App', placeholder: 'e.g. $YourCashtag', isActive: true, minCashout: 1, order: 1 },
-  { methodId: 'crypto-btc', name: 'Bitcoin (BTC)', placeholder: 'e.g. bc1q... wallet address', isActive: true, minCashout: 1, order: 2 },
-  { methodId: 'crypto-usdt', name: 'USDT (TRC20)', placeholder: 'e.g. TX... TRC20 address', isActive: false, minCashout: 1, order: 3 },
-  { methodId: 'venmo', name: 'Venmo', placeholder: 'e.g. @YourVenmoHandle', isActive: false, minCashout: 1, order: 4 },
-  { methodId: 'paypal', name: 'PayPal', placeholder: 'e.g. your-paypal@domain.com', isActive: false, minCashout: 1, order: 5 },
-  { methodId: 'zelle', name: 'Zelle Pay', placeholder: 'e.g. phone number or email', isActive: false, minCashout: 1, order: 6 },
-];
-
-async function ensureSeedCashout(col) {
-  const count = await col.countDocuments();
-  if (count === 0) {
-    const seed = DEFAULT_CASHOUT_METHODS.map(m => ({
-      ...m,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
-    await col.insertMany(seed);
-  }
-}
 
 // GET: Cashout methods (active for players, all for admin if ?all=true)
 export async function GET(req) {
@@ -44,20 +25,21 @@ export async function GET(req) {
 
     const db = await getDb();
     const col = db.collection('cashout_methods');
-    await ensureSeedCashout(col);
 
     const query = all ? {} : { isActive: true };
     const list = await col.find(query).sort({ order: 1, createdAt: 1 }).toArray();
 
-    const formatted = list.map(m => ({
-      id: m._id.toString(),
-      methodId: m.methodId || m._id.toString(),
-      name: m.name,
-      placeholder: m.placeholder || 'Enter your payout address or handle',
-      isActive: m.isActive ?? true,
-      minCashout: m.minCashout ?? 1,
-      order: m.order ?? 99,
-    }));
+    const formatted = normalizeActiveCashoutMethods(
+      list.map((m) => ({
+        id: m._id.toString(),
+        methodId: m.methodId || m._id.toString(),
+        name: m.name,
+        placeholder: m.placeholder || 'Enter your payout address or handle',
+        isActive: m.isActive ?? true,
+        minCashout: m.minCashout ?? 1,
+        order: m.order ?? 99,
+      }))
+    );
 
     if (!all) {
       cachedCashout = formatted;
@@ -105,6 +87,7 @@ export async function POST(req) {
 
     const res = await col.insertOne(newMethod);
     cachedCashout = null;
+    publishGatewaysUpdated();
 
     return NextResponse.json({
       success: true,
@@ -146,6 +129,7 @@ export async function PUT(req) {
 
     await col.updateOne(filter, { $set: updateFields });
     cachedCashout = null;
+    publishGatewaysUpdated();
 
     return NextResponse.json({ success: true, message: 'Cashout method updated.' });
   } catch (error) {
@@ -177,6 +161,7 @@ export async function DELETE(req) {
 
     await col.deleteOne(filter);
     cachedCashout = null;
+    publishGatewaysUpdated();
 
     return NextResponse.json({ success: true, message: 'Cashout method deleted.' });
   } catch (error) {

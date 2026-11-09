@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
+import { publishPromo } from '@/lib/realtimePublish';
 
 // GET: Returns list of promotions
 export async function GET(req) {
@@ -66,6 +67,7 @@ export async function POST(req) {
     };
 
     const result = await promosCol.insertOne(newPromo);
+    publishPromo({ action: 'create' });
 
     return NextResponse.json({
       success: true,
@@ -117,6 +119,7 @@ export async function PUT(req) {
     if (priority !== undefined) updateFields.priority = Number(priority);
 
     await promosCol.updateOne(filter, { $set: updateFields });
+    publishPromo({ action: 'update' });
 
     return NextResponse.json({ success: true, message: 'Promotion updated successfully.' });
   } catch (error) {
@@ -161,6 +164,8 @@ export async function DELETE(req) {
     if (result.deletedCount === 0) {
       return NextResponse.json({ success: false, error: 'Promotion not found or already deleted.' }, { status: 404 });
     }
+
+    publishPromo({ action: 'delete' });
 
     return NextResponse.json({
       success: true,

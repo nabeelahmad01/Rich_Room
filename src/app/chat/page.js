@@ -25,6 +25,7 @@ import { playTune } from '@/lib/soundAlerts';
 import { diffSet, areEqual } from '@/lib/fastDiff';
 import { getInitialPlayerUser, writeCachedPlayer, broadcastPlayerLogout } from '@/lib/playerSessionCache';
 import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
+import { postChatMessage } from '@/lib/chatClient';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -309,26 +310,23 @@ export default function ChatPage() {
 
     (async () => {
       try {
-        const { res, data } = await fetchJsonQuick(
-          '/api/chat',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(payload),
-          },
-          currentAttachment ? 25000 : 10000
-        );
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Failed to send message. Please retry.');
-        }
+        const data = await postChatMessage(payload, {
+          timeoutMs: currentAttachment ? 60000 : 45000,
+          retries: 2,
+        });
         if (data.message) {
           setMessages((prev) =>
             prev.map((m) => (m.id === optimisticMsg.id ? data.message : m))
           );
         }
+        setSendError(null);
         fetchMsgsRef.current?.();
       } catch (err) {
+        if (err?.code === 'SLOW_CONNECTION' || /timed out/i.test(err?.message || '')) {
+          setSendError(null);
+          fetchMsgsRef.current?.();
+          return;
+        }
         setInputMessage(currentText);
         setAttachedImage(currentAttachment);
         setSendError(err.message || 'Delivery failed. Tap to retry.');

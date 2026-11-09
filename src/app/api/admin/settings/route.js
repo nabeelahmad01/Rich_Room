@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser, ROLES } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
+import { publishSettingsUpdated } from '@/lib/realtimePublish';
 import { DEFAULT_CASHOUT_RULES, MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 
 export const dynamic = 'force-dynamic';
@@ -154,6 +155,7 @@ export async function PUT(req) {
     }
 
     const updatedSettings = await settingsCol.findOne({ key: 'general' });
+    publishSettingsUpdated();
     return NextResponse.json({ success: true, message: 'Settings saved successfully.', settings: updatedSettings });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

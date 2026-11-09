@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import LoadCoinsModal from '@/components/modals/LoadCoinsModal';
 import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
+import { parseResponseJson } from '@/lib/fetchWithTimeout';
 import { readCachedPlayer } from '@/lib/playerSessionCache';
 import {
   readGameAccountsCache,
@@ -116,11 +117,22 @@ export default function PlayerGameAccountsHub({
     try {
       const [credRes, reqRes] = await Promise.all([
         fetch(`/api/game-accounts?email=${encodeURIComponent(user.email)}`, { credentials: 'include', cache: 'no-store' }),
-        fetch(`/api/account-requests?email=${encodeURIComponent(user.email)}`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`/api/account-requests?email=${encodeURIComponent(user.email)}&lightweight=true`, { credentials: 'include', cache: 'no-store' }),
       ]);
 
-      const credData = await credRes.json();
-      const reqData = await reqRes.json();
+      if (!credRes.ok && !reqRes.ok) return;
+      let credData = { success: false };
+      let reqData = { success: false };
+      try {
+        if (credRes.ok) credData = await parseResponseJson(credRes);
+      } catch {
+        return;
+      }
+      try {
+        if (reqRes.ok) reqData = await parseResponseJson(reqRes);
+      } catch {
+        return;
+      }
 
       const readyList = [];
       const pendingList = [];
@@ -135,7 +147,7 @@ export default function PlayerGameAccountsHub({
       if (reqData.success && reqData.accountRequests) {
         // Step 1: Collect all verified READY credentials first
         reqData.accountRequests.forEach((req) => {
-          if (req.status === 'READY') {
+          if (String(req.status || '').toUpperCase() === 'READY') {
             const reqKey = normalizeGameTitleKey(req.gameTitle);
             const alreadyExists = readyList.some(
               (a) => normalizeGameTitleKey(a.gameTitle) === reqKey
@@ -154,7 +166,7 @@ export default function PlayerGameAccountsHub({
 
         // Step 2: Only show pending or rejected for games the user does NOT already have accounts for
         reqData.accountRequests.forEach((req) => {
-          if (req.status === 'READY') return;
+          if (String(req.status || '').toUpperCase() === 'READY') return;
 
           const reqTitleKey = normalizeGameTitleKey(req.gameTitle);
           const hasActiveAccount = readyList.some(
@@ -163,7 +175,7 @@ export default function PlayerGameAccountsHub({
               (a.gameId && req.gameId && String(a.gameId) === String(req.gameId))
           );
 
-          if (req.status === 'PENDING') {
+          if (String(req.status || '').toUpperCase() === 'PENDING') {
             // Only add pending if user does not already have an active account for this game, OR if it's a coin load
             if (!hasActiveAccount || req.requestType === 'COIN_LOAD') {
               pendingList.push(req);

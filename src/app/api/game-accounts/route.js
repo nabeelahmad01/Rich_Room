@@ -1,45 +1,32 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getPlayerSessionUser } from '@/lib/auth';
-import { cleanGameTitle } from '@/lib/fastDiff';
+import { getGamesThumbnailLookup, resolveThumbnailFromLookup } from '@/lib/gamesThumbnailLookup';
 
-/** Build lookups so player "My Game IDs" cards get the same thumbnail as admin catalog (by id or title). */
-async function buildGamesThumbnailLookup(db) {
-  const games = await db.collection('games').find({}).toArray();
-  const byId = new Map();
-  const byTitleNorm = new Map();
-  const byTitleClean = new Map();
+const RESPONSE_CACHE = new Map();
+const RESPONSE_TTL_MS = 4000;
 
-  for (const g of games) {
-    const oid = g._id ? g._id.toString() : null;
-    const thumb = g.thumbnail || g.image || g.imageUrl || null;
-    const meta = { gameId: oid, thumbnail: thumb };
-    const candidates = new Set(
-      [oid, g.gameId, g.id].filter(Boolean).map((x) => String(x))
-    );
-    candidates.forEach((id) => {
-      if (id) byId.set(id, meta);
-    });
-    const tn = (g.title || '').toLowerCase().trim();
-    if (tn) byTitleNorm.set(tn, meta);
-    const tc = cleanGameTitle(g.title || '').toLowerCase().trim();
-    if (tc) byTitleClean.set(tc, meta);
-  }
-  return { byId, byTitleNorm, byTitleClean };
-}
+const ACCOUNT_PROJECTION = {
+  gameTitle: 1,
+  gameId: 1,
+  userEmail: 1,
+  username: 1,
+  password: 1,
+  status: 1,
+  createdAt: 1,
+};
 
-function resolveThumbnailFromLookup(lookup, gameTitle, gameId) {
-  const { byId, byTitleNorm, byTitleClean } = lookup;
-  if (gameId) {
-    const idStr = String(gameId);
-    if (byId.has(idStr)) return byId.get(idStr);
-  }
-  const tn = (gameTitle || '').toLowerCase().trim();
-  if (tn && byTitleNorm.has(tn)) return byTitleNorm.get(tn);
-  const tc = cleanGameTitle(gameTitle || '').toLowerCase().trim();
-  if (tc && byTitleClean.has(tc)) return byTitleClean.get(tc);
-  return null;
-}
+const REQUEST_PROJECTION = {
+  gameTitle: 1,
+  gameId: 1,
+  userEmail: 1,
+  userName: 1,
+  gameAccountUsername: 1,
+  gameAccountPassword: 1,
+  status: 1,
+  requestType: 1,
+  createdAt: 1,
+};
 
 // GET game credentials (by player email)
 export async function GET(req) {
@@ -52,33 +39,33 @@ export async function GET(req) {
       return NextResponse.json({ success: true, gameAccounts: [] });
     }
 
-    const db = await getDb();
     const cleanEmail = email.toLowerCase().trim();
+    const cached = RESPONSE_CACHE.get(cleanEmail);
+    if (cached && Date.now() - cached.at < RESPONSE_TTL_MS) {
+      return NextResponse.json(cached.body);
+    }
+
+    const db = await getDb();
     const emailRegex = { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    const readyStatus = { $in: ['READY', 'ready', 'Ready'] };
+    const approvedReadyStatus = { $in: ['READY', 'ready', 'Ready', 'APPROVED'] };
+    const pendingStatus = { $in: ['PENDING', 'pending', 'Pending'] };
 
-    // 1. Fetch from gameAccounts collection
-    const accounts = await db
-      .collection('gameAccounts')
-      .find({ userEmail: emailRegex, status: 'READY' })
-      .toArray();
-
-    // 2. Also fetch approved READY requests from accountRequests
-    const readyRequests = await db
-      .collection('accountRequests')
-      .find({ userEmail: emailRegex, status: 'READY' })
-      .toArray();
-
-    // 3. Fetch any PENDING account requests
-    const pending = await db
-      .collection('accountRequests')
-      .find({
-        userEmail: emailRegex,
-        status: 'PENDING',
-        requestType: { $ne: 'COIN_LOAD' },
-      })
-      .toArray();
-
-    const gameLookup = await buildGamesThumbnailLookup(db);
+    const [accounts, readyRequests, pendingRaw, gameLookup] = await Promise.all([
+      db.collection('gameAccounts').find({ userEmail: emailRegex, status: readyStatus }, { projection: ACCOUNT_PROJECTION }).toArray(),
+      db
+        .collection('accountRequests')
+        .find({ userEmail: emailRegex, status: approvedReadyStatus }, { projection: REQUEST_PROJECTION })
+        .toArray(),
+      db
+        .collection('accountRequests')
+        .find(
+          { userEmail: emailRegex, status: pendingStatus, requestType: { $ne: 'COIN_LOAD' } },
+          { projection: REQUEST_PROJECTION }
+        )
+        .toArray(),
+      getGamesThumbnailLookup(db),
+    ]);
 
     const mergedMap = new Map();
     accounts.forEach((acc) => {
@@ -131,7 +118,13 @@ export async function GET(req) {
       };
     });
 
-    return NextResponse.json({
+    const readyTitleKeys = new Set(Array.from(mergedMap.keys()));
+    const pending = pendingRaw.filter((p) => {
+      const key = (p.gameTitle || '').toLowerCase().trim();
+      return key && !readyTitleKeys.has(key);
+    });
+
+    const body = {
       success: true,
       gameAccounts: enrichedAccounts,
       pendingRequests: pending.map((p) => {
@@ -145,7 +138,9 @@ export async function GET(req) {
           createdAt: p.createdAt || new Date(),
         };
       }),
-    });
+    };
+    RESPONSE_CACHE.set(cleanEmail, { at: Date.now(), body });
+    return NextResponse.json(body);
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }

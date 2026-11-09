@@ -101,7 +101,10 @@ export default function WalletPage() {
       if (e.key === 'paradise_user_balance_sync') loadData();
     };
 
+    const handleInstant = () => loadData(true);
     window.addEventListener('paradise-user-sync', handleUserSync);
+    window.addEventListener('paradise-instant-sync', handleInstant);
+    window.addEventListener('paradise-ledger-refresh', handleInstant);
     window.addEventListener('storage', handleStorageSync);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
@@ -110,6 +113,8 @@ export default function WalletPage() {
       clearInterval(interval);
       if (balanceChan) balanceChan.close();
       window.removeEventListener('paradise-user-sync', handleUserSync);
+      window.removeEventListener('paradise-instant-sync', handleInstant);
+      window.removeEventListener('paradise-ledger-refresh', handleInstant);
       window.removeEventListener('storage', handleStorageSync);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);

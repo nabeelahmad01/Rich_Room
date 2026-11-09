@@ -33,12 +33,14 @@ import { readCachedGameAccountSeeds } from '@/lib/gameAccountsClientCache';
 import { loadPlayerGameAccountsForEmail } from '@/lib/playerGameAccountsClient';
 import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 import { readCashoutMethodsCache, writeCashoutMethodsCache } from '@/lib/paymentMethodsCache';
+import { normalizeActiveCashoutMethods } from '@/lib/cashoutMethodsNormalize';
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
 import { MIN_CASHOUT_USD } from '@/lib/cashoutPolicy';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
+import { parseResponseJson } from '@/lib/fetchWithTimeout';
 
 export default function WithdrawView({ isEmbedded = false, onSelectTab, seedReadyAccounts = [] }) {
   const router = useRouter();
@@ -51,7 +53,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
   // Withdrawal Form State
   const [amount, setAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('50');
-  const [method, setMethod] = useState('Cash App');
+  const [method, setMethod] = useState('');
   const [recipientTag, setRecipientTag] = useState('');
   const [selectedGame, setSelectedGame] = useState(() => {
     if (seedReadyAccounts?.length) return cleanGameTitle(seedReadyAccounts[0].gameTitle);
@@ -82,13 +84,9 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
     return [];
   });
 
-  const [payoutMethods, setPayoutMethods] = useState(() => {
-    const cached = typeof window !== 'undefined' ? readCashoutMethodsCache() : null;
-    return Array.isArray(cached) ? cached : [];
-  });
-  const [loadingPayoutMethods, setLoadingPayoutMethods] = useState(
-    () => !(typeof window !== 'undefined' && readCashoutMethodsCache()?.length)
-  );
+  const [payoutMethods, setPayoutMethods] = useState([]);
+  const [loadingPayoutMethods, setLoadingPayoutMethods] = useState(true);
+  const [clientReady, setClientReady] = useState(false);
 
   const [showHistory, setShowHistory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -113,7 +111,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
     if (!isSilent && !user) setLoadingUser(true);
     try {
       const res = await fetch('/api/auth/me', { cache: 'no-store' });
-      const data = await res.json();
+      if (!res.ok) throw new Error(`auth/me ${res.status}`);
+      const data = await parseResponseJson(res);
       if (data.authenticated && data.user) {
         diffSet(setUser, data.user);
       } else if (!isSilent) {
@@ -131,7 +130,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
     if (!isSilent && withdrawHistory.length === 0) setLoadingHistory(true);
     try {
       const res = await fetch('/api/payments/withdraw?lightweight=true', { cache: 'no-store' });
-      const data = await res.json();
+      if (!res.ok) return;
+      const data = await parseResponseJson(res);
       if (data.success && data.redemptions) {
         diffSet(setWithdrawHistory, data.redemptions);
         writeSessionCache(CACHE_KEYS.WITHDRAW_HISTORY, data.redemptions);
@@ -190,9 +190,10 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
     if (!silent && payoutMethods.length === 0) setLoadingPayoutMethods(true);
     try {
       const res = await fetch('/api/payments/cashout-methods', { cache: 'no-store' });
-      const data = await res.json();
+      if (!res.ok) return;
+      const data = await parseResponseJson(res);
       if (data.success && Array.isArray(data.methods)) {
-        const active = data.methods.filter((m) => m.isActive !== false);
+        const active = normalizeActiveCashoutMethods(data.methods);
         setPayoutMethods(active);
         if (active.length) {
           writeCashoutMethodsCache(active);
@@ -200,6 +201,8 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
             if (prev && active.some((m) => m.name === prev)) return prev;
             return active[0].name;
           });
+        } else {
+          setMethod('');
         }
       }
     } catch (err) {
@@ -210,6 +213,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
   };
 
   useEffect(() => {
+    setClientReady(true);
     const cached = getCachedUser();
     if (cached) {
       setUser(cached);
@@ -221,16 +225,14 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
     fetchGameAccounts();
     const cachedCatalog = readAdminGamesFromCache();
     if (cachedCatalog?.length) setAdminGames(cachedCatalog);
-    syncGamesCatalog(true);
-    if (payoutMethods.length === 0) {
-      const cachedPayout = readCashoutMethodsCache();
-      if (cachedPayout?.length) {
-        setPayoutMethods(cachedPayout);
-        setMethod((prev) => prev || cachedPayout[0]?.name || '');
-        setLoadingPayoutMethods(false);
-      }
+    syncGamesCatalog(false);
+    const cachedPayout = readCashoutMethodsCache();
+    if (cachedPayout?.length) {
+      setPayoutMethods(cachedPayout);
+      setMethod((prev) => prev || cachedPayout[0]?.name || '');
+      setLoadingPayoutMethods(false);
     }
-    fetchCashoutMethods(payoutMethods.length > 0);
+    fetchCashoutMethods(Boolean(cachedPayout?.length));
 
     // Zero-refresh live polling: gentle background sync with instant broadcast listeners
     const pollInterval = setInterval(() => {
@@ -249,7 +251,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
         diffSet(setUser, e.detail);
         fetchCashoutMethods(true);
         fetchGameAccounts(true);
-        syncGamesCatalog(true);
+        syncGamesCatalog(false);
       } else {
         setUser(null);
       }
@@ -259,7 +261,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
       fetchHistory(true);
       fetchUser(true);
       fetchGameAccounts(true);
-      syncGamesCatalog(true);
+      syncGamesCatalog(false);
       fetchCashoutMethods(true);
     };
 
@@ -349,6 +351,14 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
       return;
     }
 
+    if (!method || !payoutMethods.some((m) => m.name === method)) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Select an active payout method configured by the finance desk.',
+      });
+      return;
+    }
+
     if (!recipientTag.trim()) {
       setStatusMessage({ type: 'error', text: 'Please enter your Payout Tag Name / Cashtag.' });
       return;
@@ -418,7 +428,17 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data = { success: false };
+      try {
+        data = await parseResponseJson(res);
+      } catch {
+        setStatusMessage({
+          type: 'error',
+          text: 'Server returned an unexpected response. Please try again.',
+        });
+        setSubmitting(false);
+        return;
+      }
 
       if (res.ok && data.success) {
         setStatusMessage({
@@ -528,7 +548,9 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                 {/* Game Select & Account Detection */}
                 <div>
                   {(() => {
-                    const linkedAcc = findAccountForGame(userGameAccounts, selectedGame, adminGames);
+                    const linkedAcc = clientReady
+                      ? findAccountForGame(userGameAccounts, selectedGame, adminGames)
+                      : null;
 
                     return (
                       <>
@@ -537,7 +559,11 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                             <Gamepad2 size={13} className="text-[var(--neon-cyan)]" />
                             Select Game Won From *
                           </label>
-                          {linkedAcc ? (
+                          {!clientReady ? (
+                            <span className="text-[10px] text-slate-500 font-bold px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900/80">
+                              Checking…
+                            </span>
+                          ) : linkedAcc ? (
                             <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono">
                               <CheckCircle2 size={10} />
                               ID: @{linkedAcc.username}
@@ -555,7 +581,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                           onChange={(e) => setSelectedGame(e.target.value)}
                           disabled={cashoutGameOptions.length === 0}
                           className={`w-full px-4 py-3 rounded-xl bg-slate-900 border text-white font-heading font-bold text-sm focus:outline-none transition-colors ${
-                            linkedAcc
+                            !clientReady || linkedAcc
                               ? 'border-slate-700 focus:border-[var(--neon-cyan)]'
                               : 'border-red-500/80 focus:border-red-400'
                           }`}
@@ -574,14 +600,14 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                           )}
                         </select>
 
-                        {linkedAcc ? (
+                        {clientReady && linkedAcc ? (
                           <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/30 flex items-center gap-2 mt-2 text-emerald-300 text-xs">
                             <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
                             <span>
                               Verified Game Account: <strong className="font-mono text-white bg-emerald-900/60 px-1.5 py-0.5 rounded">@{linkedAcc.username}</strong> will be submitted to Coin Allotment.
                             </span>
                           </div>
-                        ) : (
+                        ) : clientReady ? (
                           <div className="p-3.5 rounded-2xl bg-red-950/70 border border-red-500/60 flex items-start gap-3 mt-2 text-red-200">
                             <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
                             <div className="space-y-1">
@@ -600,7 +626,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                               </button>
                             </div>
                           </div>
-                        )}
+                        ) : null}
                       </>
                     );
                   })()}
@@ -628,7 +654,7 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                       const isSelected = method === m.name;
                       return (
                         <button
-                          key={m.id || m.methodId}
+                          key={m.id || m.methodId || m.name}
                           type="button"
                           onClick={() => setMethod(m.name)}
                           className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between cursor-pointer ${
@@ -747,9 +773,11 @@ export default function WithdrawView({ isEmbedded = false, onSelectTab, seedRead
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[11px] text-cyan-300 font-bold bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-1 rounded-full font-mono">
-                      Via {method}
-                    </span>
+                    {method ? (
+                      <span className="text-[11px] text-cyan-300 font-bold bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-1 rounded-full font-mono">
+                        Via {method}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </div>

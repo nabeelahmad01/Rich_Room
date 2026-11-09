@@ -83,12 +83,16 @@ export default function LedgerPage() {
     const handleFocus = () => loadData(true);
 
     window.addEventListener('paradise-user-sync', handleUserSync);
+    window.addEventListener('paradise-instant-sync', handleFocus);
+    window.addEventListener('paradise-ledger-refresh', handleFocus);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('paradise-user-sync', handleUserSync);
+      window.removeEventListener('paradise-instant-sync', handleFocus);
+      window.removeEventListener('paradise-ledger-refresh', handleFocus);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
     };

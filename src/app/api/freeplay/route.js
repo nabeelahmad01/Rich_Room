@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser } from '@/lib/auth';
 import { notifyStaff } from '@/lib/notify';
+import { publishFreeplay, publishAccountRequestCreated } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
 
 export const dynamic = 'force-dynamic';
@@ -220,6 +221,25 @@ export async function POST(req) {
         taskId: resolvedTaskId,
         url: '/admin?tab=coins_allotment',
       },
+    });
+
+    publishFreeplay({
+      action: 'submitted',
+      userEmail: cleanEmail,
+      userId: user._id.toString(),
+      gameTitle: cleanGame,
+      requestId: insertRes.insertedId.toString(),
+    });
+    publishAccountRequestCreated({
+      request: {
+        id: insertRes.insertedId.toString(),
+        userEmail: cleanEmail,
+        gameTitle: cleanGame,
+        status: 'PENDING',
+        isFreeplay: true,
+      },
+      userEmail: cleanEmail,
+      userId: user._id.toString(),
     });
 
     return NextResponse.json({

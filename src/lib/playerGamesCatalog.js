@@ -1,4 +1,5 @@
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
+import { parseResponseJson } from '@/lib/fetchWithTimeout';
 
 /** Admin games list — refresh at most once per interval unless forced. */
 export const ADMIN_GAMES_REFRESH_MS = 5 * 60 * 1000;
@@ -24,7 +25,8 @@ export async function refreshAdminGamesCatalog({ force = false } = {}) {
 
   try {
     const res = await fetch('/api/games', { cache: 'no-store' });
-    const data = await res.json();
+    if (!res.ok) return readAdminGamesFromCache({ allowStale: true }) || [];
+    const data = await parseResponseJson(res);
     if (data.success && Array.isArray(data.games) && data.games.length > 0) {
       writeSessionCache(CACHE_KEYS.GAMES_LIST, data.games);
       return data.games;

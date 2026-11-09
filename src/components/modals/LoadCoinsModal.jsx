@@ -96,29 +96,6 @@ export default function LoadCoinsModal({
         try {
           localStorage.setItem('paradise_user_balance_sync', String(Date.now()));
         } catch {}
-        try {
-          const sChan = new BroadcastChannel('paradise_staff_alerts');
-          sChan.postMessage({
-            type: 'NEW_COIN_LOAD',
-            amount: amt,
-            username: user.username,
-            gameTitle,
-            time: Date.now(),
-          });
-          sChan.close();
-        } catch {}
-        try {
-          localStorage.setItem(
-            'paradise_staff_event',
-            JSON.stringify({
-              type: 'NEW_COIN_LOAD',
-              amount: amt,
-              username: user.username,
-              gameTitle,
-              time: Date.now(),
-            })
-          );
-        } catch {}
         if (onSuccess) onSuccess(data);
         setTimeout(() => {
           onClose();

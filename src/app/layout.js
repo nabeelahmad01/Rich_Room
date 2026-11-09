@@ -3,6 +3,7 @@ import GlobalLiveChat from '@/components/chat/GlobalLiveChat';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 import SessionBridge from '@/components/common/SessionBridge';
 import GeoRegionGate from '@/components/common/GeoRegionGate';
+import RealtimeBridge from '@/components/common/RealtimeBridge';
 
 export const metadata = {
   title: 'Rich Room | VIP Online Gaming & Sweeps Lounge',
@@ -64,6 +65,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="antialiased selection:bg-[var(--neon-cyan)] selection:text-black">
         <PushNotificationManager />
+        <RealtimeBridge />
         <SessionBridge />
         <GeoRegionGate />
         {children}

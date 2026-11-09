@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
+import { publishWallet } from '@/lib/realtimePublish';
 import { getSessionUser, getUserFilter } from '@/lib/auth';
 import { WHEEL_SLICES } from '@/lib/wheelConstants';
 
@@ -155,6 +156,14 @@ export async function POST(req) {
         createdAt: now,
       });
     }
+
+    publishWallet({
+      action: 'daily_spin',
+      userEmail: user.email,
+      userId: user._id.toString(),
+      winAmount: prizeAmount,
+      newBalance,
+    });
 
     return NextResponse.json({
       success: true,

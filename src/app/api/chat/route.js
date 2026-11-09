@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getSessionUser, ROLES, safeIdFilter, getUserFilter } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
+import {
+  getSessionUser,
+  getAdminSessionUser,
+  getPlayerSessionUser,
+  ROLES,
+  getUserFilter,
+  safeIdFilter,
+} from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
+import { publishChatRealtime } from '@/lib/realtimePublish';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,62 +28,99 @@ function isStaffRole(role) {
   );
 }
 
-/**
- * Group messages into conversation summaries for Staff Inbox.
- * Uses robust in-memory grouping over find() to ensure 100% compatibility
- * across MongoDB Atlas, local MongoDB, and fallback storage engines.
- */
+function conversationKey(msg) {
+  const raw = msg?.conversationId ?? msg?.customerUserId ?? msg?.userId ?? '';
+  const cid = String(raw).trim();
+  if (!cid || cid === 'undefined' || cid === 'null') return '';
+  return cid;
+}
+
+function conversationIdMatchOr(cid) {
+  const id = String(cid || '').trim();
+  if (!id) return [];
+  const or = [
+    { conversationId: id },
+    { customerUserId: id },
+    { userId: id },
+  ];
+  if (/^[0-9a-fA-F]{24}$/.test(id)) {
+    try {
+      const oid = new ObjectId(id);
+      or.push({ conversationId: oid }, { customerUserId: oid }, { userId: oid });
+    } catch {}
+  }
+  return or;
+}
+
+/** Reliable inbox — works on every MongoDB tier (no fragile aggregation). */
 async function buildStaffInbox(chatCol) {
   try {
-    const rows = await chatCol
-      .aggregate([
-        { $sort: { createdAt: -1 } },
-        { $limit: 500 },
+    const rawMessages = await chatCol
+      .find(
+        {},
         {
-          $group: {
-            _id: {
-              $toString: { $ifNull: ['$conversationId', '$userId'] },
-            },
-            latest: { $first: '$$ROOT' },
-            unreadCount: {
-              $sum: {
-                $cond: [
-                  {
-                    $and: [
-                      { $eq: ['$senderRole', 'player'] },
-                      { $ne: ['$read', true] },
-                    ],
-                  },
-                  1,
-                  0,
-                ],
-              },
-            },
+          projection: {
+            conversationId: 1,
+            userId: 1,
+            username: 1,
+            customerUsername: 1,
+            customerUserId: 1,
+            senderRole: 1,
+            read: 1,
+            text: 1,
+            createdAt: 1,
+            imageUrl: 1,
           },
-        },
-        { $sort: { 'latest.createdAt': -1 } },
-        { $limit: 100 },
-      ])
+        }
+      )
+      .sort({ createdAt: -1 })
+      .limit(500)
       .toArray();
 
-    return rows.map((row) => {
-      const msg = row.latest || {};
-      const cid = row._id || '';
+    const convMap = new Map();
+
+    for (const msg of rawMessages) {
+      const cid = conversationKey(msg);
+      if (!cid) continue;
+
       const customerName =
         msg.customerUsername || (msg.senderRole === 'player' ? msg.username : null);
       const customerUid = msg.customerUserId || msg.userId || cid;
-      return {
-        _id: cid,
-        userId: customerUid,
-        username: customerName || msg.username || 'Player',
-        lastMessage:
-          msg.text || (msg.imageUrl ? '📷 [Image Attachment]' : 'Active inquiry'),
-        lastSenderRole: msg.senderRole || 'player',
-        updatedAt: msg.createdAt || new Date(),
-        unreadCount: row.unreadCount || 0,
-        unreadStaff: (row.unreadCount || 0) > 0,
-      };
-    });
+      const isUnreadPlayerMsg = msg.read === false && msg.senderRole === 'player';
+
+      if (!convMap.has(cid)) {
+        convMap.set(cid, {
+          _id: cid,
+          userId: String(customerUid),
+          username: customerName || msg.username || 'Player',
+          lastMessage:
+            msg.text || (msg.imageUrl ? '📷 [Image Attachment]' : 'Active inquiry'),
+          lastSenderRole: msg.senderRole || 'player',
+          updatedAt: msg.createdAt || new Date(),
+          unreadCount: isUnreadPlayerMsg ? 1 : 0,
+          unreadStaff: isUnreadPlayerMsg,
+        });
+      } else {
+        const conv = convMap.get(cid);
+        if (
+          customerName &&
+          (conv.username === 'Player' || conv.username === 'Rich Room Support')
+        ) {
+          conv.username = customerName;
+        }
+        if (customerUid && conv.userId === cid) {
+          conv.userId = String(customerUid);
+        }
+        if (isUnreadPlayerMsg) {
+          conv.unreadCount = (conv.unreadCount || 0) + 1;
+          conv.unreadStaff = true;
+        }
+      }
+    }
+
+    return Array.from(convMap.values()).sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
   } catch (err) {
     console.error('buildStaffInbox error:', err);
     return [];
@@ -88,16 +134,27 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const conversationId = (searchParams.get('conversationId') || '').trim();
+    const customerUserId = (searchParams.get('customerUserId') || '').trim();
+    const customerUsername = (searchParams.get('customerUsername') || '').trim();
     const guestId = (searchParams.get('guestId') || '').trim();
     const inbox = searchParams.get('inbox') === 'true';
-    const adminMode = inbox || searchParams.get('admin') === 'true';
     const markRead = searchParams.get('markRead') === 'true';
 
-    const session = adminMode
-      ? (await getSessionUser('admin')) || (await getSessionUser())
-      : await getSessionUser('player');
+    const staffSession =
+      (await getAdminSessionUser()) || (await getSessionUser('admin'));
+    const isStaff = Boolean(staffSession && isStaffRole(staffSession.role));
 
-    // Must have a session OR a guestId
+    const db = await getDb();
+    const chatCol = db.collection('chat_messages');
+
+    // 1. Staff Inbox Request (Players Paradise pattern)
+    if (isStaff && inbox) {
+      const activeConvs = await buildStaffInbox(chatCol);
+      return NextResponse.json({ success: true, conversations: activeConvs });
+    }
+
+    const session = isStaff ? staffSession : await getPlayerSessionUser();
+
     if (!session && !guestId) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized. Please provide a guest session or login.' },
@@ -105,27 +162,17 @@ export async function GET(req) {
       );
     }
 
-    const db = await getDb();
-    const chatCol = db.collection('chat_messages');
-    const isStaff = Boolean(adminMode && session && isStaffRole(session.role));
-
-    // 1. Staff Inbox Request
-    if (inbox) {
-      if (!session || !isStaffRole(session.role)) {
-        return NextResponse.json({ success: false, error: 'Unauthorized staff inbox request.' }, { status: 403 });
-      }
-      const activeConvs = await buildStaffInbox(chatCol);
-      return NextResponse.json({ success: true, conversations: activeConvs });
-    }
-
     // 2. Determine target conversation IDs
     let targetConvIds = [];
     if (isStaff && conversationId && conversationId !== 'all') {
       targetConvIds = [conversationId];
-    } else if (!isStaff && session && session.userId && (session.role === 'player' || !guestId)) {
+    } else if (session && session.userId && session.role === 'player') {
       targetConvIds.push(String(session.userId));
       if (session.username) targetConvIds.push(session.username);
-      if (conversationId) targetConvIds.push(conversationId);
+      try {
+        const u = await db.collection('users').findOne(getUserFilter(session));
+        if (u?._id) targetConvIds.push(u._id.toString());
+      } catch {}
     } else if (guestId && guestId !== 'guest_session') {
       targetConvIds = [guestId];
     } else if (conversationId && conversationId !== 'guest_session') {
@@ -137,13 +184,18 @@ export async function GET(req) {
     // 3. Fetch conversation messages
     let query;
     if (isStaff && conversationId) {
-      query = {
-        $or: [
-          { conversationId },
-          { customerUserId: conversationId },
-          { userId: conversationId },
-        ],
-      };
+      const or = [...conversationIdMatchOr(conversationId)];
+      if (customerUserId && customerUserId !== conversationId) {
+        or.push(...conversationIdMatchOr(customerUserId));
+      }
+      if (customerUsername) {
+        or.push(
+          { customerUsername },
+          { username: customerUsername },
+          { customerUsername: new RegExp(`^${customerUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        );
+      }
+      query = { $or: or };
     } else {
       query = {
         $or: [
@@ -155,30 +207,42 @@ export async function GET(req) {
     }
 
     const rawMessages = await chatCol
-      .find(query)
+      .find(query, {
+        projection: {
+          conversationId: 1,
+          customerUserId: 1,
+          userId: 1,
+          username: 1,
+          customerUsername: 1,
+          senderRole: 1,
+          staffName: 1,
+          text: 1,
+          imageUrl: 1,
+          read: 1,
+          createdAt: 1,
+        },
+      })
       .sort({ createdAt: 1 })
       .limit(200)
       .toArray();
 
-    // 4. Mark unread messages as read ONLY when actively opened/viewed
-    if (isStaff) {
-      if (markRead) {
-        chatCol
-          .updateMany(
-            {
-              $or: [
-                { conversationId: { $in: targetConvIds } },
-                { customerUserId: { $in: targetConvIds } },
-                { userId: { $in: targetConvIds } },
-              ],
-              senderRole: 'player',
-              read: false,
-            },
-            { $set: { read: true } }
-          )
-          .catch(() => {});
-      }
-    } else if (searchParams.get('markRead') !== 'false') {
+    const staffViewingThread = isStaff && Boolean(conversationId && conversationId !== 'all');
+    const shouldMarkPlayerMsgsRead = staffViewingThread;
+    const shouldMarkStaffMsgsRead = !isStaff && markRead;
+
+    if (shouldMarkPlayerMsgsRead) {
+      const convOr = conversationIdMatchOr(conversationId);
+      chatCol
+        .updateMany(
+          {
+            $or: convOr.length ? convOr : [{ conversationId }],
+            senderRole: 'player',
+            read: false,
+          },
+          { $set: { read: true } }
+        )
+        .catch(() => {});
+    } else if (shouldMarkStaffMsgsRead) {
       chatCol
         .updateMany(
           {
@@ -191,24 +255,43 @@ export async function GET(req) {
         .catch(() => {});
     }
 
-    // 5. Unread count from staff for the player
     const unreadStaffCount = isStaff
       ? 0
-      : rawMessages.filter((m) => m.senderRole === 'staff' && !m.read).length;
+      : shouldMarkStaffMsgsRead
+        ? 0
+        : rawMessages.filter((m) => m.senderRole === 'staff' && !m.read).length;
 
-    // 6. Format response
-    const formattedMessages = rawMessages.map((m) => ({
-      id: m._id ? m._id.toString() : m.id || Math.random().toString(36).substring(2, 10),
-      conversationId: m.conversationId || (targetConvIds[0] || ''),
-      userId: m.userId,
-      username: m.username,
-      senderRole: m.senderRole || 'player',
-      staffName: m.staffName || null,
-      text: m.text || '',
-      imageUrl: m.imageUrl || null,
-      read: !!m.read,
-      createdAt: m.createdAt,
-    }));
+    const lightweightImages = searchParams.get('lightweightImages') !== 'false';
+
+    const formattedMessages = rawMessages.map((m) => {
+      const senderRole = m.senderRole || 'player';
+      const wasRead = !!m.read;
+      const effectiveRead =
+        wasRead ||
+        (shouldMarkStaffMsgsRead && senderRole === 'staff') ||
+        (shouldMarkPlayerMsgsRead && senderRole === 'player');
+      const msgId = m._id ? m._id.toString() : m.id || Math.random().toString(36).substring(2, 10);
+      const rawImg = m.imageUrl || '';
+      let imageUrl = rawImg || null;
+      if (rawImg && lightweightImages) {
+        const isExternal = rawImg.startsWith('http://') || rawImg.startsWith('https://');
+        if (!isExternal || rawImg.length > 2048) {
+          imageUrl = `/api/chat/attachment?id=${msgId}`;
+        }
+      }
+      return {
+        id: msgId,
+        conversationId: m.conversationId || (targetConvIds[0] || ''),
+        userId: m.userId,
+        username: m.username,
+        senderRole,
+        staffName: m.staffName || null,
+        text: m.text || '',
+        imageUrl,
+        read: effectiveRead,
+        createdAt: m.createdAt,
+      };
+    });
 
     return NextResponse.json({
       success: true,
@@ -248,8 +331,8 @@ export async function POST(req) {
 
     const isExplicitStaffReply = Boolean(body.isStaffReply);
     const session = isExplicitStaffReply
-      ? (await getSessionUser('admin')) || (await getSessionUser())
-      : await getSessionUser('player');
+      ? (await getAdminSessionUser()) || (await getSessionUser('admin'))
+      : (await getPlayerSessionUser()) || (await getSessionUser('player'));
 
     // Authorization check: Never reject a player/guest inquiry with 401
     const cleanGuestParam = (guestId || conversationId || '').trim();
@@ -277,7 +360,7 @@ export async function POST(req) {
 
     const isStaff = session && isStaffRole(session.role);
     const shouldReplyAsStaff = Boolean(isExplicitStaffReply && isStaff);
-    const hasPlayerSession = Boolean(session && (session.role === 'player' || (!guestId && !isExplicitStaffReply)));
+    const hasPlayerSession = Boolean(session && !isStaff && !isExplicitStaffReply);
 
     let resolvedConvId;
     let customerUserId;
@@ -400,6 +483,14 @@ export async function POST(req) {
         }
       })();
     }
+
+    publishChatRealtime({
+      conversationId: resolvedConvId,
+      senderRole,
+      message: { id: insertedId, ...newMsg },
+      userId: customerUserId,
+      guestId: String(resolvedConvId).startsWith('guest_') ? resolvedConvId : undefined,
+    });
 
     return NextResponse.json({
       success: true,

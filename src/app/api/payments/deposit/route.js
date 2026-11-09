@@ -4,6 +4,10 @@ import { getSessionUser, ROLES, getUserFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { sendEmail } from '@/lib/email';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
+import {
+  publishFinanceDeposit,
+  publishAccountRequestCreated,
+} from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
 
 // GET: List Deposits (Admin / Financial Manager) or Player's own
@@ -265,6 +269,14 @@ export async function POST(req) {
         depositId: res.insertedId.toString(),
         url: '/admin?tab=finance',
       },
+    });
+
+    publishFinanceDeposit({
+      action: 'created',
+      status: 'pending',
+      userEmail: user?.email || session.email,
+      userId: resolvedUserId,
+      depositId: res.insertedId.toString(),
     });
 
     return NextResponse.json({
@@ -618,6 +630,15 @@ export async function PUT(req) {
         data: { amount: String(creditedSC) },
       });
 
+      publishFinanceDeposit({
+        action: 'approve',
+        status: 'approved',
+        userEmail: user.email,
+        userId: user._id.toString(),
+        depositId: deposit._id.toString(),
+        creditedSC,
+      });
+
       // 5. Automatic Game Account Request Creation if Player Deposited without an Existing Account
       let autoAccountRequestCreated = false;
       if (deposit.gameTitle) {
@@ -669,6 +690,17 @@ export async function PUT(req) {
               type: 'account_request_created',
               data: { gameTitle: cleanGameTitle, depositId: deposit._id.toString() },
             });
+
+            publishAccountRequestCreated({
+              request: {
+                userEmail: cleanEmail,
+                userName: user.username,
+                gameTitle: cleanGameTitle,
+                status: 'PENDING',
+              },
+              userEmail: cleanEmail,
+              userId: user._id.toString(),
+            });
           }
         }
       }
@@ -697,6 +729,14 @@ export async function PUT(req) {
           title: 'Deposit Update ⚠️',
           message: `Your deposit request ($${deposit.amount}) could not be approved: ${finalRejectReason}`,
           type: 'deposit_rejected',
+        });
+
+        publishFinanceDeposit({
+          action: 'reject',
+          status: 'rejected',
+          userEmail: user.email,
+          userId: user._id.toString(),
+          depositId: deposit._id.toString(),
         });
       }
 

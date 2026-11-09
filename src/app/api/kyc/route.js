@@ -4,6 +4,7 @@ import { getSessionUser, ROLES, getUserFilter, safeIdFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { sendEmail } from '@/lib/email';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
+import { publishKyc } from '@/lib/realtimePublish';
 
 // GET: List KYC submissions (Staff) or current status (Player)
 export async function GET(req) {
@@ -107,6 +108,14 @@ export async function POST(req) {
       { $set: { kycStatus: 'pending' } }
     );
 
+    publishKyc({
+      action: 'submitted',
+      status: 'pending',
+      userEmail: session.email,
+      userId: session.userId,
+      kycId: res.insertedId.toString(),
+    });
+
     return NextResponse.json({
       success: true,
       id: res.insertedId.toString(),
@@ -120,6 +129,7 @@ export async function POST(req) {
 // PUT: Review KYC (Super Admin & Financial Manager)
 export async function PUT(req) {
   try {
+    const session = await getSessionUser();
     const authorizedRoles = [
       ROLES.SUPER_ADMIN,
       ROLES.FINANCIAL_MANAGER,
@@ -182,6 +192,14 @@ export async function PUT(req) {
         data: { url: '/wallet' },
       });
 
+      publishKyc({
+        action: 'approve',
+        status: 'approved',
+        userEmail: user?.email,
+        userId: kyc.userId,
+        kycId,
+      });
+
       return NextResponse.json({ success: true, message: 'KYC Approved successfully.' });
     } else if (action === 'reject') {
       await kycCol.updateOne(
@@ -210,6 +228,14 @@ export async function PUT(req) {
         message: `Your identity verification could not be approved: ${rejectReason || 'Document blurred or information mismatch'}. Please resubmit clear photos.`,
         type: 'kyc_rejected',
         data: { url: '/wallet' },
+      });
+
+      publishKyc({
+        action: 'reject',
+        status: 'rejected',
+        userEmail: user?.email,
+        userId: kyc.userId,
+        kycId,
       });
 
       return NextResponse.json({ success: true, message: 'KYC Rejected.' });

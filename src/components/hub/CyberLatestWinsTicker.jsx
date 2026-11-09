@@ -6,9 +6,17 @@ import { diffSet } from '@/lib/fastDiff';
 import { fetchWinsTicker, getInstantWinsTicker } from '@/lib/winsTickerClient';
 
 export default function CyberLatestWinsTicker() {
-  const [wins, setWins] = useState(getInstantWinsTicker);
+  const [wins, setWins] = useState([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    setHydrated(true);
+    const instant = getInstantWinsTicker();
+    if (instant?.length) setWins(instant);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return undefined;
     let cancelled = false;
 
     const refresh = async (silent = true) => {
@@ -25,7 +33,7 @@ export default function CyberLatestWinsTicker() {
       cancelled = true;
       clearInterval(timer);
     };
-  }, []);
+  }, [hydrated]);
 
   const doubleList = wins.length > 0 ? [...wins, ...wins] : [];
 
@@ -37,6 +45,9 @@ export default function CyberLatestWinsTicker() {
       </div>
 
       <div className="flex-1 overflow-hidden relative min-h-[36px] flex items-center">
+        {!hydrated ? (
+          <div className="h-8 w-full max-w-md rounded-xl bg-slate-800/60 animate-pulse" aria-hidden />
+        ) : (
         <div className="ticker-slide-track gap-4 items-center">
           {doubleList.map((item, idx) => (
             <div
@@ -55,6 +66,7 @@ export default function CyberLatestWinsTicker() {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

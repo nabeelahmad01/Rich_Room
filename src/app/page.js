@@ -36,7 +36,7 @@ import KycModal from '@/components/modals/KycModal';
 import { diffSet, areEqual, cleanGameTitle } from '@/lib/fastDiff';
 import { gamesCacheKey, readGamesFromSession, writeGamesToSession, readInitialGamesCatalog } from '@/lib/gamesClientCache';
 import { writeSessionCache, CACHE_KEYS } from '@/lib/playerDataCache';
-import { readCachedGameAccountSeeds, writeGameAccountsCache } from '@/lib/gameAccountsClientCache';
+import { readCachedGameAccountSeeds } from '@/lib/gameAccountsClientCache';
 import { buildGameAccountIndex, gameHasReadyAccount, gameHasPendingAccount } from '@/lib/gameAccountMatch';
 import { broadcastPlayerLogout } from '@/lib/playerSessionCache';
 import { subscribePlayerAccountsSync, broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
@@ -45,7 +45,12 @@ import BonusAlertToast from '@/components/common/BonusAlertToast';
 import PushNotificationManager from '@/components/common/PushNotificationManager';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { fetchCurrentUser, getCachedUser, setCachedUser } from '@/lib/authClient';
-import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
+import { fetchJsonQuick, parseResponseJson } from '@/lib/fetchWithTimeout';
+import { loadPlayerGameAccountsForEmail } from '@/lib/playerGameAccountsClient';
+
+function tabNeedsGamesCatalog(tab) {
+  return tab === 'lobby' || tab === 'games' || tab === 'my-game-ids';
+}
 
 // Games
 import Panda777SlotsModal from '@/components/games/Panda777SlotsModal';
@@ -165,47 +170,32 @@ export default function HomePage({ initialTab = 'lobby' }) {
       return;
     }
     try {
-      const res = await fetch(`/api/game-accounts?email=${encodeURIComponent(userEmail)}`, { cache: 'no-store' });
-      const data = await res.json();
-      if (data.success) {
-        const cleanAccounts = (data.gameAccounts || []).map((a) => ({
-          ...a,
-          gameTitle: cleanGameTitle(a.gameTitle),
-        }));
-        const cleanRequests = (data.pendingRequests || []).map((r) => ({
-          ...r,
-          gameTitle: cleanGameTitle(r.gameTitle),
-        }));
+      const { active, pending, ok } = await loadPlayerGameAccountsForEmail(userEmail);
+      if (!ok) return;
 
-        const pendingTitles = new Set(cleanRequests.map((r) => titleKey(r.gameTitle)));
-        if (accountsReadyInitRef.current) {
-          for (const key of prevPendingTitlesRef.current) {
-            if (!pendingTitles.has(key)) {
-              const acc = cleanAccounts.find((a) => titleKey(a.gameTitle) === key);
-              if (acc) {
-                playTune('bell', 0.65);
-                setRequestToast({
-                  type: 'success',
-                  title: 'Game ID Ready! 🎮',
-                  message: `Your ${acc.gameTitle} credentials are ready. Username: ${acc.username}`,
-                });
-                setTimeout(() => setRequestToast(null), 8000);
-              }
+      const pendingTitles = new Set(pending.map((r) => titleKey(r.gameTitle)));
+      if (accountsReadyInitRef.current) {
+        for (const key of prevPendingTitlesRef.current) {
+          if (!pendingTitles.has(key)) {
+            const acc = active.find((a) => titleKey(a.gameTitle) === key);
+            if (acc) {
+              playTune('bell', 0.65);
+              setRequestToast({
+                type: 'success',
+                title: 'Game ID Ready! 🎮',
+                message: `Your ${acc.gameTitle} credentials are ready. Username: ${acc.username}`,
+              });
+              setTimeout(() => setRequestToast(null), 8000);
             }
           }
-        } else {
-          accountsReadyInitRef.current = true;
         }
-        prevPendingTitlesRef.current = pendingTitles;
-
-        diffSet(setUserGameAccounts, cleanAccounts);
-        diffSet(setPendingAccountRequests, cleanRequests);
-        writeGameAccountsCache(userEmail, {
-          active: cleanAccounts,
-          pending: cleanRequests,
-          rejected: [],
-        });
+      } else {
+        accountsReadyInitRef.current = true;
       }
+      prevPendingTitlesRef.current = pendingTitles;
+
+      diffSet(setUserGameAccounts, active);
+      diffSet(setPendingAccountRequests, pending);
     } catch {}
   }, []);
 
@@ -254,7 +244,8 @@ export default function HomePage({ initialTab = 'lobby' }) {
       if (params.toString()) url += `?${params.toString()}`;
 
       const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
-      const data = await res.json();
+      if (!res.ok) return;
+      const data = await parseResponseJson(res);
       if (data.success && data.games) {
         const sanitized = data.games.map((g) => ({
           ...g,
@@ -323,7 +314,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
     const handleFocus = () => {
       if (!document.hidden) {
         loadUser();
-        loadGames();
+        if (tabNeedsGamesCatalog(activeTab)) loadGames();
       }
     };
 
@@ -343,8 +334,14 @@ export default function HomePage({ initialTab = 'lobby' }) {
       };
     } catch {}
 
+    const handleInstant = () => {
+      handleAccountSync();
+      loadUser();
+    };
+
     window.addEventListener('paradise-user-sync', handleUserSync);
     window.addEventListener('accountRequestUpdated', handleAccountSync);
+    window.addEventListener('paradise-instant-sync', handleInstant);
     window.addEventListener('focus', handleFocus);
     window.addEventListener('storage', handleStorage);
     document.addEventListener('visibilitychange', handleFocus);
@@ -353,6 +350,7 @@ export default function HomePage({ initialTab = 'lobby' }) {
       unsubscribeAccounts();
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('accountRequestUpdated', handleAccountSync);
+      window.removeEventListener('paradise-instant-sync', handleInstant);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('storage', handleStorage);
       document.removeEventListener('visibilitychange', handleFocus);
@@ -403,8 +401,9 @@ export default function HomePage({ initialTab = 'lobby' }) {
   }, [user?.email, pendingAccountRequests.length, loadUserGameAccounts]);
 
   useEffect(() => {
+    if (!tabNeedsGamesCatalog(activeTab)) return;
     loadGames();
-  }, [category, searchTerm]);
+  }, [category, searchTerm, activeTab]);
 
   useEffect(() => {
     if (activeTab !== 'games' && activeTab !== 'lobby') return;

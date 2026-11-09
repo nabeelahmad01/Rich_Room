@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
+import { publishGamesCatalog } from '@/lib/realtimePublish';
 import { getSessionUser, ROLES } from '@/lib/auth';
 import { withGameDescription } from '@/lib/gameDescriptions';
+import { invalidateGamesThumbnailLookup } from '@/lib/gamesThumbnailLookup';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -14,6 +16,7 @@ const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache (player catalog only; admin 
 function invalidateGamesCache() {
   gamesCache = null;
   gamesCacheTime = 0;
+  invalidateGamesThumbnailLookup();
 }
 
 async function loadAllGamesFromDb() {
@@ -170,6 +173,7 @@ export async function POST(req) {
 
     const res = await gamesCol.insertOne(newGame);
     invalidateGamesCache();
+    publishGamesCatalog({ action: 'create', gameId });
     const idStr = res.insertedId ? res.insertedId.toString() : gameId;
     return NextResponse.json({
       success: true,
@@ -224,6 +228,7 @@ export async function PUT(req) {
 
     await gamesCol.updateOne(getGameFilter(id), { $set: updateFields });
     invalidateGamesCache();
+    publishGamesCatalog({ action: 'update', gameId: id });
 
     return NextResponse.json({ success: true, message: 'Game updated successfully' });
   } catch (error) {
@@ -251,6 +256,7 @@ export async function DELETE(req) {
 
     await gamesCol.deleteOne(getGameFilter(id));
     invalidateGamesCache();
+    publishGamesCatalog({ action: 'delete', gameId: id });
     return NextResponse.json({ success: true, message: 'Game deleted successfully' });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

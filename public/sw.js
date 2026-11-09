@@ -1,5 +1,5 @@
 // Rich Room Service Worker (Web Push & Chrome Native Notifications)
-const CACHE_NAME = 'rich-room-cache-v1';
+const CACHE_NAME = 'rich-room-cache-v2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

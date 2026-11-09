@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getSessionUser, ROLES } from '@/lib/auth';
-import { ensureDbInitialized } from '@/lib/initDb';
+import { publishGatewaysUpdated } from '@/lib/realtimePublish';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -35,12 +35,26 @@ export async function GET(req) {
     const methodsCol = db.collection('payment_methods');
 
     const query = all ? {} : { isActive: true };
-    const methods = await methodsCol.find(query).toArray();
-
-    // Trigger non-blocking init in background only if empty
-    if (methods.length === 0) {
-      ensureDbInitialized().catch(() => {});
-    }
+    const methods = await methodsCol
+      .find(query, {
+        projection: {
+          methodId: 1,
+          name: 1,
+          type: 1,
+          tag: 1,
+          tagName: 1,
+          accountDetails: 1,
+          instructions: 1,
+          paymentUrl: 1,
+          qrCode: 1,
+          minDeposit: 1,
+          maxDeposit: 1,
+          isActive: 1,
+          createdAt: 1,
+        },
+      })
+      .sort({ createdAt: 1 })
+      .toArray();
 
     const formatted = methods.map(m => ({
       id: m._id.toString(),
@@ -127,6 +141,7 @@ export async function POST(req) {
 
     const res = await methodsCol.insertOne(newMethod);
     invalidatePaymentMethodsCache();
+    publishGatewaysUpdated();
     return NextResponse.json({
       success: true,
       id: res.insertedId.toString(),
@@ -203,6 +218,7 @@ export async function PUT(req) {
     const filter = getMethodFilter(id);
     await methodsCol.updateOne(filter, { $set: updateFields });
     invalidatePaymentMethodsCache();
+    publishGatewaysUpdated();
 
     return NextResponse.json({ success: true, message: 'Payment method updated successfully.' });
   } catch (error) {
@@ -239,6 +255,7 @@ export async function DELETE(req) {
 
     await methodsCol.deleteOne(getMethodFilter(id));
     invalidatePaymentMethodsCache();
+    publishGatewaysUpdated();
     return NextResponse.json({ success: true, message: 'Payment method deleted.' });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

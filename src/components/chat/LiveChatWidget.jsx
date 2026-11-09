@@ -17,6 +17,7 @@ import { diffSet, areEqual } from '@/lib/fastDiff';
 import { isPlayerSoundEnabled, refreshPlayerNotifications } from '@/lib/notificationsClient';
 import { fetchCurrentUser } from '@/lib/authClient';
 import { fetchJsonQuick } from '@/lib/fetchWithTimeout';
+import { postChatMessage } from '@/lib/chatClient';
 
 export default function LiveChatWidget({ user: initialUser, soundEnabled = true }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,8 +50,10 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
           localStorage.setItem('pp_guest_chat_id', storedId);
         }
         setGuestId(storedId);
+        window.dispatchEvent(new CustomEvent('pp-guest-chat-ready'));
       } catch {
         setGuestId(`guest_${Date.now().toString(36)}`);
+        window.dispatchEvent(new CustomEvent('pp-guest-chat-ready'));
       }
     }
   }, []);
@@ -170,13 +173,14 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
       }
 
       params.set('markRead', isOpen ? 'true' : 'false');
+      params.set('lightweightImages', 'true');
       const endpoint = `/api/chat?${params.toString()}`;
 
       try {
         const { data } = await fetchJsonQuick(
           endpoint,
           { credentials: 'include', cache: 'no-store' },
-          8000
+          20000
         );
         if (isCancelled || !data?.success) return;
 
@@ -225,12 +229,52 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
     fetchMessages();
     fetchMessagesRef.current = fetchMessages;
-    const pollInterval = isOpen ? 1200 : 5000;
+    const pollInterval = isOpen ? 1200 : 8000;
     const interval = setInterval(fetchMessages, pollInterval);
+
+    const onRealtime = (e) => {
+      const ev = e.detail;
+      if (ev?.type !== 'CHAT_MESSAGE') return;
+      if (ev.senderRole !== 'staff') return;
+      const myConvId = String(
+        currentUser
+          ? currentUser.userId || currentUser.id || currentUser._id
+          : guestId || ''
+      );
+      if (ev.conversationId && myConvId && String(ev.conversationId) !== myConvId) return;
+      if (ev.message) {
+        const m = ev.message;
+        const msgId = String(m.id || m._id || `rt_${ev.t || Date.now()}`);
+        setMessages((prev) => {
+          if (prev.some((x) => String(x.id) === msgId)) return prev;
+          const imageUrl =
+            m.imageUrl && String(m.imageUrl).length > 256
+              ? `/api/chat/attachment?id=${msgId}`
+              : m.imageUrl || null;
+          return [
+            ...prev,
+            {
+              ...m,
+              id: msgId,
+              imageUrl,
+              senderRole: 'staff',
+              read: isOpen,
+              createdAt: m.createdAt || new Date().toISOString(),
+            },
+          ];
+        });
+        if (isOpen) setUnreadStaffCount(0);
+        else setUnreadStaffCount((c) => c + 1);
+      } else if (fetchMessagesRef.current) {
+        fetchMessagesRef.current();
+      }
+    };
+    window.addEventListener('richroom-realtime', onRealtime);
 
     return () => {
       isCancelled = true;
       clearInterval(interval);
+      window.removeEventListener('richroom-realtime', onRealtime);
     };
   }, [isOpen, currentUser, guestId, soundEnabled]);
 
@@ -416,26 +460,23 @@ export default function LiveChatWidget({ user: initialUser, soundEnabled = true 
 
     (async () => {
       try {
-        const { res, data } = await fetchJsonQuick(
-          '/api/chat',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(payload),
-          },
-          currentAttachment ? 25000 : 10000
-        );
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Failed to send message. Please retry.');
-        }
+        const data = await postChatMessage(payload, {
+          timeoutMs: currentAttachment ? 60000 : 45000,
+          retries: 2,
+        });
         if (data.message) {
           setMessages((prev) =>
             prev.map((m) => (m.id === optimisticMsg.id ? { ...data.message, id: data.message.id } : m))
           );
         }
+        setSendError(null);
         fetchMessagesRef.current?.();
       } catch (err) {
+        if (err?.code === 'SLOW_CONNECTION' || /timed out/i.test(err?.message || '')) {
+          setSendError(null);
+          fetchMessagesRef.current?.();
+          return;
+        }
         setSendError(err.message || 'Delivery failed. Tap Send to retry.');
         setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
         setInputMessage((prev) => prev || currentText);

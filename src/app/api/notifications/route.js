@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSessionUser, ROLES, getUserFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { sendPushNotification, getFirebaseMessaging } from '@/lib/fcm';
+import { publishBroadcast, REALTIME_TYPES } from '@/lib/realtimePublish';
 
 // GET: Fetch in-app notifications for player OR broadcast history for admin
 export async function GET(req) {
@@ -205,6 +206,12 @@ export async function POST(req) {
         }
       })();
     }
+
+    publishBroadcast(REALTIME_TYPES.NOTIFICATION_BROADCAST, {
+      title: title.trim(),
+      url,
+      broadcastId: res.insertedId.toString(),
+    });
 
     return NextResponse.json({
       success: true,

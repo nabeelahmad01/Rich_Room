@@ -1,9 +1,33 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { getSessionUser, ROLES, safeIdFilter } from '@/lib/auth';
+import { getSessionUser, getAdminSessionUser, ROLES, safeIdFilter } from '@/lib/auth';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
+import {
+  publishAccountRequestCreated,
+  publishAccountRequestUpdated,
+} from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
+
+const STAFF_ROLES = new Set([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.OPERATION_ADMIN,
+  ROLES.FINANCIAL_MANAGER,
+  ROLES.COIN_MANAGER,
+  ROLES.CHAT_SUPPORT,
+  'financial_admin',
+  'coins_admin',
+  'support_admin',
+]);
+
+function isStaffSession(session) {
+  return Boolean(session?.role && STAFF_ROLES.has(session.role));
+}
+
+function normStatus(value) {
+  return String(value || '').toUpperCase().trim();
+}
 
 // GET Account Requests
 export async function GET(req) {
@@ -12,29 +36,9 @@ export async function GET(req) {
     const email = searchParams.get('email');
     const status = searchParams.get('status');
     const type = searchParams.get('type'); // 'ACCOUNT_CREATION' | 'COIN_LOAD' | 'all'
+    const lightweight = searchParams.get('lightweight') !== 'false';
 
     const db = await getDb();
-
-    // Auto-migrate any legacy freeplay requests from 'account_requests' (underscore) into 'accountRequests'
-    try {
-      const legacyDocs = await db.collection('account_requests').find({}).toArray();
-      if (legacyDocs.length > 0) {
-        for (const doc of legacyDocs) {
-          const { _id, ...rest } = doc;
-          const fpAmt = Number(doc.freeplayAmount || doc.transferAmount || 5);
-          await db.collection('accountRequests').insertOne({
-            ...rest,
-            userEmail: (doc.userEmail || '').toLowerCase().trim(),
-            requestType: 'COIN_LOAD',
-            transferAmount: fpAmt,
-            isFreeplay: true,
-            freeplayPending: true,
-            freeplayAmount: fpAmt,
-          });
-          await db.collection('account_requests').deleteOne({ _id });
-        }
-      }
-    } catch {}
 
     const query = {};
 
@@ -48,42 +52,66 @@ export async function GET(req) {
 
     if (type === 'ACCOUNT_CREATION') {
       query.$and = [
-        { isFreeplay: { $ne: true } },
-        { freeplayPending: { $ne: true } },
         {
           $or: [
             { requestType: 'ACCOUNT_CREATION' },
             {
               $and: [
                 { requestType: { $ne: 'COIN_LOAD' } },
-                { $or: [{ transferAmount: { $lte: 0 } }, { transferAmount: { $exists: false } }, { transferAmount: null }] }
-              ]
-            }
-          ]
-        }
+                {
+                  $or: [
+                    { transferAmount: { $lte: 0 } },
+                    { transferAmount: { $exists: false } },
+                    { transferAmount: null },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
       ];
     } else if (type === 'COIN_LOAD') {
       query.$and = [
         {
           $or: [
             { requestType: 'COIN_LOAD' },
-            { isFreeplay: true },
-            { freeplayPending: true },
             {
               $and: [
                 { requestType: { $ne: 'ACCOUNT_CREATION' } },
-                { transferAmount: { $gt: 0 } }
-              ]
-            }
-          ]
-        }
+                { transferAmount: { $gt: 0 } },
+              ],
+            },
+          ],
+        },
       ];
     }
 
+    const projection = lightweight
+      ? {
+          userEmail: 1,
+          userName: 1,
+          gameTitle: 1,
+          gameId: 1,
+          requestType: 1,
+          status: 1,
+          gameAccountUsername: 1,
+          gameAccountPassword: 1,
+          transferAmount: 1,
+          isFreeplay: 1,
+          freeplayPending: 1,
+          freeplayAmount: 1,
+          freeplayTaskId: 1,
+          rejectionReason: 1,
+          rejectReason: 1,
+          createdAt: 1,
+        }
+      : undefined;
+
     const requests = await db
       .collection('accountRequests')
-      .find(query)
+      .find(query, projection ? { projection } : undefined)
       .sort({ createdAt: -1 })
+      .limit(200)
       .toArray();
 
     return NextResponse.json({
@@ -91,21 +119,27 @@ export async function GET(req) {
       accountRequests: requests.map(r => {
         const isFp = Boolean(r.isFreeplay || r.freeplayPending);
         const fpAmt = Number(r.freeplayAmount || r.transferAmount || 0);
+        const id = r._id.toString();
+        const isLoad = isFp || Number(r.transferAmount || 0) > 0 || r.requestType === 'COIN_LOAD';
+        let freeplayScreenshot = r.freeplayScreenshot || r.screenshot || '';
+        if (lightweight && isLoad) {
+          freeplayScreenshot = `/api/account-requests/proof?id=${id}`;
+        }
         return {
-          id: r._id.toString(),
+          id,
           userEmail: r.userEmail,
           userName: r.userName || r.userEmail?.split('@')[0],
           gameTitle: r.gameTitle,
           gameId: r.gameId || '',
           requestType: isFp ? 'COIN_LOAD' : (r.requestType || (Number(r.transferAmount || 0) > 0 ? 'COIN_LOAD' : 'ACCOUNT_CREATION')),
-          status: r.status || 'PENDING',
+          status: normStatus(r.status || 'PENDING'),
           gameAccountUsername: r.gameAccountUsername || '',
           gameAccountPassword: r.gameAccountPassword || '',
           transferAmount: isFp ? (fpAmt || 5) : Number(r.transferAmount || 0),
           isFreeplay: isFp,
           freeplayPending: isFp,
           freeplayAmount: fpAmt,
-          freeplayScreenshot: r.freeplayScreenshot || r.screenshot || '',
+          freeplayScreenshot,
           freeplayTaskId: r.freeplayTaskId || '',
           rejectionReason: r.rejectionReason || r.rejectReason || '',
           createdAt: r.createdAt || new Date(),
@@ -120,7 +154,7 @@ export async function GET(req) {
 // POST - User requests an account or loads coins for a game
 export async function POST(req) {
   try {
-    const session = await getSessionUser();
+    const session = (await getSessionUser('player')) || (await getSessionUser());
     const body = await req.json();
     const userEmail = (session?.email || body.userEmail || '').toLowerCase().trim();
     const userName = session?.username || body.userName || userEmail.split('@')[0];
@@ -327,22 +361,30 @@ export async function POST(req) {
     });
 
     const requestId = res.insertedId.toString();
+    const responseRequest = {
+      id: requestId,
+      _id: requestId,
+      userEmail,
+      userName,
+      gameTitle,
+      gameId,
+      gameAccountUsername: resolvedGameUsername || '',
+      requestType,
+      transferAmount,
+      status: 'PENDING',
+      createdAt: newRequest.createdAt,
+    };
+
+    publishAccountRequestCreated({
+      request: responseRequest,
+      userEmail,
+      userId: user._id?.toString?.() || session?.userId,
+    });
+
     return NextResponse.json({
       success: true,
       requestId,
-      request: {
-        id: requestId,
-        _id: requestId,
-        userEmail,
-        userName,
-        gameTitle,
-        gameId,
-        gameAccountUsername: resolvedGameUsername || '',
-        requestType,
-        transferAmount,
-        status: 'PENDING',
-        createdAt: newRequest.createdAt,
-      },
+      request: responseRequest,
       message: requestType === 'COIN_LOAD'
         ? `Load request for ${gameTitle} submitted! $${transferAmount.toFixed(2)} SC has been deducted from your wallet.`
         : `Account request for ${gameTitle} submitted! Staff will issue your credentials shortly.`,
@@ -355,8 +397,8 @@ export async function POST(req) {
 // PUT - Admin approves or cancels account or load request
 export async function PUT(req) {
   try {
-    const session = await getSessionUser();
-    if (!session || !['super_admin', 'operation_admin', 'financial_manager', 'coin_manager', 'chat_support'].includes(session.role)) {
+    const session = (await getAdminSessionUser()) || (await getSessionUser('admin'));
+    if (!isStaffSession(session)) {
       return NextResponse.json({ success: false, message: 'Unauthorized staff action.' }, { status: 403 });
     }
 
@@ -579,6 +621,21 @@ export async function PUT(req) {
         });
       }
 
+      publishAccountRequestUpdated({
+        request: {
+          ...targetRequest,
+          id: targetRequest._id.toString(),
+          status: 'READY',
+          gameAccountUsername: username,
+          gameAccountPassword: password,
+        },
+        userEmail: cleanEmail,
+        userId: targetRequest.userId,
+        status: 'READY',
+        gameTitle: cleanTitle,
+        action: 'approve',
+      });
+
       return NextResponse.json({
         success: true,
         message: isFreeplay
@@ -680,6 +737,20 @@ export async function PUT(req) {
         data: { gameTitle: cleanTitle },
       });
 
+      publishAccountRequestUpdated({
+        request: {
+          ...targetRequest,
+          id: targetRequest._id.toString(),
+          status: 'REJECTED',
+          rejectionReason: reason,
+        },
+        userEmail: cleanEmail,
+        userId: targetRequest.userId,
+        status: 'REJECTED',
+        gameTitle: cleanTitle,
+        action: 'reject',
+      });
+
       return NextResponse.json({
         success: true,
         message: isFreeplay
@@ -715,13 +786,23 @@ export async function DELETE(req) {
 
     // Only allow player if it's their own request, or staff
     const isOwner = session && session.email?.toLowerCase().trim() === target.userEmail?.toLowerCase().trim();
-    const isStaff = session && ['super_admin', 'operation_admin', 'financial_manager', 'coin_manager', 'chat_support'].includes(session.role);
+    const isStaff = isStaffSession(session);
 
     if (!isOwner && !isStaff) {
       return NextResponse.json({ success: false, message: 'Unauthorized.' }, { status: 403 });
     }
 
     await requestsCol.deleteOne(safeIdFilter(id));
+
+    publishAccountRequestUpdated({
+      request: { id, ...target, status: 'DISMISSED' },
+      userEmail: target.userEmail,
+      userId: target.userId,
+      status: 'DISMISSED',
+      gameTitle: target.gameTitle,
+      action: 'dismiss',
+    });
+
     return NextResponse.json({ success: true, message: 'Request dismissed successfully.' });
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });

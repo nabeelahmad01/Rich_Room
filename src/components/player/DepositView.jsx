@@ -38,10 +38,11 @@ import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
 import { compressImageFile } from '@/lib/imageCompress';
 import { getCachedUser } from '@/lib/authClient';
+import { writePaymentMethodsCache } from '@/lib/paymentMethodsCache';
 import {
-  readPaymentMethodsCache,
-  writePaymentMethodsCache,
-} from '@/lib/paymentMethodsCache';
+  readPaymentMethodsInstant,
+  fetchPaymentMethods,
+} from '@/lib/paymentMethodsClient';
 import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
 import { readAdminGamesFromCache, refreshAdminGamesCatalog } from '@/lib/playerGamesCatalog';
 import { readInitialGamesCatalog } from '@/lib/gamesClientCache';
@@ -63,18 +64,9 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
   });
 
   // Deposit Form State (never show placeholder demo gateways — cache or API only)
-  const [gateways, setGateways] = useState(() => {
-    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
-    return cached?.length ? cached : [];
-  });
-  const [selectedGateway, setSelectedGateway] = useState(() => {
-    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
-    return cached?.[0] || null;
-  });
-  const [loadingGateways, setLoadingGateways] = useState(() => {
-    const cached = typeof window !== 'undefined' ? readPaymentMethodsCache() : null;
-    return !cached?.length;
-  });
+  const [gateways, setGateways] = useState([]);
+  const [selectedGateway, setSelectedGateway] = useState(null);
+  const [loadingGateways, setLoadingGateways] = useState(true);
   const [gatewaysError, setGatewaysError] = useState(null);
   const [amount, setAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');
@@ -164,35 +156,44 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
     }
   };
 
-  // 2. Fetch gateways
-  const fetchGateways = async (isSilent = false) => {
-    if (!isSilent && gateways.length === 0) setLoadingGateways(true);
-    setGatewaysError(null);
-    try {
-      const res = await fetch('/api/payments/methods', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      const data = await res.json();
-      if (data.success && data.methods && data.methods.length > 0) {
-        writePaymentMethodsCache(data.methods);
-        diffSet(setGateways, data.methods);
-        setSelectedGateway((prev) => {
-          if (prev && data.methods.some((m) => m.id === prev.id)) return prev;
-          return data.methods[0];
-        });
-      } else if (gateways.length === 0) {
-        setGatewaysError('Payment gateways are not available right now. Please try again or contact live support.');
-      }
-    } catch (err) {
-      console.error(err);
-      if (gateways.length === 0) {
-        setGatewaysError('Could not load payment options. Check your connection and tap Retry.');
-      }
-    } finally {
-      setLoadingGateways(false);
+  const applyGatewayList = useCallback((methods) => {
+    if (!methods?.length) {
+      setGateways([]);
+      setSelectedGateway(null);
+      setGatewaysError(
+        'No deposit gateways are active. Ask staff to enable gateways in Admin → Payment Gateways.'
+      );
+      return;
     }
-  };
+    writePaymentMethodsCache(methods);
+    diffSet(setGateways, methods);
+    setGatewaysError(null);
+    setSelectedGateway((prev) => {
+      if (prev && methods.some((m) => m.id === prev.id)) return prev;
+      return methods[0];
+    });
+  }, []);
+
+  const fetchGateways = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent && gateways.length === 0) setLoadingGateways(true);
+      try {
+        const methods = await fetchPaymentMethods({ force: !isSilent });
+        applyGatewayList(methods);
+      } catch (err) {
+        console.error(err);
+        const cached = readPaymentMethodsInstant();
+        if (cached?.length) {
+          applyGatewayList(cached);
+        } else if (!isSilent) {
+          setGatewaysError('Could not load payment options. Check your connection and tap Retry.');
+        }
+      } finally {
+        setLoadingGateways(false);
+      }
+    },
+    [applyGatewayList, gateways.length]
+  );
 
   // 3. Fetch deposit history (with silent background update support and lightweight query)
   const fetchHistory = async (isSilent = false) => {
@@ -258,15 +259,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
     }
 
     fetchUserAndSettings(true);
-    if (gateways.length === 0) {
-      const cachedGw = readPaymentMethodsCache();
-      if (cachedGw?.length) {
-        setGateways(cachedGw);
-        setSelectedGateway(cachedGw[0]);
-        setLoadingGateways(false);
-      }
+    const cachedGw = readPaymentMethodsInstant();
+    if (cachedGw?.length) {
+      applyGatewayList(cachedGw);
+      setLoadingGateways(false);
     }
-    fetchGateways(gateways.length > 0);
+    fetchPaymentMethods({ force: true }).then((methods) => applyGatewayList(methods));
     fetchHistory(true);
     fetchGameAccounts();
     const cachedCatalog = readAdminGamesFromCache();
@@ -310,8 +308,14 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
       fetchGameAccounts();
     };
 
+    const handlePaymentMethodsEvent = (e) => {
+      const methods = e.detail?.methods;
+      if (Array.isArray(methods)) applyGatewayList(methods);
+    };
+
     window.addEventListener('paradise-user-sync', handleUserSync);
     window.addEventListener('paradise-cashier-refresh', handleCashierRefresh);
+    window.addEventListener('paradise-payment-methods', handlePaymentMethodsEvent);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
@@ -319,11 +323,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
       unsubscribeAccounts();
       clearInterval(pollInterval);
       window.removeEventListener('paradise-cashier-refresh', handleCashierRefresh);
+      window.removeEventListener('paradise-payment-methods', handlePaymentMethodsEvent);
       window.removeEventListener('paradise-user-sync', handleUserSync);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
     };
-  }, [fetchGameAccounts]);
+  }, [fetchGameAccounts, applyGatewayList, fetchGateways]);
 
   const handleCopy = (text, fieldName) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -482,32 +487,6 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
         fetchHistory(true);
         fetchUserAndSettings(true);
 
-        // Alert Admin & Finance Desk immediately (0ms cross-tab broadcast)
-        try {
-          const staffChannel = new BroadcastChannel('paradise_staff_alerts');
-          staffChannel.postMessage({
-            type: 'NEW_DEPOSIT',
-            depositId: data.depositId,
-            amount: finalAmount,
-            username: user?.username || 'Player',
-            methodName: selectedGateway?.name || 'Payment',
-          });
-          staffChannel.close();
-        } catch {}
-
-        try {
-          localStorage.setItem(
-            'paradise_staff_event',
-            JSON.stringify({
-              type: 'NEW_DEPOSIT',
-              depositId: data.depositId,
-              amount: finalAmount,
-              username: user?.username || 'Player',
-              methodName: selectedGateway?.name || 'Payment',
-              time: Date.now(),
-            })
-          );
-        } catch {}
       } else {
         // Rollback optimistic item on failure
         setDepositHistory((prev) => prev.filter((d) => d.id !== tempId));

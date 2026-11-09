@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { fetchCurrentUser } from '@/lib/authClient';
-import { prefetchPublicSettings } from '@/lib/publicSettingsClient';
+import { fetchPublicSettings, prefetchPublicSettings } from '@/lib/publicSettingsClient';
 import { prefetchWinsTicker } from '@/lib/winsTickerClient';
+import { prefetchPaymentMethods } from '@/lib/paymentMethodsClient';
 
 /**
  * Keeps client UI in sync with the httpOnly session cookie after client-side navigation.
@@ -16,6 +17,22 @@ export default function SessionBridge() {
   useEffect(() => {
     prefetchPublicSettings();
     prefetchWinsTicker();
+    prefetchPaymentMethods();
+
+    const onSettingsSync = () => {
+      fetchPublicSettings({ force: true }).catch(() => {});
+    };
+    const onGatewaysSync = () => {
+      prefetchPaymentMethods();
+    };
+    window.addEventListener('paradise-public-settings-sync', onSettingsSync);
+    window.addEventListener('paradise-games-catalog-sync', onGatewaysSync);
+    window.addEventListener('paradise-cashier-refresh', onGatewaysSync);
+    return () => {
+      window.removeEventListener('paradise-public-settings-sync', onSettingsSync);
+      window.removeEventListener('paradise-games-catalog-sync', onGatewaysSync);
+      window.removeEventListener('paradise-cashier-refresh', onGatewaysSync);
+    };
   }, []);
 
   useEffect(() => {
@@ -27,6 +44,7 @@ export default function SessionBridge() {
         if (cancelled || typeof window === 'undefined') return;
         if (data?.authenticated && data?.user) {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: data.user }));
+          window.dispatchEvent(new CustomEvent('pp-player-session-ready'));
         } else {
           window.dispatchEvent(new CustomEvent('paradise-user-sync', { detail: null }));
         }

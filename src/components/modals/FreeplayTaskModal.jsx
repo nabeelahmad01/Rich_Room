@@ -265,32 +265,6 @@ export default function FreeplayTaskModal({
           });
         } catch {}
 
-        // Broadcast real-time event to Admin Coins Allotment Desk (0ms)
-        try {
-          const staffChannel = new BroadcastChannel('paradise_staff_alerts');
-          staffChannel.postMessage({
-            type: 'NEW_COIN_LOAD',
-            isFreeplay: true,
-            gameTitle: selectedGame,
-            userName: user?.username || targetEmail.split('@')[0],
-            amount: data.amount || freeplayAmount,
-          });
-          staffChannel.close();
-        } catch {}
-        try {
-          localStorage.setItem(
-            'paradise_staff_event',
-            JSON.stringify({
-              type: 'NEW_COIN_LOAD',
-              isFreeplay: true,
-              gameTitle: selectedGame,
-              userName: user?.username || targetEmail.split('@')[0],
-              amount: data.amount || freeplayAmount,
-              time: Date.now(),
-            })
-          );
-        } catch {}
-
         if (onSuccess) onSuccess(data);
         setStatusMsg({
           type: 'success',

@@ -1,11 +1,20 @@
 import { getDb } from './mongodb';
 import { sendPushNotification } from './fcm';
+import { publishStaffPlayerSync, publishStaffSync, REALTIME_TYPES } from './realtimePublish';
 
 /**
  * Dispatches an instant in-app notification & push notification strictly to ONE targeted player.
  * NEVER broadcasts personal alerts to any other user or player topic!
  */
 export function notifyPlayer({ userId, userEmail, username, title, message, type = 'general', data = {} }) {
+  publishStaffPlayerSync(REALTIME_TYPES.WALLET, {
+    userEmail,
+    userId,
+    notifyType: type,
+    title,
+    url: data?.url,
+  });
+
   // Fire asynchronously in background
   (async () => {
     try {
@@ -94,6 +103,13 @@ export function notifyPlayer({ userId, userEmail, username, title, message, type
  * NEVER sends to player device tokens or player broadcast topics!
  */
 export function notifyStaff({ title, message, type = 'staff_alert', data = {} }) {
+  publishStaffSync(REALTIME_TYPES.DESK_SYNC, {
+    notifyType: type,
+    title,
+    conversationId: data?.conversationId,
+    url: data?.url,
+  });
+
   (async () => {
     try {
       const db = await getDb();

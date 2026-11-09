@@ -74,10 +74,13 @@ export default function ProfilePage() {
       if (e.detail) diffSet(setUser, e.detail);
     };
 
+    const handleInstant = () => fetchProfile(true);
     window.addEventListener('paradise-user-sync', handleUserSync);
+    window.addEventListener('paradise-instant-sync', handleInstant);
     return () => {
       clearInterval(interval);
       window.removeEventListener('paradise-user-sync', handleUserSync);
+      window.removeEventListener('paradise-instant-sync', handleInstant);
     };
   }, []);
 

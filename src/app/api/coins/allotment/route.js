@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { getSessionUser, ROLES, safeIdFilter } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { notifyPlayer } from '@/lib/notify';
+import { publishWallet } from '@/lib/realtimePublish';
 
 // Search player for allotment or fetch recent allotment history
 export async function GET(req) {
@@ -177,6 +178,15 @@ export async function POST(req) {
         : `Your balance has been adjusted by -${numAmount} ${currency}. Reason: ${reason.trim()}`,
       type: action === 'credit' ? 'coins_allotment' : 'coins_deduction',
       data: { currency, amount: String(numAmount), newBalance: String(newBalance), url: '/wallet' },
+    });
+
+    publishWallet({
+      action,
+      currency,
+      amount: numAmount,
+      newBalance,
+      userEmail: player.email,
+      userId: player._id.toString(),
     });
 
     return NextResponse.json({

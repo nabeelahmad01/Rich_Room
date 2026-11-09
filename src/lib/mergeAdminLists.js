@@ -67,15 +67,32 @@ export function mergeRedemptionsOptimistic(prev, incoming) {
 }
 
 export function mergeAccountRequestsOptimistic(prev, incoming) {
-  if (!Array.isArray(incoming) || incoming.length === 0) return incoming || [];
-  const prevById = new Map(prev.map((x) => [getEntityId(x), x]));
-  return incoming.map((inc) => {
+  if (!Array.isArray(incoming)) return Array.isArray(prev) ? prev : [];
+  const prevList = Array.isArray(prev) ? prev : [];
+  const prevById = new Map(prevList.map((x) => [getEntityId(x), x]));
+  const incomingIds = new Set(incoming.map((x) => getEntityId(x)).filter(Boolean));
+
+  const merged = incoming.map((inc) => {
     const id = getEntityId(inc);
     const loc = prevById.get(id);
     if (!loc) return inc;
     if (accountReqNeedsAction(inc) && !accountReqNeedsAction(loc)) return loc;
     return inc;
   });
+
+  const now = Date.now();
+  const graceMs = 120000;
+  const extras = prevList.filter((loc) => {
+    const id = getEntityId(loc);
+    if (id && incomingIds.has(id)) return false;
+    if (!accountReqNeedsAction(loc)) return false;
+    const t = loc.createdAt ? new Date(loc.createdAt).getTime() : now;
+    return now - t < graceMs;
+  });
+
+  const combined = [...extras, ...merged];
+  combined.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  return combined;
 }
 
 /** Admin UI: show a new row before the next API poll (cross-tab or optimistic). */

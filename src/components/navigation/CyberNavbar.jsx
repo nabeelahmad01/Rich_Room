@@ -245,6 +245,7 @@ export default function CyberNavbar({
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('balanceUpdate', handleCustomEvent);
+    window.addEventListener('paradise-instant-sync', handleCustomEvent);
     let balanceChan = null;
     try {
       balanceChan = new BroadcastChannel('paradise_balance_sync');
@@ -262,6 +263,7 @@ export default function CyberNavbar({
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('balanceUpdate', handleCustomEvent);
+      window.removeEventListener('paradise-instant-sync', handleCustomEvent);
       window.removeEventListener('refreshUser', handleCustomEvent);
     };
   }, []);
