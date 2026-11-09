@@ -2,52 +2,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { Trophy } from 'lucide-react';
-import { diffSet, cleanGameTitle } from '@/lib/fastDiff';
-import { CACHE_KEYS, readSessionCache, writeSessionCache } from '@/lib/playerDataCache';
-
-const TICKER_TTL_MS = 90 * 1000;
+import { diffSet } from '@/lib/fastDiff';
+import { fetchWinsTicker, getInstantWinsTicker } from '@/lib/winsTickerClient';
 
 export default function CyberLatestWinsTicker() {
-  const [wins, setWins] = useState(() => {
-    const cached = readSessionCache(CACHE_KEYS.WINS_TICKER, '', TICKER_TTL_MS);
-    return Array.isArray(cached) ? cached : [];
-  });
-  const [ready, setReady] = useState(() => {
-    const cached = readSessionCache(CACHE_KEYS.WINS_TICKER, '', TICKER_TTL_MS);
-    return Array.isArray(cached) && cached.length > 0;
-  });
+  const [wins, setWins] = useState(getInstantWinsTicker);
 
   useEffect(() => {
     let cancelled = false;
-  const load = () => {
-    fetch('/api/games/activity', { credentials: 'include', cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (cancelled) return;
-        const rawList = data.activity || data.ticker || [];
-        if (data.success && Array.isArray(rawList)) {
-          const sanitized = rawList.map((item) => ({
-            ...item,
-            gameTitle: cleanGameTitle(item.gameTitle || item.game || 'VIP Casino'),
-          }));
-          diffSet(setWins, sanitized);
-          writeSessionCache(CACHE_KEYS.WINS_TICKER, sanitized);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setReady(true);
-      });
-  };
-    load();
-    const refresh = setInterval(load, 60000);
+
+    const refresh = async (silent = true) => {
+      const list = await fetchWinsTicker({ force: !silent });
+      if (!cancelled && list?.length) {
+        diffSet(setWins, list);
+      }
+    };
+
+    refresh(true);
+    const timer = setInterval(() => refresh(true), 45000);
+
     return () => {
       cancelled = true;
-      clearInterval(refresh);
+      clearInterval(timer);
     };
   }, []);
 
-  const showEmpty = ready && wins.length === 0;
   const doubleList = wins.length > 0 ? [...wins, ...wins] : [];
 
   return (
@@ -58,20 +37,10 @@ export default function CyberLatestWinsTicker() {
       </div>
 
       <div className="flex-1 overflow-hidden relative min-h-[36px] flex items-center">
-        {!ready ? (
-          <div className="flex gap-2 w-full animate-pulse">
-            <div className="h-8 flex-1 rounded-xl bg-slate-800/80" />
-            <div className="h-8 flex-1 rounded-xl bg-slate-800/60 hidden sm:block" />
-          </div>
-        ) : showEmpty ? (
-          <p className="text-[11px] text-slate-500 font-mono w-full text-center py-1">
-            Live win feed loading… play to see jackpots here.
-          </p>
-        ) : (
         <div className="ticker-slide-track gap-4 items-center">
           {doubleList.map((item, idx) => (
             <div
-              key={idx}
+              key={`${item.username}-${item.gameTitle}-${idx}`}
               className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-700/60 shrink-0 text-xs shadow-sm hover:border-[var(--neon-cyan)] transition-colors"
             >
               <div className="w-5 h-5 rounded-full bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] flex items-center justify-center font-bold text-[10px]">
@@ -86,7 +55,6 @@ export default function CyberLatestWinsTicker() {
             </div>
           ))}
         </div>
-        )}
       </div>
     </div>
   );

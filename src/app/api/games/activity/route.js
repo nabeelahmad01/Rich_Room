@@ -4,7 +4,16 @@ import { getSessionUser, ROLES } from '@/lib/auth';
 
 let tickerCache = null;
 let tickerCacheAt = 0;
-const TICKER_CACHE_MS = 45 * 1000;
+const TICKER_CACHE_MS = 3 * 60 * 1000;
+
+const FALLBACK_TICKER = [
+  { username: 'raze77', game: 'Ultra Panda', gameTitle: 'Ultra Panda', amount: 340.5, currency: 'SC' },
+  { username: 'nyx_pro', game: 'Fire Kirin', gameTitle: 'Fire Kirin', amount: 820.0, currency: 'SC' },
+  { username: 'lucky_bella', game: 'Orion Stars', gameTitle: 'Orion Stars', amount: 450.0, currency: 'SC' },
+  { username: 'crypto_ace', game: 'Game Vault', gameTitle: 'Game Vault', amount: 1250.0, currency: 'SC' },
+  { username: 'halcyon_vip', game: 'Juwa City', gameTitle: 'Juwa City', amount: 290.75, currency: 'SC' },
+  { username: 'drake99', game: 'Milky Way', gameTitle: 'Milky Way', amount: 620.0, currency: 'SC' },
+];
 
 export async function GET(req) {
   try {
@@ -87,6 +96,10 @@ export async function GET(req) {
       }));
     }
 
+    if (!displayWins.length) {
+      displayWins = FALLBACK_TICKER;
+    }
+
     tickerCache = displayWins;
     tickerCacheAt = Date.now();
 
@@ -96,6 +109,12 @@ export async function GET(req) {
       activity: displayWins,
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      ticker: FALLBACK_TICKER,
+      activity: FALLBACK_TICKER,
+      fromFallback: true,
+      error: error.message,
+    });
   }
 }

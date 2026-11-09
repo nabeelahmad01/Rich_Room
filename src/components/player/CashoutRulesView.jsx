@@ -7,65 +7,61 @@ import {
   formatPlayerFacingCopy,
   resolveCashoutRulesText,
 } from '@/lib/cashoutPolicy';
-import {
-  CACHE_KEYS,
-  readLocalCache,
-  writeLocalCache,
-} from '@/lib/playerDataCache';
-import { LoadingInline } from '@/components/common/LoadState';
-
-function hydrateRulesFromCache() {
-  try {
-    const cached = readLocalCache(CACHE_KEYS.SETTINGS_SNIPPET);
-    if (cached?.cashoutRules) {
-      return formatPlayerFacingCopy(resolveCashoutRulesText(cached));
-    }
-  } catch {}
-  return '';
-}
+import { fetchPublicSettings, getInstantCashoutRulesDisplay } from '@/lib/publicSettingsClient';
 
 export default function CashoutRulesView({ isEmbedded = true }) {
-  const [cashoutRules, setCashoutRules] = useState(hydrateRulesFromCache);
-  const [loading, setLoading] = useState(() => !hydrateRulesFromCache());
+  const [cashoutRules, setCashoutRules] = useState(getInstantCashoutRulesDisplay);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState(null);
 
-  const loadRules = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    setLoadError(null);
-    try {
-      const res = await fetch('/api/settings/public', { cache: 'no-store' });
-      const data = await res.json();
-      if (!data?.success) {
-        throw new Error(data?.error || 'Could not load cashout rules');
-      }
-      const text = resolveCashoutRulesText(data);
-      const display = formatPlayerFacingCopy(text);
-      setCashoutRules(display);
-      writeLocalCache(CACHE_KEYS.SETTINGS_SNIPPET, {
-        cashoutRules: text,
-        minRedemptionSC: data.minRedemptionSC,
-      });
-    } catch (err) {
-      setLoadError(err.message || 'Network error');
-      const cached = readLocalCache(CACHE_KEYS.SETTINGS_SNIPPET);
-      const fallback = formatPlayerFacingCopy(
-        cached?.cashoutRules ? resolveCashoutRulesText(cached) : DEFAULT_CASHOUT_RULES
-      );
-      setCashoutRules(fallback);
-    } finally {
-      setLoading(false);
-    }
+  const applyPayload = useCallback((payload) => {
+    if (!payload?.cashoutRules) return;
+    const display = formatPlayerFacingCopy(resolveCashoutRulesText(payload));
+    setCashoutRules(display);
   }, []);
 
+  const loadRules = useCallback(async (silent = true) => {
+    if (!silent) setRefreshing(true);
+    setLoadError(null);
+    try {
+      const payload = await fetchPublicSettings({ force: true });
+      if (payload?.cashoutRules) {
+        applyPayload(payload);
+      } else {
+        throw new Error('Could not load cashout rules');
+      }
+    } catch (err) {
+      setLoadError(err.message || 'Network error');
+      setCashoutRules((prev) => prev || formatPlayerFacingCopy(DEFAULT_CASHOUT_RULES));
+    } finally {
+      setRefreshing(false);
+    }
+  }, [applyPayload]);
+
   useEffect(() => {
-    const hasCache = !!hydrateRulesFromCache();
-    loadRules(hasCache);
+    loadRules(true);
+
     const onFocus = () => loadRules(true);
+    const onSettingsSync = () => loadRules(true);
+
+    let bc = null;
+    try {
+      bc = new BroadcastChannel('paradise_settings_sync');
+      bc.onmessage = onSettingsSync;
+    } catch {}
+    const onStorage = (e) => {
+      if (e.key === 'paradise_settings_sync') onSettingsSync();
+    };
+
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('storage', onStorage);
+
     return () => {
+      if (bc) bc.close();
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onFocus);
+      window.removeEventListener('storage', onStorage);
     };
   }, [loadRules]);
 
@@ -90,24 +86,23 @@ export default function CashoutRulesView({ isEmbedded = true }) {
             <h2 className="font-heading font-black text-sm text-[var(--neon-cyan)] uppercase tracking-wider">
               Official Cashout Policy
             </h2>
+            {refreshing && (
+              <RefreshCw size={12} className="text-slate-500 animate-spin" aria-hidden />
+            )}
           </div>
           <button
             type="button"
             onClick={() => loadRules(false)}
             className="text-[10px] font-bold text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
           >
-            <RefreshCw size={12} />
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
 
-        {loading && !cashoutRules ? (
-          <LoadingInline label="Loading cashout rules…" />
-        ) : (
-          <div className="whitespace-pre-line text-xs sm:text-sm font-sans leading-relaxed text-slate-200">
-            {cashoutRules || formatPlayerFacingCopy(DEFAULT_CASHOUT_RULES)}
-          </div>
-        )}
+        <div className="whitespace-pre-line text-xs sm:text-sm font-sans leading-relaxed text-slate-200">
+          {cashoutRules || formatPlayerFacingCopy(DEFAULT_CASHOUT_RULES)}
+        </div>
 
         {loadError && (
           <p className="text-[10px] text-amber-300/90 border border-amber-500/30 bg-amber-950/30 rounded-xl px-3 py-2">

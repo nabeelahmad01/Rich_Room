@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { fetchCurrentUser } from '@/lib/authClient';
+import { prefetchPublicSettings } from '@/lib/publicSettingsClient';
+import { prefetchWinsTicker } from '@/lib/winsTickerClient';
 
 /**
  * Keeps client UI in sync with the httpOnly session cookie after client-side navigation.
@@ -10,6 +12,11 @@ import { fetchCurrentUser } from '@/lib/authClient';
  */
 export default function SessionBridge() {
   const pathname = usePathname();
+
+  useEffect(() => {
+    prefetchPublicSettings();
+    prefetchWinsTicker();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
