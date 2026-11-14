@@ -91,6 +91,7 @@ import {
 } from '@/lib/mergeAdminLists';
 import { broadcastPlayerAccountsUpdated } from '@/lib/playerAccountSync';
 import { broadcastPlayerDepositResolved } from '@/lib/staffAlertsSync';
+import AdminBootShell from '@/components/admin/AdminBootShell';
 
 /** Player + realtime + poll can append the same Mongo id twice — dedupe before render. */
 function dedupeChatMessagesById(msgs) {
@@ -112,6 +113,7 @@ function dedupeChatMessagesById(msgs) {
 
 export default function AdminPortalView({ initialTab }) {
   const [user, setUser] = useState(null);
+  const [sessionBooting, setSessionBooting] = useState(true);
   // Normalize initialTab
   const normalizeTab = (tab) => {
     if (!tab) return 'overview';
@@ -1082,6 +1084,33 @@ export default function AdminPortalView({ initialTab }) {
     }
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me?admin=true', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (data.authenticated && data.user) {
+          const role = String(data.user.role || '').toLowerCase();
+          if (role && role !== 'player') {
+            applyStaffUser(data.user);
+          }
+        }
+      } catch {
+        /* show login form */
+      } finally {
+        if (!cancelled) setSessionBooting(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Browser Desktop & Chrome Push Notification State
   const [desktopNotifPerm, setDesktopNotifPerm] = useState(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
@@ -2032,6 +2061,10 @@ export default function AdminPortalView({ initialTab }) {
 
     return false;
   };
+
+  if (sessionBooting) {
+    return <AdminBootShell label="Checking staff session…" />;
+  }
 
   // Not Logged In as Staff Form
   if (!user) {
