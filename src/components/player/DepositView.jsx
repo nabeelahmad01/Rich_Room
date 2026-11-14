@@ -36,7 +36,7 @@ import { loadPlayerGameAccountsForEmail } from '@/lib/playerGameAccountsClient';
 import { subscribePlayerAccountsSync } from '@/lib/playerAccountSync';
 import CyberFooter from '@/components/common/CyberFooter';
 import DailySpinWheelModal from '@/components/common/DailySpinWheelModal';
-import { compressImageFile } from '@/lib/imageCompress';
+import { compressImageFile, compressDataUrl } from '@/lib/imageCompress';
 import { getCachedUser, mergePlayerUser } from '@/lib/authClient';
 import { writePaymentMethodsCache } from '@/lib/paymentMethodsCache';
 import {
@@ -475,7 +475,15 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
 
       const linkedAccount = findAccountForGame(userGameAccounts, selectedGame, adminGames);
 
-      const proofPayload = proofImage;
+      let proofPayload = proofImage;
+      if (proofPayload && proofPayload.length > 120_000) {
+        proofPayload = await compressDataUrl(proofPayload, {
+          maxSize: 900,
+          quality: 0.5,
+          maxChars: 110_000,
+        });
+      }
+
       const payload = {
         amount: finalAmount,
         method: chosenMethodName,
@@ -490,7 +498,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
         gameAccountUsername: linkedAccount ? linkedAccount.username : '',
         bonusType,
         bonusPercent,
-        proofDeferred: true,
+        proofImage: proofPayload,
       };
 
       // 0ms Optimistic UI update: Instantly show pending deposit in history table
@@ -511,20 +519,7 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
       };
       setDepositHistory((prev) => [optimisticDeposit, ...prev]);
 
-      broadcastStaffNewDeposit({
-        depositId: tempId,
-        amount: finalAmount,
-        username: user?.username || 'Player',
-        methodName: chosenMethodName,
-        totalSC,
-        bonusSC,
-        gameTitle: selectedGame || '',
-        playerTagName: senderAccount.trim(),
-        txHash: transactionId.trim(),
-        hasProof: Boolean(proofImage),
-      });
-
-      const { res, data } = await fetchJsonQuick(
+      const { res, data } = await fetchJsonWithTimeout(
         '/api/payments/deposit',
         {
           method: 'POST',
@@ -532,12 +527,20 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         },
-        20000
+        120000
       );
 
       setSubmitting(false);
 
       if (res.ok && data.success) {
+        if (!data.proofSaved) {
+          setDepositHistory((prev) => prev.filter((d) => d.id !== tempId));
+          setStatusMessage({
+            type: 'error',
+            text: 'Deposit could not save your screenshot. Keep the image and submit again.',
+          });
+          return;
+        }
         const realId = data.depositId;
         if (realId) {
           setDepositHistory((prev) =>
@@ -556,37 +559,12 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
             gameTitle: selectedGame || '',
             playerTagName: senderAccount.trim(),
             txHash: transactionId.trim(),
-            hasProof: Boolean(proofPayload),
+            hasProof: true,
           });
-          void (async () => {
-            try {
-              const { data: proofData } = await fetchJsonWithTimeout(
-                '/api/payments/deposit/proof',
-                {
-                  method: 'POST',
-                  credentials: 'include',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ depositId: realId, proofImage: proofPayload }),
-                },
-                120000
-              );
-              if (!proofData?.success) {
-                setStatusMessage({
-                  type: 'error',
-                  text: 'Deposit submitted but screenshot upload failed — reopen Wallet and contact support with your receipt.',
-                });
-              }
-            } catch {
-              setStatusMessage({
-                type: 'error',
-                text: 'Deposit submitted but screenshot upload failed — please try attaching proof again.',
-              });
-            }
-          })();
         }
         setStatusMessage({
           type: 'success',
-          text: `Deposit request for $${finalAmount.toFixed(2)} submitted! Total ${totalSC.toFixed(2)} SC (${bonusPercent}% bonus included) will be credited upon desk verification.`,
+          text: `Deposit request for $${finalAmount.toFixed(2)} submitted with payment screenshot! Total ${totalSC.toFixed(2)} SC (${bonusPercent}% bonus included) will be credited upon desk verification.`,
         });
         setSenderAccount('');
         setTransactionId('');

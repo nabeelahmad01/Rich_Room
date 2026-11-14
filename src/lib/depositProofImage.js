@@ -1,3 +1,13 @@
+/** Validate player-uploaded screenshot before Mongo write (data URLs only). */
+export function normalizeProofForStorage(proofImage) {
+  if (proofImage == null) return null;
+  const s = String(proofImage).trim();
+  if (!s.startsWith('data:image/')) return null;
+  if (s.length < 80) return null;
+  if (s.length > 2_200_000) return null;
+  return s;
+}
+
 /** Decode deposit / redemption proof blobs from Mongo (data URLs, raw base64, https). */
 
 export function proofDataToImage(rawData) {

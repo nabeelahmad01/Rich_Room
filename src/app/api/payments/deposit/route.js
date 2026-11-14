@@ -9,6 +9,7 @@ import {
   publishAccountRequestCreated,
 } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
+import { normalizeProofForStorage } from '@/lib/depositProofImage';
 import { runDepositApproveSideEffects } from '@/lib/depositApproveSideEffects';
 
 // GET: List Deposits (Admin / Financial Manager) or Player's own
@@ -138,7 +139,7 @@ export async function GET(req) {
 // POST: Player Submit Deposit Request
 export async function POST(req) {
   try {
-    const session = await getSessionUser();
+    const session = (await getSessionUser('player')) || (await getSessionUser());
     if (!session) {
       return NextResponse.json({ success: false, error: 'Unauthorized. Please login.' }, { status: 401 });
     }
@@ -175,8 +176,9 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Your payment tag name / handle is required.' }, { status: 400 });
     }
 
-    const proofDeferred = Boolean(body.proofDeferred);
-    if (!proofImage && !proofDeferred) {
+    const storedProof = normalizeProofForStorage(proofImage || body.proof);
+    const proofDeferred = Boolean(body.proofDeferred) && !storedProof;
+    if (!storedProof && !proofDeferred) {
       return NextResponse.json({ success: false, error: 'Payment proof screenshot is required.' }, { status: 400 });
     }
 
@@ -224,7 +226,6 @@ export async function POST(req) {
 
     const requestedGame = String(gameTitle || body.game || '').trim();
     const resolvedGameUsername = String(body.gameAccountUsername || '').trim();
-    const proofPayload = proofImage || null;
     const deferGameUsernameLookup = Boolean(requestedGame && !resolvedGameUsername);
 
     const newDeposit = {
@@ -237,8 +238,8 @@ export async function POST(req) {
       playerTagName: tagName,
       playerPaymentEmail: (playerPaymentEmail || user?.email || '').trim(),
       senderNote: tagName,
-      proofImage: null,
-      proofPending: Boolean(proofDeferred),
+      proofImage: storedProof,
+      proofPending: proofDeferred,
       txHash: resolvedTxHash,
       gameTitle: requestedGame || null,
       gameId: gameId || (requestedGame ? requestedGame.toLowerCase().replace(/\s+/g, '-') : null),
@@ -272,18 +273,12 @@ export async function POST(req) {
       gameTitle: requestedGame || '',
       playerTagName: tagName,
       txHash: resolvedTxHash,
-      hasProof: Boolean(proofPayload),
+      hasProof: Boolean(storedProof),
     });
 
     const insertedId = res.insertedId;
     void (async () => {
       try {
-        if (proofPayload) {
-          await depositsCol.updateOne(
-            { _id: insertedId },
-            { $set: { proofImage: proofPayload, updatedAt: new Date() } }
-          );
-        }
         if (deferGameUsernameLookup) {
           const accCheck = await findUserGameAccount(
             db,
@@ -324,6 +319,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       depositId: depositIdStr,
+      proofSaved: Boolean(storedProof),
       calculatedCoins: {
         totalSC,
         bonusSC,
@@ -331,7 +327,9 @@ export async function POST(req) {
         bonusPercent,
         totalGC,
       },
-      message: `Deposit of $${depositAmount.toFixed(2)} with ${bonusPercent}% bonus (${totalSC} SC total) submitted! Verification in progress.`,
+      message: storedProof
+        ? `Deposit of $${depositAmount.toFixed(2)} with ${bonusPercent}% bonus (${totalSC} SC total) and screenshot submitted! Verification in progress.`
+        : `Deposit of $${depositAmount.toFixed(2)} submitted — attach screenshot from Wallet if staff requests it.`,
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

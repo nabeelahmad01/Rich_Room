@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { getAdminSessionUser, getSessionUser, ROLES } from '@/lib/auth';
-import { proofDataToImage } from '@/lib/depositProofImage';
+import { proofDataToImage, normalizeProofForStorage } from '@/lib/depositProofImage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -121,19 +121,12 @@ export async function POST(req) {
 
     const body = await req.json();
     const depositId = String(body.depositId || '').trim();
-    let proofImage = body.proofImage;
+    const proofImage = normalizeProofForStorage(body.proofImage);
 
     if (!depositId || !proofImage) {
       return NextResponse.json(
-        { success: false, error: 'Deposit ID and proof image are required.' },
+        { success: false, error: 'Deposit ID and a valid payment screenshot are required.' },
         { status: 400 }
-      );
-    }
-
-    if (typeof proofImage === 'string' && proofImage.length > 1_800_000) {
-      return NextResponse.json(
-        { success: false, error: 'Screenshot too large. Please use a smaller image.' },
-        { status: 413 }
       );
     }
 
@@ -151,13 +144,6 @@ export async function POST(req) {
     const ownerId = String(deposit.userId || '');
     if (ownerId !== String(session.userId) || deposit.status !== 'pending') {
       return NextResponse.json({ success: false, error: 'Not allowed.' }, { status: 403 });
-    }
-
-    if (typeof proofImage === 'string' && !proofImage.startsWith('data:image/')) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid image format. Upload a PNG or JPEG screenshot.' },
-        { status: 400 }
-      );
     }
 
     await depositsCol.updateOne(
