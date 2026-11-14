@@ -14,6 +14,20 @@ import {
   ShieldCheck,
   RefreshCw,
 } from 'lucide-react';
+import { sanitizePlainText } from '@/lib/sanitizeText';
+import { cleanGameTitle } from '@/lib/fastDiff';
+
+function displayPlayerName(req) {
+  return sanitizePlainText(req.userName, 64) || 'Player';
+}
+
+function displayGameTitle(req) {
+  return cleanGameTitle(sanitizePlainText(req.gameTitle, 120)) || '—';
+}
+
+function displayCredential(value) {
+  return sanitizePlainText(value, 80);
+}
 
 export default function AccountRequestsView({
   requests = [],
@@ -281,17 +295,17 @@ export default function AccountRequestsView({
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-800 flex items-center justify-center font-black text-white text-xs uppercase shadow">
-                            {req.userName ? req.userName.charAt(0) : 'P'}
+                            {displayPlayerName(req).charAt(0) || 'P'}
                           </div>
                           <div>
-                            <p className="font-black text-white text-sm">{req.userName}</p>
+                            <p className="font-black text-white text-sm">{displayPlayerName(req)}</p>
                             <p className="text-[11px] text-gray-400 font-mono">{req.userEmail}</p>
                           </div>
                         </div>
                       </td>
 
                       <td className="p-4 whitespace-nowrap">
-                        <span className="font-heading font-black text-amber-400 text-sm">{req.gameTitle}</span>
+                        <span className="font-heading font-black text-amber-400 text-sm">{displayGameTitle(req)}</span>
                         {Boolean(req.freeplayPending) && (
                           <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                             <span className="inline-flex items-center gap-1 text-[10.5px] font-black text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-lg shadow-sm">
@@ -339,16 +353,21 @@ export default function AccountRequestsView({
                         {req.gameAccountUsername ? (
                           <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-amber-300 font-black text-xs">U: {req.gameAccountUsername}</span>
+                              <span className="text-amber-300 font-black text-xs">U: {displayCredential(req.gameAccountUsername)}</span>
                               <button
-                                onClick={() => handleCopy(`${req.gameAccountUsername} / ${req.gameAccountPassword}`, req.id)}
+                                onClick={() =>
+                                  handleCopy(
+                                    `${displayCredential(req.gameAccountUsername)} / ${displayCredential(req.gameAccountPassword)}`,
+                                    req.id
+                                  )
+                                }
                                 className="p-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
                                 title="Copy credentials"
                               >
                                 {copiedId === req.id ? <CheckCheck size={12} className="text-emerald-400" /> : <Copy size={12} />}
                               </button>
                             </div>
-                            <p className="text-gray-400 text-xs">P: {req.gameAccountPassword}</p>
+                            <p className="text-gray-400 text-xs">P: {displayCredential(req.gameAccountPassword)}</p>
                           </div>
                         ) : (
                           <span className="text-gray-500 italic text-xs">Not issued yet</span>
@@ -417,10 +436,10 @@ export default function AccountRequestsView({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--neon-cyan)] to-[var(--neon-purple)] flex items-center justify-center font-black text-black text-sm shadow">
-                        {req.userName ? req.userName.charAt(0) : 'P'}
+                        {displayPlayerName(req).charAt(0) || 'P'}
                       </div>
                       <div>
-                        <h4 className="font-black text-white text-sm leading-tight">{req.userName}</h4>
+                        <h4 className="font-black text-white text-sm leading-tight">{displayPlayerName(req)}</h4>
                         <p className="text-[11px] text-gray-400 font-mono mt-0.5">{req.userEmail}</p>
                       </div>
                     </div>
@@ -440,7 +459,7 @@ export default function AccountRequestsView({
                   <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400 font-bold">Game Requested:</span>
-                      <span className="font-heading font-black text-amber-400 text-sm">{req.gameTitle}</span>
+                      <span className="font-heading font-black text-amber-400 text-sm">{displayGameTitle(req)}</span>
                     </div>
 
                     {Boolean(req.freeplayPending) && (
@@ -481,11 +500,16 @@ export default function AccountRequestsView({
                   {req.gameAccountUsername && (
                     <div className="p-3 bg-amber-500/[0.06] rounded-xl border border-amber-500/20 flex items-center justify-between">
                       <div className="font-mono text-xs">
-                        <p className="text-amber-300 font-bold">User: {req.gameAccountUsername}</p>
+                        <p className="text-amber-300 font-bold">User: {displayCredential(req.gameAccountUsername)}</p>
                         <p className="text-gray-400">Pass: {req.gameAccountPassword}</p>
                       </div>
                       <button
-                        onClick={() => handleCopy(`${req.gameAccountUsername} / ${req.gameAccountPassword}`, req.id)}
+                        onClick={() =>
+                          handleCopy(
+                            `${displayCredential(req.gameAccountUsername)} / ${displayCredential(req.gameAccountPassword)}`,
+                            req.id
+                          )
+                        }
                         className="p-2 rounded-lg bg-white/10 text-gray-300 hover:text-white"
                       >
                         {copiedId === req.id ? <CheckCheck size={14} className="text-emerald-400" /> : <Copy size={14} />}

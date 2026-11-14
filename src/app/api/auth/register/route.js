@@ -5,6 +5,7 @@ import { signToken, ROLES } from '@/lib/auth';
 import { sendEmail, getWelcomeEmailTemplate } from '@/lib/email';
 import { ensureDbInitialized } from '@/lib/initDb';
 import { getDeviceIdFromRequest } from '@/lib/deviceServer';
+import { containsHtmlLike } from '@/lib/sanitizeText';
 
 export async function POST(req) {
   try {
@@ -48,6 +49,20 @@ export async function POST(req) {
 
     if (cleanUsername.length < 3) {
       return NextResponse.json({ success: false, error: 'Username must be at least 3 characters.' }, { status: 400 });
+    }
+
+    if (containsHtmlLike(username) || /[<>"'`]/.test(username)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Username may only use letters, numbers, dots, hyphens, and underscores.',
+      }, { status: 400 });
+    }
+
+    if (!/^[a-z0-9._-]{3,32}$/i.test(cleanUsername)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Username must be 3–32 characters (letters, numbers, . _ - only).',
+      }, { status: 400 });
     }
 
     if (cleanPassword.length < 6) {

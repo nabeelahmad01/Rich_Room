@@ -93,8 +93,10 @@ export function diffSet(setter, nextVal) {
  */
 export function cleanGameTitle(title) {
   if (typeof title !== 'string') return '';
-  return title
+  const noTags = title.replace(/<[^>]*>/g, '').replace(/&lt;/gi, '').replace(/&gt;/gi, '');
+  return noTags
     .replace(/[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .slice(0, 120);
 }

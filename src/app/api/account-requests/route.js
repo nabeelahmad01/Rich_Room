@@ -9,6 +9,8 @@ import {
   publishWallet,
 } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
+import { sanitizePlainText, containsHtmlLike } from '@/lib/sanitizeText';
+import { cleanGameTitle } from '@/lib/fastDiff';
 
 const STAFF_ROLES = new Set([
   ROLES.SUPER_ADMIN,
@@ -166,16 +168,18 @@ export async function GET(req) {
             }
           }
         }
+        const safeName = sanitizePlainText(r.userName || r.userEmail?.split('@')[0], 64);
+        const safeTitle = cleanGameTitle(sanitizePlainText(r.gameTitle, 120));
         return {
           id,
           userEmail: r.userEmail,
-          userName: r.userName || r.userEmail?.split('@')[0],
-          gameTitle: r.gameTitle,
+          userName: safeName,
+          gameTitle: safeTitle,
           gameId: r.gameId || '',
           requestType: isFp ? 'COIN_LOAD' : (r.requestType || (Number(r.transferAmount || 0) > 0 ? 'COIN_LOAD' : 'ACCOUNT_CREATION')),
           status: normStatus(r.status || 'PENDING'),
-          gameAccountUsername: r.gameAccountUsername || '',
-          gameAccountPassword: r.gameAccountPassword || '',
+          gameAccountUsername: sanitizePlainText(r.gameAccountUsername, 80),
+          gameAccountPassword: sanitizePlainText(r.gameAccountPassword, 80),
           transferAmount: isFp ? (fpAmt || 5) : Number(r.transferAmount || 0),
           isFreeplay: isFp,
           freeplayPending: isFp,
@@ -199,7 +203,7 @@ export async function POST(req) {
     const body = await req.json();
     const userEmail = (session?.email || body.userEmail || '').toLowerCase().trim();
     const userName = session?.username || body.userName || userEmail.split('@')[0];
-    const gameTitle = String(body.gameTitle || '').trim();
+    let gameTitle = cleanGameTitle(sanitizePlainText(body.gameTitle, 120));
     const gameId = body.gameId || '';
 
     const transferAmount = Math.max(0, Number(body.transferAmount || 0));
@@ -207,6 +211,9 @@ export async function POST(req) {
 
     if (!userEmail || !gameTitle) {
       return NextResponse.json({ success: false, message: 'Game title and user email are required.' }, { status: 400 });
+    }
+    if (containsHtmlLike(body.gameTitle)) {
+      return NextResponse.json({ success: false, message: 'Invalid game name. Use plain text only.' }, { status: 400 });
     }
 
     const db = await getDb();
