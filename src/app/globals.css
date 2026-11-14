@@ -196,12 +196,25 @@ h1, h2, h3, h4, .font-heading {
   min-width: 640px;
 }
 
-@media (max-width: 639px) {
-  .admin-portal-root header .admin-header-audio-pill {
-    max-width: 100%;
-    flex-wrap: wrap;
-    row-gap: 6px;
+@media (max-width: 767px) {
+  .admin-portal-root .admin-staff-header .admin-header-actions {
+    flex: 0 0 auto;
+    max-width: min(62vw, 220px);
+  }
+
+  .admin-portal-root .admin-header-lobby-link {
+    padding: 7px 9px !important;
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex !important;
+    align-items: center;
     justify-content: center;
+  }
+
+  .admin-portal-root .admin-header-avatar-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 12px !important;
   }
 }
 

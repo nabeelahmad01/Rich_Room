@@ -2205,10 +2205,10 @@ export default function AdminPortalView({ initialTab }) {
           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--neon-cyan-glow)',
           zIndex: 40,
         }}
-        className="px-2.5 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0 relative min-h-[64px] sm:min-h-[82px] py-2.5 sm:py-0"
+        className="admin-staff-header px-2 sm:px-6 flex flex-row items-center justify-between gap-2 shrink-0 relative min-h-[52px] sm:min-h-[82px] py-2 sm:py-0"
       >
         {/* Left Section: Official Logo (always in top header) + Staff Console Pill */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 min-w-0 flex-1">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
           <Link
             href="/admin"
             style={{
@@ -2221,7 +2221,7 @@ export default function AdminPortalView({ initialTab }) {
             <img
               src="/logo.png"
               alt="Rich Room VIP Admin"
-              className="vegas-navbar-logo hover:scale-105 transition-transform h-9 sm:h-[46px] w-auto object-contain"
+              className="vegas-navbar-logo hover:scale-105 transition-transform h-8 sm:h-[46px] w-auto max-w-[42vw] sm:max-w-none object-contain object-left"
             />
           </Link>
 
@@ -2254,13 +2254,13 @@ export default function AdminPortalView({ initialTab }) {
           </div>
         </div>
 
-        {/* Right Section: Telemetry Capsule, Player Lobby Button, Audio Alert, Avatar Circle */}
-        <div className="flex flex-wrap items-center justify-end sm:justify-end gap-1.5 sm:gap-2.5 shrink-0 w-full sm:w-auto">
+        {/* Right Section: nav controls stay on one row on mobile */}
+        <div className="admin-header-actions flex flex-nowrap items-center justify-end gap-1 sm:gap-2.5 shrink-0 ml-1">
 
-          {/* Player Lobby Button (matches DEPOSIT button gradient in screenshot) */}
+          {/* Player Lobby Button — icon-only on small screens */}
           <Link
             href="/"
-            className="btn-coral"
+            className="btn-coral admin-header-lobby-link"
             style={{
               borderRadius: '9999px',
               padding: '8px 20px',
@@ -2273,13 +2273,12 @@ export default function AdminPortalView({ initialTab }) {
             }}
           >
             <ExternalLink size={13} color="#FFFFFF" />
-            <span className="hidden xs:inline">PLAYER LOBBY</span>
-            <span className="xs:hidden">LOBBY</span>
+            <span className="hidden sm:inline">PLAYER LOBBY</span>
           </Link>
 
-          {/* Luxury Audio Alert Hub */}
+          {/* Luxury Audio Alert Hub — desktop / tablet; mobile uses profile menu */}
           <div
-            className="admin-header-audio-pill"
+            className="admin-header-audio-pill hidden md:flex"
             style={{
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--chrome-border)',
@@ -2374,6 +2373,7 @@ export default function AdminPortalView({ initialTab }) {
             <button
               type="button"
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="admin-header-avatar-btn"
               style={{
                 width: '38px',
                 height: '38px',
@@ -2476,10 +2476,9 @@ export default function AdminPortalView({ initialTab }) {
             )}
           </div>
 
-          {/* Mobile Drawer Hamburger Button (strictly hidden on desktop >= 768px) */}
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="admin-mobile-hamburger items-center justify-center w-10 h-10 rounded-xl text-[var(--neon-cyan)] bg-[var(--bg-card)] border border-[var(--chrome-border)] shrink-0 transition relative cursor-pointer"
+            className="admin-mobile-hamburger items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl text-[var(--neon-cyan)] bg-[var(--bg-card)] border border-[var(--chrome-border)] shrink-0 transition relative cursor-pointer"
             aria-label="Toggle navigation drawer"
           >
             {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
