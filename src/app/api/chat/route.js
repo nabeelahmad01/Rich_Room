@@ -11,6 +11,11 @@ import {
 import { getDb } from '@/lib/mongodb';
 import { notifyPlayer, notifyStaff } from '@/lib/notify';
 import { publishChatRealtime } from '@/lib/realtimePublish';
+import {
+  containsHtmlLike,
+  isChatProbeOrGarbage,
+  sanitizePlainText,
+} from '@/lib/sanitizeText';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,6 +95,7 @@ async function buildStaffInbox(chatCol) {
     const convMap = new Map();
 
     for (const msg of rawMessages) {
+      if (isChatProbeOrGarbage(msg?.text) && !msg?.imageUrl) continue;
       const cid = conversationKey(msg);
       if (!cid) continue;
 
@@ -237,6 +243,10 @@ export async function GET(req) {
       .limit(200)
       .toArray();
 
+    const chatMessages = rawMessages.filter(
+      (m) => !isChatProbeOrGarbage(m?.text) || Boolean(m?.imageUrl)
+    );
+
     const staffViewingThread = isStaff && Boolean(conversationId && conversationId !== 'all');
     const shouldMarkPlayerMsgsRead = staffViewingThread;
     const shouldMarkStaffMsgsRead = !isStaff && markRead;
@@ -270,11 +280,11 @@ export async function GET(req) {
       ? 0
       : shouldMarkStaffMsgsRead
         ? 0
-        : rawMessages.filter((m) => m.senderRole === 'staff' && !m.read).length;
+        : chatMessages.filter((m) => m.senderRole === 'staff' && !m.read).length;
 
     const lightweightImages = searchParams.get('lightweightImages') !== 'false';
 
-    const formattedMessages = rawMessages.map((m) => {
+    const formattedMessages = chatMessages.map((m) => {
       const senderRole = m.senderRole || 'player';
       const wasRead = !!m.read;
       const effectiveRead =
@@ -297,7 +307,7 @@ export async function GET(req) {
         username: m.username,
         senderRole,
         staffName: m.staffName || null,
-        text: m.text || '',
+        text: sanitizePlainText(m.text || '', 5000),
         imageUrl,
         read: effectiveRead,
         createdAt: m.createdAt,
@@ -362,6 +372,13 @@ export async function POST(req) {
     if (!cleanText && !cleanImageUrl) {
       return NextResponse.json(
         { success: false, error: 'Message text or image attachment required.' },
+        { status: 400 }
+      );
+    }
+
+    if (cleanText && (isChatProbeOrGarbage(cleanText) || containsHtmlLike(cleanText))) {
+      return NextResponse.json(
+        { success: false, error: 'Please type a real message in plain text.' },
         { status: 400 }
       );
     }

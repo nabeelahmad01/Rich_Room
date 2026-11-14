@@ -57,3 +57,16 @@ export function isSafeDisplayUsername(username) {
   if (containsHtmlLike(username)) return false;
   return /^[\w.@+-]+$/.test(s);
 }
+
+/** Fuzz bots POST SSE channel names as "chat" — never store or show these. */
+export function isChatProbeOrGarbage(text) {
+  const s = String(text || '').trim();
+  if (!s) return false;
+  if (containsHtmlLike(s)) return true;
+  if (/^i\d{2,8}[-_]/i.test(s)) return true;
+  if (/\b(EMAILCONV|GUESTCONV|staff_desk|guest-probe|player_broadcast)\b/i.test(s)) return true;
+  if (/-chan-(player_|staff_|guest)/i.test(s)) return true;
+  if (/^i\d+-chan-/i.test(s)) return true;
+  if (/player_email_|player_id_[0-9a-f]{8,}/i.test(s)) return true;
+  return false;
+}
