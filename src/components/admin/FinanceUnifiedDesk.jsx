@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import DepositProofImage from '@/components/admin/DepositProofImage';
 import {
   Search,
   Check,
@@ -771,7 +772,7 @@ export default function FinanceUnifiedDesk({
                                     }}
                                     title="Thumbnail preview"
                                   >
-                                    <img
+                                    <DepositProofImage
                                       src={proofSrc}
                                       alt="Proof"
                                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -1549,7 +1550,7 @@ export default function FinanceUnifiedDesk({
                 maxHeight: '65vh',
               }}
             >
-              <img
+              <DepositProofImage
                 src={previewProof.image || previewProof.url || previewProof.proofUrl || previewProof.qrCodeImage}
                 alt="Payment Proof Receipt"
                 style={{
@@ -1559,42 +1560,7 @@ export default function FinanceUnifiedDesk({
                   borderRadius: '8px',
                   boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
                 }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const fallback = document.getElementById('receipt-image-fallback');
-                  if (fallback) fallback.style.display = 'flex';
-                }}
               />
-              <div
-                id="receipt-image-fallback"
-                style={{
-                  display: 'none',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '24px',
-                  color: '#94A3B8',
-                  textAlign: 'center',
-                }}
-              >
-                <AlertCircle size={32} color="#F59E0B" />
-                <p style={{ margin: 0, fontSize: '12.5px', color: '#F1F5F9', fontWeight: 700 }}>
-                  Image proof preview unavailable
-                </p>
-                <p style={{ margin: 0, fontSize: '11px', color: '#94A3B8' }}>
-                  The uploaded proof could not be rendered directly.
-                </p>
-                {(previewProof.image || previewProof.url) && (
-                  <a
-                    href={previewProof.image || previewProof.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: 'var(--neon-cyan)', fontSize: '11.5px', marginTop: '6px', textDecoration: 'underline' }}
-                  >
-                    Open Image in New Window ↗
-                  </a>
-                )}
-              </div>
             </div>
 
             {/* Modal Footer */}

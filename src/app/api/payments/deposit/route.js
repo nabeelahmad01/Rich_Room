@@ -81,9 +81,12 @@ export async function GET(req) {
         const totalSC = d.totalSC !== undefined ? d.totalSC : Number((d.amount + bonusSC).toFixed(2));
         const totalGC = d.totalGC !== undefined ? d.totalGC : (d.amount * 10000);
 
-        const hasProof = d.hasProofImage !== undefined
-          ? Boolean(d.hasProofImage)
-          : Boolean(d.proofImage || d.proofUrl || d.receiptImage || d.screenshot);
+        const hasProofData =
+          d.hasProofImage !== undefined
+            ? Boolean(d.hasProofImage)
+            : Boolean(d.proofImage || d.proofUrl || d.receiptImage || d.screenshot);
+        const proofPending = Boolean(d.proofPending);
+        const hasProof = hasProofData && !proofPending;
 
         let resolvedProofImage = null;
         if (hasProof) {
@@ -107,7 +110,8 @@ export async function GET(req) {
           playerPaymentEmail: d.playerPaymentEmail || '',
           senderNote: d.senderNote || d.playerTagName || '',
           proofImage: resolvedProofImage,
-          hasProof: hasProof,
+          hasProof,
+          proofPending: proofPending && !hasProofData,
           txHash: d.txHash || '',
           bonusType,
           bonusPercent,

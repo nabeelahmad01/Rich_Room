@@ -1,7 +1,35 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { getSessionUser } from '@/lib/auth';
+import { getAdminSessionUser, getSessionUser, ROLES } from '@/lib/auth';
+import { proofDataToImage } from '@/lib/depositProofImage';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const STAFF_ROLES = new Set([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.OPERATION_ADMIN,
+  ROLES.FINANCIAL_MANAGER,
+  ROLES.COIN_MANAGER,
+  ROLES.CHAT_SUPPORT,
+  'financial_admin',
+  'coins_admin',
+  'support_admin',
+]);
+
+function isStaff(session) {
+  return Boolean(session?.role && STAFF_ROLES.has(session.role));
+}
+
+function buildDepositFilter(id) {
+  const is24Hex = typeof id === 'string' && id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id);
+  if (is24Hex && ObjectId.isValid(id)) {
+    return { $or: [{ _id: new ObjectId(id) }, { _id: id }, { id }] };
+  }
+  return { $or: [{ _id: id }, { id }] };
+}
 
 export async function GET(req) {
   try {
@@ -12,40 +40,72 @@ export async function GET(req) {
       return new NextResponse('Missing ID', { status: 400 });
     }
 
+    const admin = await getAdminSessionUser();
+    const player = await getSessionUser('player');
+
     const db = await getDb();
-    const depositsCol = db.collection('deposits');
-
-    const is24Hex = typeof id === 'string' && id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id);
-    const filter = is24Hex && ObjectId.isValid(id)
-      ? { $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }] }
-      : { $or: [{ _id: id }, { id: id }] };
-
-    const deposit = await depositsCol.findOne(filter, {
-      projection: { proofImage: 1, proofUrl: 1, receiptImage: 1, screenshot: 1 },
+    const deposit = await db.collection('deposits').findOne(buildDepositFilter(id), {
+      projection: {
+        proofImage: 1,
+        proofUrl: 1,
+        receiptImage: 1,
+        screenshot: 1,
+        userId: 1,
+        proofPending: 1,
+      },
     });
 
-    const rawData = deposit?.proofImage || deposit?.proofUrl || deposit?.receiptImage || deposit?.screenshot;
-
-    if (!deposit || !rawData) {
-      return new NextResponse('Proof not found', { status: 404 });
+    if (!deposit) {
+      return new NextResponse('Deposit not found', { status: 404 });
     }
 
-    // If it's a data URL (e.g. data:image/png;base64,....)
-    if (typeof rawData === 'string' && rawData.startsWith('data:')) {
-      const parts = rawData.split(',');
-      const mime = parts[0].split(':')[1].split(';')[0];
-      const buffer = Buffer.from(parts[1], 'base64');
-
-      return new NextResponse(buffer, {
-        headers: {
-          'Content-Type': mime,
-          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
-        },
-      });
+    const ownerId = String(deposit.userId || '');
+    const isOwner = player?.userId && String(player.userId) === ownerId;
+    if (!isStaff(admin) && !isOwner) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // If it's a direct URL
-    return NextResponse.redirect(rawData);
+    const rawData =
+      deposit.proofImage || deposit.proofUrl || deposit.receiptImage || deposit.screenshot;
+
+    if (!rawData) {
+      const pending = deposit.proofPending;
+      return new NextResponse(
+        pending ? 'Proof upload still pending' : 'Proof not found',
+        { status: 404 }
+      );
+    }
+
+    const decoded = proofDataToImage(rawData);
+    if (!decoded) {
+      return new NextResponse('Unsupported proof format', { status: 415 });
+    }
+
+    if (decoded.kind === 'url') {
+      try {
+        const upstream = await fetch(decoded.url, { redirect: 'follow' });
+        if (!upstream.ok) {
+          return NextResponse.redirect(decoded.url);
+        }
+        const mime = upstream.headers.get('content-type') || 'image/jpeg';
+        const buffer = Buffer.from(await upstream.arrayBuffer());
+        return new NextResponse(buffer, {
+          headers: {
+            'Content-Type': mime,
+            'Cache-Control': 'private, max-age=3600',
+          },
+        });
+      } catch {
+        return NextResponse.redirect(decoded.url);
+      }
+    }
+
+    return new NextResponse(decoded.buffer, {
+      headers: {
+        'Content-Type': decoded.mime || 'image/png',
+        'Cache-Control': 'private, max-age=86400, stale-while-revalidate=604800',
+      },
+    });
   } catch (err) {
     return new NextResponse('Server Error: ' + err.message, { status: 500 });
   }
@@ -54,14 +114,14 @@ export async function GET(req) {
 /** Attach payment screenshot after fast deposit intent (avoids huge JSON on main POST). */
 export async function POST(req) {
   try {
-    const session = await getSessionUser();
+    const session = (await getSessionUser('player')) || (await getSessionUser());
     if (!session?.userId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
     const depositId = String(body.depositId || '').trim();
-    const proofImage = body.proofImage;
+    let proofImage = body.proofImage;
 
     if (!depositId || !proofImage) {
       return NextResponse.json(
@@ -70,16 +130,17 @@ export async function POST(req) {
       );
     }
 
+    if (typeof proofImage === 'string' && proofImage.length > 1_800_000) {
+      return NextResponse.json(
+        { success: false, error: 'Screenshot too large. Please use a smaller image.' },
+        { status: 413 }
+      );
+    }
+
     const db = await getDb();
     const depositsCol = db.collection('deposits');
 
-    const is24Hex =
-      depositId.length === 24 && /^[0-9a-fA-F]{24}$/.test(depositId) && ObjectId.isValid(depositId);
-    const filter = is24Hex
-      ? { $or: [{ _id: new ObjectId(depositId) }, { _id: depositId }] }
-      : { _id: depositId };
-
-    const deposit = await depositsCol.findOne(filter, {
+    const deposit = await depositsCol.findOne(buildDepositFilter(depositId), {
       projection: { userId: 1, status: 1, proofImage: 1 },
     });
 
@@ -90,6 +151,13 @@ export async function POST(req) {
     const ownerId = String(deposit.userId || '');
     if (ownerId !== String(session.userId) || deposit.status !== 'pending') {
       return NextResponse.json({ success: false, error: 'Not allowed.' }, { status: 403 });
+    }
+
+    if (typeof proofImage === 'string' && !proofImage.startsWith('data:image/')) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid image format. Upload a PNG or JPEG screenshot.' },
+        { status: 400 }
+      );
     }
 
     await depositsCol.updateOne(

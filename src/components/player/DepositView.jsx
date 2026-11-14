@@ -558,16 +558,31 @@ export default function DepositView({ isEmbedded = false, onSelectTab, seedReady
             txHash: transactionId.trim(),
             hasProof: Boolean(proofPayload),
           });
-          void fetchJsonWithTimeout(
-            '/api/payments/deposit/proof',
-            {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ depositId: realId, proofImage: proofPayload }),
-            },
-            120000
-          ).catch(() => {});
+          void (async () => {
+            try {
+              const { data: proofData } = await fetchJsonWithTimeout(
+                '/api/payments/deposit/proof',
+                {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ depositId: realId, proofImage: proofPayload }),
+                },
+                120000
+              );
+              if (!proofData?.success) {
+                setStatusMessage({
+                  type: 'error',
+                  text: 'Deposit submitted but screenshot upload failed — reopen Wallet and contact support with your receipt.',
+                });
+              }
+            } catch {
+              setStatusMessage({
+                type: 'error',
+                text: 'Deposit submitted but screenshot upload failed — please try attaching proof again.',
+              });
+            }
+          })();
         }
         setStatusMessage({
           type: 'success',

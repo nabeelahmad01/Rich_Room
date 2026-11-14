@@ -9,7 +9,11 @@ import {
   publishWallet,
 } from '@/lib/realtimePublish';
 import { findUserGameAccount } from '@/lib/gameAccounts';
-import { sanitizePlainText, containsHtmlLike } from '@/lib/sanitizeText';
+import {
+  sanitizePlainText,
+  sanitizeGameCredential,
+  containsHtmlLike,
+} from '@/lib/sanitizeText';
 import { cleanGameTitle } from '@/lib/fastDiff';
 
 const STAFF_ROLES = new Set([
@@ -168,18 +172,30 @@ export async function GET(req) {
             }
           }
         }
-        const safeName = sanitizePlainText(r.userName || r.userEmail?.split('@')[0], 64);
-        const safeTitle = cleanGameTitle(sanitizePlainText(r.gameTitle, 120));
+        const rawName = r.userName || r.userEmail?.split('@')[0] || '';
+        let safeName = sanitizePlainText(rawName, 64);
+        if (!safeName || containsHtmlLike(rawName)) {
+          safeName = sanitizePlainText(r.userEmail?.split('@')[0], 64) || 'Player';
+        }
+        const rawTitle = r.gameTitle || '';
+        let safeTitle = cleanGameTitle(sanitizePlainText(rawTitle, 120));
+        if (!safeTitle || containsHtmlLike(rawTitle)) safeTitle = '';
+        const suspicious =
+          containsHtmlLike(rawName) ||
+          containsHtmlLike(rawTitle) ||
+          containsHtmlLike(r.gameAccountUsername) ||
+          containsHtmlLike(r.gameAccountPassword);
         return {
           id,
           userEmail: r.userEmail,
           userName: safeName,
           gameTitle: safeTitle,
+          suspicious,
           gameId: r.gameId || '',
           requestType: isFp ? 'COIN_LOAD' : (r.requestType || (Number(r.transferAmount || 0) > 0 ? 'COIN_LOAD' : 'ACCOUNT_CREATION')),
           status: normStatus(r.status || 'PENDING'),
-          gameAccountUsername: sanitizePlainText(r.gameAccountUsername, 80),
-          gameAccountPassword: sanitizePlainText(r.gameAccountPassword, 80),
+          gameAccountUsername: sanitizeGameCredential(r.gameAccountUsername),
+          gameAccountPassword: sanitizeGameCredential(r.gameAccountPassword),
           transferAmount: isFp ? (fpAmt || 5) : Number(r.transferAmount || 0),
           isFreeplay: isFp,
           freeplayPending: isFp,
@@ -376,9 +392,9 @@ export async function POST(req) {
     }
 
     // 2. Resolve Game Account Username — skip DB lookup on coin load when client sent ID
-    let resolvedGameUsername = String(
+    let resolvedGameUsername = sanitizeGameCredential(
       body.gameAccountUsername || body.username || ''
-    ).trim();
+    );
     const deferUsernameLookup =
       requestType === 'COIN_LOAD' && !resolvedGameUsername && Boolean(gameTitle);
     if (!resolvedGameUsername && gameTitle && !deferUsernameLookup) {
@@ -491,10 +507,19 @@ export async function PUT(req) {
     }
 
     const body = await req.json();
-    const { id, action, username, password } = body;
+    const { id, action } = body;
+    const username = sanitizeGameCredential(body.username);
+    const password = sanitizeGameCredential(body.password);
 
     if (!id || !action) {
       return NextResponse.json({ success: false, message: 'ID and action are required.' }, { status: 400 });
+    }
+
+    if (action === 'approve' && (containsHtmlLike(body.username) || containsHtmlLike(body.password))) {
+      return NextResponse.json({
+        success: false,
+        message: 'Credentials must be plain letters, numbers, dots, dashes, or underscores only.',
+      }, { status: 400 });
     }
 
     const db = await getDb();

@@ -1541,8 +1541,9 @@ export default function AdminPortalView({ initialTab }) {
           gameTitle: payload.gameTitle || null,
           playerTagName: payload.playerTagName || '',
           txHash: payload.txHash || '',
-          proofImage: hasProof ? `/api/payments/deposit/proof?id=${depId}` : null,
-          hasProof,
+          proofImage: null,
+          hasProof: Boolean(hasProof),
+          proofPending: hasProof,
           createdAt: new Date().toISOString(),
         };
         setDeposits((prev) => {
